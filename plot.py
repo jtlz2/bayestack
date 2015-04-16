@@ -1,0 +1,92 @@
+#!/usr/bin/env python
+##!/Library/Frameworks/EPD64.framework/Versions/Current/bin/python
+
+"""
+This is plot.py
+Jonathan Zwart
+April 2014
+
+Usage:
+
+./plot.py CHAINS_DIR
+
+"""
+
+import os,sys
+import importlib
+import numpy
+#if os.getenv('PBS_O_HOST') is not None and 'baltasar' not in os.getenv('PBS_O_HOST'):
+if os.getenv('PBS_O_HOST') not in [None,'baltasar']:
+    from matplotlib import pyplot as plt
+import pylab
+from profile_support import profile
+from utils import *
+import contour_plot
+
+param_file=sys.argv[-1]
+setf='%s.settings' % param_file
+#param_dir=sys.argv[-1]
+#param_file='settings.py'
+#param_file=os.path.join(param_dir,param_file)
+#try:
+#    execfile(param_file)
+#except IOError:
+#    print 'IOError :('
+#    #from settings import *
+
+#-------------------------------------------------------------------------------
+
+
+@profile
+def main():
+
+    """
+    """
+
+    print 'Settings file is %s' % param_file
+
+    # Import the settings variables
+    set_module=importlib.import_module(setf)
+    globals().update(set_module.__dict__)
+
+    # Insert hacks here
+    #plotRanges['C']=[0,200]
+
+    chain=pylab.loadtxt('%s/1-post_equal_weights.dat'%outdir)
+
+    # Local plot
+    line=True
+    autoscale=False
+    title='%s - %s'%(outdir,dataset)
+    truth=plotTruth
+    bundle=contour_plot.contourTri(chain,\
+                            line=line,outfile='%s/%s'%(outdir,triangle),\
+                            col=('red','blue'),labels=parameters,\
+                            ranges=plotRanges,truth=truth,\
+                            autoscale=autoscale,title=title,\
+                            labelDict=labelDict)
+
+    # Plot for publication
+    line=False
+    autoscale=True
+    title=''#'%s - %s'%(outdir,dataset)
+    truth=None
+    extn='pdf'
+    bundle=contour_plot.contourTri(chain,\
+                            line=line,\
+                            outfile='%s/triangle-%s-publn.%s'%(outdir,run_num,extn),\
+                            labels=parameters,\
+                            ranges=plotRanges,truth=truth,\
+                            autoscale=autoscale,title=title,\
+                            binsize=50,labelDict=labelDict)
+
+    stats=fetchStats(outdir,parameters,plotTruth)
+    printLaTeX(parameters,stats,dump=outdir)
+
+
+#-------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+
+    ret=main()
+    sys.exit(ret)
