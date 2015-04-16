@@ -154,9 +154,9 @@ class countModel(object):
         self.priors=Priors()
         self.priorsDict={}
         for p in self.parameters:
-            if p[0]=='C': self.priorsDict[p]=['LOG',1.0e-5,1.0e7]
-            elif p[0]=='S': self.priorsDict[p]=['U',0.01,100.0]
-            elif p[0]=='a': self.priorsDict[p]=['U',-2.5,-0.1]
+            if p[0]=='C': self.priorsDict[p]=['LOG',C_MIN,C_MAX]
+            elif p[0]=='S': self.priorsDict[p]=['U',SMIN_MIN,SMAX_MAX]
+            elif p[0]=='a': self.priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX]
             elif p[0]=='n':
                 if self.floatNoise:
                     self.priorsDict[p]=['U',\
@@ -164,8 +164,8 @@ class countModel(object):
                 else:
                     self.priorsDict[p]=\
                             ['DELTA',self.survey.SURVEY_NOISE,self.survey.SURVEY_NOISE]
-            if p=='S0': self.priorsDict[p]=['U',0.01,20.0]
-            if p=='S1': self.priorsDict[p]=['U',20.0,100.0] # -> generalize
+            if p=='S0': self.priorsDict[p]=['U',SMIN_MIN,SMIN_MAX]
+            if p=='S1': self.priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # --> generalize
 
         #self.priorsDict={self.paramsAvail[laws[self.nlaws]][0]:[C_PRIOR,C_MIN,C_MAX],\
         #                 self.paramsAvail[laws[self.nlaws]][1]:['U',ALPHA_MIN,ALPHA_MAX]}
@@ -280,7 +280,6 @@ class countModel(object):
             return -1.0e99
         else:
             #self.transform(cube,ndim,nparams)
-            #print self.currentPhysParams
             #print self.currentPhysParams
             return poissonLhood(self.data,self.realise(cube))
 
