@@ -35,7 +35,8 @@ def main():
 
     nlaws=1
     floatNoise=False
-    fitter=countModel('ppl',nlaws,settingsf,dataset,binStyle,floatNoise)
+    modelFamily='ppl'
+    fitter=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
 
     try:
         os.mkdir(outdir)
