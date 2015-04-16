@@ -23,7 +23,7 @@ def main():
     nlaws=1
     floatNoise=False
     modelFamily='ppl'
-    fitter=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
+    expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
 
     try:
         os.mkdir(outdir)
@@ -31,7 +31,7 @@ def main():
         pass
 
     # Run multinest
-    pymultinest.run(fitter.loglike,fitter.logprior,fitter.nparams,\
+    pymultinest.run(expt.loglike,expt.logprior,expt.nparams,\
                     resume=False,verbose=True,\
                     multimodal=multimodal,max_modes=max_modes,write_output=True,\
                     n_live_points=n_live_points,\
