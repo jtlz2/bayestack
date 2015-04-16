@@ -195,12 +195,12 @@ class countModel(object):
     def confusionNoiseSquared(self,Slower,Supper):
         return self.survey.radioSynthOmegaSr*self.secondMoment(Slower,Supper)
 
-    def checkSminPriorOK(self):
-        (C,alpha,Smin,Smax)=self.currentPhysParams
-        self.SminPriorOK=lumfunc.checkSminPriorOK(C,alpha,Smin,Smax,\
-                                                  self.survey.SURVEY_NOISE,\
-                                          self.survey.radioSynthOmegaSr,numerical=False)
-        return self.SminPriorOK
+    #def checkSminPriorOK(self):
+    #    (C,alpha,Smin,Smax)=self.currentPhysParams
+    #    self.SminPriorOK=lumfunc.checkSminPriorOK(C,alpha,Smin,Smax,\
+    #                                              self.survey.SURVEY_NOISE,\
+    #                                      self.survey.radioSynthOmegaSr,numerical=False)
+    #    return self.SminPriorOK
 
     def dn_by_ds(self,return_all):
         return lumfunc.calculateDnByDs(self.bins,self.dataRealisation,\
@@ -260,7 +260,7 @@ class countModel(object):
         return
 
     def loglike(self,cube,ndim,nparams):
-        # Test the break positions
+        # Test the break positions if necessary
         if self.kind=='ppl' and not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i][0]=='S']):
             print '+',
             return -1.0e99
