@@ -261,7 +261,7 @@ class countModel(object):
 
     def loglike(self,cube,ndim,nparams):
         # Test the break positions
-        if not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i][0]=='S']):
+        if self.kind=='ppl' and not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i][0]=='S']):
             print '+',
             return -1.0e99
         else:
