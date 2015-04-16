@@ -127,7 +127,7 @@ class countModel(object):
         self.model=model(self.kind)
         self.floatNoise=floatNoise
 
-        # Set up parameters
+        # Set up parameters for this model
         self.paramsAvail=\
                     {'breaks':['S%i'%ic for ic in xrange(self.nlaws+1)],\
                      'slopes':['a%i'%ic for ic in xrange(self.nlaws)],\
@@ -141,7 +141,6 @@ class countModel(object):
         self.nparams=len(self.parameters)
         print self.nparams,self.parameters
         self.currentPhysParams=-99.0*numpy.ones(self.nparams)
-        #self.CDFBuilt=False
 
         # Set up data and bins
         self.survey=surveySetup(whichSurvey)
@@ -167,8 +166,6 @@ class countModel(object):
             if p=='S0': self.priorsDict[p]=['U',SMIN_MIN,SMIN_MAX]
             if p=='S1': self.priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # --> generalize
 
-        #self.priorsDict={self.paramsAvail[laws[self.nlaws]][0]:[C_PRIOR,C_MIN,C_MAX],\
-        #                 self.paramsAvail[laws[self.nlaws]][1]:['U',ALPHA_MIN,ALPHA_MAX]}
         return
 
 
@@ -185,18 +182,7 @@ class countModel(object):
         return corrected_data,bins
 
     def evaluate(self,Ss,params):
-        #return powerLawFuncWrap(self.currentParams)
         return self.model.eval(Ss,self.currentParams)
-        #if self.kind=='SPL':
-        #    (C,alpha,Smin,Smax)=self.params
-        #    return lumfunc.powerLawFuncWrap(self.nlaws,S,C,alpha,-99.0,-99.0,\
-        #                                      Smin,Smax,-99.0,1.0)
-        #elif self.kind=='TPL':
-        #    (C,alpha,Smin,Smax,beta,S0)=self.params
-        #    return lumfunc.powerLawFuncWrap(self.nlaws,S,C,alpha,D,beta,\
-        #                                      Smin,Smax,S0,1.0)
-        #else:
-        #    return 'Invalid model! %s' % self.kind
 
     def secondMoment(self,Slower,Supper):
         return self.momentN(Slower,Supper,2)
