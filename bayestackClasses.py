@@ -180,8 +180,9 @@ class countModel(object):
 
     def loadData(self,datafile):
         dataMatrix=numpy.genfromtxt(datafile)
-        return dataMatrix[:,3]*dataMatrix[:,8],\
-          numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
+        corrected_data=dataMatrix[:,3]*dataMatrix[:,8]
+        bins=numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
+        return corrected_data,bins
 
     def evaluate(self,Ss,params):
         #return powerLawFuncWrap(self.currentParams)
