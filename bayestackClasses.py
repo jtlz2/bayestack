@@ -6,6 +6,7 @@ from scipy import integrate
 from scipy.special import erf
 from priors import Priors
 import lumfunc
+import countUtils
 from utils import sqDeg2sr,beamFac,sqrtTwo
 import cosmolopy
 
@@ -203,7 +204,7 @@ class countModel(object):
     #    return self.SminPriorOK
 
     def dn_by_ds(self,return_all):
-        return lumfunc.calculateDnByDs(self.bins,self.dataRealisation,\
+        return countUtils.calculateDnByDs(self.bins,self.dataRealisation,\
                                 return_all=return_all)
 
     def erfs(self,S,Sbin,sigma):
