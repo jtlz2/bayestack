@@ -83,11 +83,9 @@ def powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin,Smax,\
     if S < Smin or S > Smax:
         return 0.0
 
-    if ssigma > 1.0e-50:
-        erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
-        return erfs * powerLawFuncWrap(nlaws,S,C,alpha,D,beta,\
+    erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
+    return erfs * powerLawFuncWrap(nlaws,S,C,alpha,D,beta,\
                                        Smin,Smax,S0,gamma,S1,delta,S2,area)
-    return None
 
 #-------------------------------------------------------------------------------
 
