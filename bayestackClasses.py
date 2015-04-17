@@ -6,25 +6,10 @@ from scipy import integrate
 from scipy.special import erf
 from priors import Priors
 import countUtils
-from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing
+from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood
 import cosmolopy
 
-    
 #-------------------------------------------------------------------------------
-
-def poissonLhood(data,realisation):
-    #print data
-    #for i in range(len(data)):
-    #    print i,data[i],realisation[i]
-    print realisation
-    #sys.exit(0)
-    kk=data[numpy.where(realisation > 0)];
-    iii=realisation[numpy.where(realisation > 0)]
-    loglike = (kk*numpy.log(iii) + kk - kk*numpy.log(kk) - iii).sum()
-    return loglike
-
-#-------------------------------------------------------------------------------
-
 
 class surveySetup(object):
 
