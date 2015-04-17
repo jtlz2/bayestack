@@ -66,24 +66,22 @@ def main():
 
     # Wait here after broadcast...
     world.Barrier()
-    if master: print 'All %i processors received OK...' % size
+    if master: print 'All %i processors received OK...\n' % size
 
     # Write settings variables to file
     if master:
         variablesf=os.path.join(outdir,variablesfile)
         dump_variable_values(set_module,variablesf,verbose=False)
 
-        print
         startTime = time.strftime('%X %x %Z')
         note='Time now is %s' % startTime
         remark(log,note)
 
         shutil.copy(param_file,outdir)
-        note='Settings file: %s' % param_file
-        remark(log,note)
         shutil.copy(datafile,outdir)
-        note='Data file: %s' % datafile
-        remark(log,note)
+        notes=['Settings file: %s' % param_file,\
+               'Data file: %s' % datafile]
+        remarks(log,notes)
 
         # This is to allow import of settings from outdir
         # i.e. from outdir import * [or whatever]
@@ -147,7 +145,7 @@ def main():
                'or\n./plot.py %s' % outdir,\
                 'and\n./reconstruct.py %s' % outdir]
 
-        remarks(log,note)
+        remarks(log,notes)
         log.close()
 
         # Copy the stats file so it's legible on my iPhone, Google, email etc.
