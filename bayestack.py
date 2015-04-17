@@ -12,7 +12,7 @@ import importlib
 import pymultinest
 from bayestack_settings import *
 from bayestackClasses import countModel
-from utils import touch,remark,dump_variable_values
+from utils import touch,remark,remarks,dump_variable_values
 from mpi4py import MPI
 import dill
 MPI._p_pickle.dumps = dill.dumps
@@ -91,10 +91,9 @@ def main():
         initf=os.path.join(outdir,init_file)
         touch(initf)
 
-        note='Bins taken from %s' % datafile
-        remark(log,note)
-        note='# Bin occupancies [i uJy uJy field^-1]:'
-        remark(log,note)
+        notes=['Bins taken from %s' % datafile,\
+               '# Bin occupancies [i uJy uJy field^-1]:']
+        remarks(log,notes)
         for ibin in xrange(nbins-1):
             try:
                 line='%i %f %f %f'%(ibin+1,bins[ibin],bins[ibin+1],ks[ibin])
@@ -148,7 +147,7 @@ def main():
                'or\n./plot.py %s' % outdir,\
                 'and\n./reconstruct.py %s' % outdir]
 
-        for note in notes: remark(log,note)
+        remarks(log,note)
         log.close()
 
         # Copy the stats file so it's legible on my iPhone, Google, email etc.
