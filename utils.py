@@ -31,6 +31,13 @@ def touch(fname, times=None):
 
 #-------------------------------------------------------------------------------
 
+def strictly_increasing(L):
+    """http://stackoverflow.com/questions/4983258/python-how-to-check-list-monotonicity
+    """
+    return all(x<y for x, y in zip(L, L[1:]))
+
+#-------------------------------------------------------------------------------
+
 def matchit(x,y,shape):
     """
     http://stackoverflow.com/questions/8251541/numpy-for-every-element-in-one-array-find-the-index-in-another-array

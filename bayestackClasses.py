@@ -6,15 +6,9 @@ from scipy import integrate
 from scipy.special import erf
 from priors import Priors
 import countUtils
-from utils import sqDeg2sr,beamFac,sqrtTwo
+from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing
 import cosmolopy
 
-#-------------------------------------------------------------------------------
-
-def strictly_increasing(L):
-    """http://stackoverflow.com/questions/4983258/python-how-to-check-list-monotonicity
-    """
-    return all(x<y for x, y in zip(L, L[1:]))
     
 #-------------------------------------------------------------------------------
 
