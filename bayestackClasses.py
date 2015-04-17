@@ -210,7 +210,7 @@ class countModel(object):
         self.dataRealisation=countUtils.calculateI3(C,alpha,Smin,Smax,\
                                                  self.survey.SURVEY_AREA,\
                                                  noise=sigma,dump=None,verbose=False,\
-                                                 bins=self.bins)
+                                                 bins=self.bins,nlaws=self.nlaws)
 #        self.dataRealisation=\
 #          lumfunc.realiseData(nlaws,[C,alpha,Smin/u2Jy,Smax/u2Jy],self.survey.SURVEY_AREA,sigma,self.bins)
         #self.dataRealisation=[integrate.quad(lambda S:lumfunc.powerLawFuncErfsS(S,self.nlaws,C,alpha,-99.0,beta,Smin/u2Jy,Smax/u2Jy,self.bins[ibin]/u2Jy,self.bins[ibin+1]/u2Jy,S0/u2Jy,gamma,S1/u2Jy,delta,S2/u2Jy,self.survey.SURVEY_NOISE/u2Jy,sqDeg2sr*self.survey.SURVEY_AREA),Smin/u2Jy,Smax/u2Jy)[0] for ibin in range(self.nbins)]
