@@ -75,12 +75,10 @@ def main():
         dump_variable_values(set_module,variablesf,verbose=False)
 
         startTime = time.strftime('%X %x %Z')
-        note='Time now is %s' % startTime
-        remark(log,note)
-
         shutil.copy(param_file,outdir)
         shutil.copy(datafile,outdir)
-        notes=['Settings file: %s' % param_file,\
+        notes=['Time now is %s' % startTime,\
+               'Settings file: %s' % param_file,\
                'Data file: %s' % datafile]
         remarks(log,notes)
 
@@ -102,7 +100,7 @@ def main():
             remark(log,line)
 
 
-    # run MultiNest
+    # Run MultiNest
     if master: t0 = time.time()
     try:
         pymultinest.run(expt.loglike,expt.logprior,expt.nparams,\
