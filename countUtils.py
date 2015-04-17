@@ -1,3 +1,15 @@
+"""
+Support functions for bayestack, bayestackClasses and lumfunc
+"""
+
+import numpy
+from math import pi,e,exp,log,log10,isinf,isnan
+from scipy import integrate,stats
+from scipy.special import erf
+from profile_support import profile
+from utils import sqrtTwo
+from bayestack_settings import *
+
 #-------------------------------------------------------------------------------
 
 @profile
@@ -122,7 +134,7 @@ def powerLawFuncErrorFn(Si,C,alpha,Smin,Smax,Sbinlow,Sbinhigh,noise,area):
         #if False:
         return 0.0
 
-    erfs = erf((Si-Sbinlow)/(sqrt(2.0)*noise)) - erf((Si-Sbinhigh)/(sqrt(2.0)*noise))
+    erfs = erf((Si-Sbinlow)/(sqrtTwo*noise)) - erf((Si-Sbinhigh)/(sqrtTwo*noise))
     erfs *= 0.5
     n = C * Si**alpha * erfs * area
 
