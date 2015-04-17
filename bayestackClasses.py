@@ -5,7 +5,6 @@ import itertools
 from scipy import integrate
 from scipy.special import erf
 from priors import Priors
-#import lumfunc
 import countUtils
 from utils import sqDeg2sr,beamFac,sqrtTwo
 import cosmolopy
