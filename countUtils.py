@@ -120,10 +120,7 @@ def powerLawFuncErrorFn(Si,C,alpha,Smin,Smax,Sbinlow,Sbinhigh,noise,area):
             area is often just set to 1.0 anyway
     """
 
-    dnds00=True
-    if dnds00 and (Si < Smin or Si > Smax):
-        #print '***Si',Smin,Smax
-        #if False:
+    if Si < Smin or Si > Smax:
         return 0.0
 
     erfs = erf((Si-Sbinlow)/(sqrtTwo*noise)) - erf((Si-Sbinhigh)/(sqrtTwo*noise))
