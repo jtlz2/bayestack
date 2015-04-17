@@ -10,19 +10,13 @@ mpirun -np 4 ./bayestack.py bayestack_settings.py
 import os
 import pymultinest
 from bayestack_settings import *
-from bayestackClasses import *
+from bayestackClasses import countModel
 
 #-------------------------------------------------------------------------------
 
 def main():
 
     settingsf='bayestack_settings'
-    
-    dataset='video'
-    binStyle=1
-    nlaws=1
-    floatNoise=False
-    modelFamily='ppl'
     expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
 
     try:

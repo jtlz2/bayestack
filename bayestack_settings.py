@@ -20,13 +20,25 @@ elif  'inject'      in exe: context='i'
 print 'Context is %s' % context
 #-------------------------------------------------------------------------------
 
+# New-style settings <-- bayestack.py
+
+dataset='video'
+binStyle=1
+nlaws=1
+floatNoise=False
+modelFamily='ppl'
+outdir='chains_150417a' # based on 140123a
+
+
+#-------------------------------------------------------------------------------
+
 # Master parameters
 MOTD=''
 RESUME=False # Turn checkpointing on
 nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
-outdir='chains_150414a' # based on 140123a
+#outdir='chains_150417a' # based on 140123a
 run_num=outdir.split('_')[-1]
 #if context=='l': outdir=os.path.join('/home/jtlz2/bartolomeu/output',outdir)
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
@@ -34,17 +46,17 @@ logfile='README.txt'
 variablesfile='variables.txt'
 comment='Rearchitecting'
 SEED_SAMP=1234 # [-1 for clock]
-floatNoise=True
+#floatNoise=False
 
 # What to fit - SPL, TPL, XPL or QPL
-nlaws=4
+#nlaws=1
 
 # Data set
-#dataset='sims/150414a'
+#dataset='sims/150417a'
 #dataset='cosmos'
 #dataset='vvdf'
-dataset='video'
-run_num_run='150414a'
+#dataset='video'
+run_num_run='150417a'
 #dataset='first'
 #dataset='mca'
 
