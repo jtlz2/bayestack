@@ -86,3 +86,19 @@ def powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin,Smax,\
                          S0,gamma,S1,delta,S2,area)
 
 #-------------------------------------------------------------------------------
+
+@profile
+def powerLawFuncWrap(nlaws,S,C,alpha,D,beta,Smin,Smax,S0,gamma,S1,delta,S2,area):
+
+    if nlaws == 1:
+        return powerLawFuncS(S,C,alpha,Smin,Smax,area)
+    elif nlaws == 2:
+        return powerLawFuncDoubleS(S,C,alpha,-99.0,beta,Smin,Smax,S0,area)
+    elif nlaws == 3:
+        return powerLawFuncTripleS(S,C,alpha,beta,Smin,Smax,S0,gamma,S1,area)
+    elif nlaws == 4:
+        return powerLawFuncQuadS(S,C,alpha,beta,Smin,Smax,S0,gamma,S1,delta,S2,area)
+
+    return
+
+#-------------------------------------------------------------------------------
