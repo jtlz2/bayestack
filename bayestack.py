@@ -37,6 +37,7 @@ def main():
         globals().update(set_module.__dict__)
 
     note='MPI processors checked in: rank/size = (%i/%i)' % (rank,size)
+    print note
 
     if master:
         try:
