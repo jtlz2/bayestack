@@ -5,7 +5,7 @@ import itertools
 from scipy import integrate
 from scipy.special import erf
 from priors import Priors
-import lumfunc
+#import lumfunc
 import countUtils
 from utils import sqDeg2sr,beamFac,sqrtTwo
 import cosmolopy
@@ -229,7 +229,7 @@ class countModel(object):
         S2=-99.0
         nlaws=1
         #print [cube[i] for i in range(5)]
-        self.dataRealisation=lumfunc.calculateI3(C,alpha,Smin,Smax,\
+        self.dataRealisation=countUtils.calculateI3(C,alpha,Smin,Smax,\
                                                  self.survey.SURVEY_AREA,\
                                                  noise=sigma,dump=None,verbose=False)
 #        self.dataRealisation=\
