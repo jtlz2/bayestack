@@ -103,10 +103,7 @@ def main():
                 sys.exit(0)
             remark(log,line)
 
-    n_params = 2*(nlaws+1)
 
-    if floatNoise: n_params +=1
-    
     # run MultiNest
     if master: t0 = time.time()
     try:
