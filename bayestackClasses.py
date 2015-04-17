@@ -121,6 +121,10 @@ class countModel(object):
         print self.nparams,self.parameters
         self.currentPhysParams=-99.0*numpy.ones(self.nparams)
 
+        # Set up priors
+        self.priors=Priors()
+        self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
+
         # Set up data and bins
         self.survey=surveySetup(whichSurvey)
         self.binScheme=binSetup(whichBins)
@@ -128,9 +132,6 @@ class countModel(object):
         self.nbins=self.binScheme.nbins
         self.data,self.bins=self.loadData(self.survey.datafile)
 
-        # Set up priors
-        self.priors=Priors()
-        self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
         return
 
     def parsePriors(self,parameters,floatNoise):
