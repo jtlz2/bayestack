@@ -130,10 +130,10 @@ class countModel(object):
 
         # Set up priors
         self.priors=Priors()
-        self.priorsDict=self.loadPriors(self.parameters,self.floatNoise)
+        self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
         return
 
-    def loadPriors(self,parameters,floatNoise):
+    def parsePriors(self,parameters,floatNoise):
         priorsDict={}
         for p in parameters:
             if p[0]=='C': priorsDict[p]=['LOG',C_MIN,C_MAX]
