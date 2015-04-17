@@ -149,10 +149,11 @@ class countModel(object):
 
 
     def setParams(self,params):
+        self.lastPhysParams=self.currentPhysParams
         self.currentPhysParams=params
 
     def lastParams(self):
-        pass
+        return self.lastPhysParams
 
     def loadData(self,datafile):
         dataMatrix=numpy.genfromtxt(datafile)
