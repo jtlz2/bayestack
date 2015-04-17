@@ -8,7 +8,7 @@ from scipy import integrate,stats
 from scipy.special import erf
 from profile_support import profile
 from utils import sqrtTwo
-from bayestack_settings import * # <-- generalize
+from bayestack_settings import * # <-- generalize, localize
 
 #-------------------------------------------------------------------------------
 
