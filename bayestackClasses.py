@@ -158,8 +158,8 @@ class countModel(object):
     def loadData(self,datafile):
         dataMatrix=numpy.genfromtxt(datafile)
         corrected_data=dataMatrix[:,3]*dataMatrix[:,8]
-        bins=numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
-        return corrected_data,bins
+        binsDogleg=numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
+        return corrected_data,binsDogleg
 
     def evaluate(self,Ss,params):
         return self.model.eval(Ss,self.currentParams)
