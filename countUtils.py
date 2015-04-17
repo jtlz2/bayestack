@@ -154,73 +154,16 @@ def calculateI3(C,alpha,Smin,Smax,area,noise=None,dump=None,\
     ;-  
     """
 
-
-    #II = numpy.zeros(nbins-1)
-    ## Set up the numerical derivative
-    #resolution=1000
-    #ds = (Smax - Smin) / resolution
-    #for ibin in xrange(nbins-1):
-    ## This is the integral from Smin to Smax
-    ## Step from Smin -> Smax
-    #    I=0.0
-    #    for istep in xrange(resolution):
-    #        Si = Smin + (istep + 0.5) * ds # + -> - because of counting from 0 not 1
-    #        erfs = erf((Si-bins[ibin])/(sqrt(2.0)*noise)) - erf((Si-bins[ibin+1])/(sqrt(2.0)*noise))
-    #        I += area*C*Si**alpha * erfs * ds
-    #    II[ibin]=I
-
-    # I checked this is the same as the numerical integration above
-    # (to 1 dec. place.)
     II = numpy.zeros(nbins-1)
     II2 = numpy.zeros(nbins-1)
-    # Switch to quadrature integration
-    # This is the integral from Smin to Smax
-    # Put C scalings here:
-    #C *= 10**(1.0/(6.0*alpha))
-    #C *= 10**(6.0*alpha)
-    #C *= 10**6.0 # Get junk out unless C is of this order (uJy v. Jy)
     for ibin in xrange(nbins-1):
-        # This is switched off in order to fix the units of C, but for
-        # a long time this was the version in use (1401NNx)
-        #II[ibin]=integrate.quad(lambda S:powerLawFuncErrorFn(S,C,alpha,Smin,Smax,bins[ibin],bins[ibin+1],noise,area),Smin,Smax)[0]*1000.0
-
-        # I'm trying to investigate the units of the power law in
-        # case it affects C
-        # **** !!!! This is the wrong place to do it --- the loop compounds!!!!
-        # Tried adding a factor of SURVEY_AREA here:
-        #print C,alpha,Smin,Smax,bins[ibin],bins[ibin+1],noise,area
-        #raw_input('pause')
-        # 1.0 was = area but I've hard-coded this now
-        #C *= 1.0/sqDeg2sr
-        #C *= 1.0e6 <- seems to work ok at 140207, but error bars too small
-        #C *= 10**(1.0/(6.0*alpha))
-        #**** All the quantities are in uJy, except C is in uJy^-1 sr^-1
-        #**** alpha is dimensionless
-        #**** II needs to be in same area units as ksNoisy (/SURVEY_AREA now)
         sqDeg2srr=sqDeg2sr
         #sqDeg2srr=1.0
         if nlaws == 1:
-            # Could 'lambda: S' be deleted - speed-up..?
-            # Was Smin,Smax -> Sbinlow,Sbinhigh
-            # Need to sort out this maths C expression - II or II2??
-            #II[ibin]=integrate.quad(lambda S:powerLawFuncErrorFn(S,C*10**(1.0/(6.0*alpha)),alpha,Smin,Smax,bins[ibin],bins[ibin+1],noise,1.0),bins[ibin],bins[ibin+1])[0]
-            # Checked II and II2 are now the same:
             II[ibin]=integrate.quad(lambda S:powerLawFuncErrorFn(S,C*1.0e-6*10**(-6.0*alpha),alpha,Smin,Smax,bins[ibin],bins[ibin+1],noise,sqDeg2srr*SURVEY_AREA),Smin,Smax)[0]
             II2[ibin]=integrate.quad(lambda S:powerLawFuncErrorFn(S,C,alpha,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2srr*SURVEY_AREA),Smin/1.0e6,Smax/1.0e6)[0]
-            #print bins[ibin],bins[ibin+1],Smin,Smax,II[ibin],II2[ibin],II[ibin]/II2[ibin]
-
-            #print C,II[ibin],' '
-            #II[ibin]=integrate.quad(lambda S:powerLawFuncErrorFn(S,C,alpha,Smin,Smax,bins[ibin],bins[ibin+1],noise,1.0),Smin,Smax)[0]
-            #print II[ibin]
-
         elif nlaws in [2,3,4]:
-            # XXXXX NEED TO FIX INTEGRATION LIMITS XXXXX -> Sbinlow,Sbinhigh
             II[ibin]=integrate.quad(lambda S:powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,noise/1.0e6,sqDeg2srr*SURVEY_AREA),Smin/1.0e6,Smax/1.0e6)[0]
-
-            #print ibin,bins[ibin],bins[ibin+1],Smin,Smax,II[ibin],II2[ibin],II[ibin]/II2[ibin]
-        #print II.sum()*1000.0
-    #print C,alpha,Smin,Smax
-    #sys.exit(0)
 
     return II
 
