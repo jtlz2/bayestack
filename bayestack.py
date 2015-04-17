@@ -126,6 +126,8 @@ def main():
         return 1
 
     if master:
+        stopTime=time.strftime('%X %x %Z')
+
         print '# Bin occupancies:'
         for ibin in xrange(nbins-1):
             print ibin+1,bins[ibin],bins[ibin+1],ks[ibin]
@@ -133,39 +135,23 @@ def main():
         t1 = time.time()
         dt=t1-t0
 
-        note='Time then was %s' % startTime
-        remark(log,note)
-        stopTime=time.strftime('%X %x %Z')
-        note='Time now is %s' % stopTime
-        remark(log,note)
-        note='Execution took %6.4f sec (~ %i min) with %i cores' % \
-          (dt,int(round(dt/60.0)),size)
-        remark(log,note)
-        note='Arguments: %s' % ' '.join(sys.argv)
-        remark(log,note)
-        
-        note='INS   = %s' % do_INS
-        remark(log,note)
-        note='nlive = %i' % n_live_points
-        remark(log,note)
-        note='Run comment: %s' % comment
-        remark(log,note)
+        notes=['Time then was %s' % startTime,\
+               'Time now is %s' % stopTime,\
+               'Execution took %6.4f sec (~ %i min) with %i cores' % \
+                                         (dt,int(round(dt/60.0)),size),\
+               'Arguments: %s' % ' '.join(sys.argv),\
+               'INS   = %s' % do_INS,\
+               'nlive = %i' % n_live_points,\
+               'Run comment: %s' % comment,\
+               'Now execute:',\
+               'import pylab; from utils import *; import contour_plot',\
+               'from %s import settings' % outdir,\
+               "contour_plot.contourTri(pylab.loadtxt('%(od)s/%(os)spost_equal_weights.dat'),line=True,outfile='%(od)s/%(tri)s',col=('red','blue'),labels=settings.parameters,ranges=settings.plotRanges,truth=settings.plotTruth,autoscale=False,title='%(od)s')" \
+               % {'od':outdir,'os':outstem,'tri':triangle},\
+               'or\n./plot.py %s' % outdir,\
+                'and\n./reconstruct.py %s' % outdir]
 
-        note='Now execute:'
-        remark(log,note)
-        note='import pylab; from utils import *; import contour_plot'
-        remark(log,note)
-        note='from %s import settings' % outdir
-        remark(log,note)
-        note="contour_plot.contourTri(pylab.loadtxt('%(od)s/%(os)spost_equal_weights.dat'),line=True,outfile='%(od)s/%(tri)s',col=('red','blue'),labels=settings.parameters,ranges=settings.plotRanges,truth=settings.plotTruth,autoscale=False,title='%(od)s')" \
-        % {'od':outdir,'os':outstem,'tri':triangle}
-
-        remark(log,note)
-        note='or\n./plot.py %s' % outdir
-        remark(log,note)
-        note='and\n./reconstruct.py %s' % outdir
-        remark(log,note)
-
+        for note in notes: remark(log,note)
         log.close()
 
         # Copy the stats file so it's legible on my iPhone, Google, email etc.
