@@ -130,23 +130,23 @@ class countModel(object):
 
         # Set up priors
         self.priors=Priors()
-        self.priorsDict={}
-        for p in self.parameters:
-            if p[0]=='C': self.priorsDict[p]=['LOG',C_MIN,C_MAX]
-            elif p[0]=='S': self.priorsDict[p]=['U',SMIN_MIN,SMAX_MAX]
-            elif p[0]=='a': self.priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX]
-            elif p[0]=='n':
-                if self.floatNoise:
-                    self.priorsDict[p]=['U',\
-                            0.5*self.survey.SURVEY_NOISE,2.0*self.survey.SURVEY_NOISE]
-                else:
-                    self.priorsDict[p]=\
-                            ['DELTA',self.survey.SURVEY_NOISE,self.survey.SURVEY_NOISE]
-            if p=='S0': self.priorsDict[p]=['U',SMIN_MIN,SMIN_MAX]
-            if p=='S1': self.priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # --> generalize
-
+        self.priorsDict=self.loadPriors(self.parameters,self.floatNoise)
         return
 
+    def loadPriors(self,parameters,floatNoise):
+        priorsDict={}
+        for p in parameters:
+            if p[0]=='C': priorsDict[p]=['LOG',C_MIN,C_MAX]
+            elif p[0]=='S': priorsDict[p]=['U',SMIN_MIN,SMAX_MAX]
+            elif p[0]=='a': priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX]
+            elif p[0]=='n':
+                if floatNoise:
+                    priorsDict[p]=['U',0.5*SURVEY_NOISE,2.0*SURVEY_NOISE]
+                else:
+                    priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
+            if p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX]
+            if p=='S1': priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # --> generalize
+        return priorsDict
 
     def setParams(self,params):
         self.lastPhysParams=self.currentPhysParams
