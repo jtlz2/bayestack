@@ -42,7 +42,7 @@ def poissonLhood(data,realisation):
     #print data
     #for i in range(len(data)):
     #    print i,data[i],realisation[i]
-    print realisation
+    #print realisation
     #sys.exit(0)
     kk=data[numpy.where(realisation > 0)];
     iii=realisation[numpy.where(realisation > 0)]
