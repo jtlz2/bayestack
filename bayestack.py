@@ -110,17 +110,17 @@ def main():
     # run MultiNest
     if master: t0 = time.time()
     try:
-        # NB MPI is already init'ed by mpi4py (crashes otherwise)
-        # mode_tolerance=-1e90 is required as a bugfix (in earlier
-        # versions of PyMultiNest)
         pymultinest.run(expt.loglike,expt.logprior,expt.nparams,\
                     resume=RESUME,verbose=True,\
                     multimodal=multimodal,max_modes=max_modes,write_output=True,\
                     n_live_points=n_live_points,\
                     evidence_tolerance=evidence_tolerance,\
+                    # mode_tolerance=-1e90 bugfix for earlier versions
+                    # of PyMultiNest
                     mode_tolerance=-1e90,seed=SEED_SAMP,max_iter=max_iter,\
                     importance_nested_sampling=do_INS,\
                     outputfiles_basename=os.path.join(outdir,outstem),\
+        # NB MPI is already init'ed by mpi4py (crashes otherwise)
                     init_MPI=False)
     except:
         return 1
@@ -128,9 +128,9 @@ def main():
     if master:
         stopTime=time.strftime('%X %x %Z')
 
-        print '# Bin occupancies:'
-        for ibin in xrange(nbins-1):
-            print ibin+1,bins[ibin],bins[ibin+1],ks[ibin]
+        #print '# Bin occupancies:'
+        #for ibin in xrange(nbins-1):
+        #    print ibin+1,bins[ibin],bins[ibin+1],ks[ibin]
 
         t1 = time.time()
         dt=t1-t0
