@@ -132,7 +132,7 @@ def powerLawFuncErrorFn(Si,C,alpha,Smin,Smax,Sbinlow,Sbinhigh,noise,area):
 @profile
 def calculateI3(C,alpha,Smin,Smax,area,noise=None,dump=None,\
                 verbose=False,nlaws=1,D=None,beta=None,S0=None,\
-                gamma=-99.0,S1=-99.0,delta=-99.0,S2=-99.0):
+                gamma=-99.0,S1=-99.0,delta=-99.0,S2=-99.0,bins=None):
     """
     Do this for all bins simultaneously
     Mimic pn_integral.pro:
@@ -152,6 +152,8 @@ def calculateI3(C,alpha,Smin,Smax,area,noise=None,dump=None,\
     ;-  
     """
 
+    nbins=len(bins)
+    
     II = numpy.zeros(nbins-1)
     II2 = numpy.zeros(nbins-1)
     for ibin in xrange(nbins-1):
