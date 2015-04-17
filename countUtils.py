@@ -8,7 +8,7 @@ from scipy import integrate,stats
 from scipy.special import erf
 from profile_support import profile
 from utils import sqrtTwo
-from bayestack_settings import *
+from bayestack_settings import * # <-- generalize
 
 #-------------------------------------------------------------------------------
 
@@ -85,17 +85,9 @@ def powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin,Smax,\
 
     if ssigma > 1.0e-50:
         erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
-        #erfs *= 0.5
-        # Should the next line be min/max or binlow/binhigh???
-        # min/max - parameter inferences way off otherwise
-        #return erfs * powerLawFuncWrap(nlaws,S,C,alpha,D,beta,Sbinlow,Sbinhigh,S0,area)
         return erfs * powerLawFuncWrap(nlaws,S,C,alpha,D,beta,\
                                        Smin,Smax,S0,gamma,S1,delta,S2,area)
-    else: # Noise-free(!!)
-        # Should the next line be min/max or binlow/binhigh???
-        # THIS NEEDS TO BE THOROUGHLY CHECKED
-        return powerLawFuncWrap(nlaws,S,C,alpha,D,beta,Sbinlow,Sbinhigh,\
-                         S0,gamma,S1,delta,S2,area)
+    return None
 
 #-------------------------------------------------------------------------------
 
