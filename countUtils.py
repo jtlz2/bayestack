@@ -50,3 +50,39 @@ def calculateDnByDs(bins,counts,eucl=False,verbose=False,idl_style=True,
     return dn_by_ds
 
 #-------------------------------------------------------------------------------
+
+
+@profile
+def powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin,Smax,\
+                      Sbinlow,Sbinhigh,S0,gamma,S1,delta,S2,ssigma,area):
+    """
+    Ketron's equation (5) + (9)
+
+    ; Integration of eq. (7).                                                       
+    ;
+    ;    /smax               /max_bin                                               
+    ;    |     dS * dN/dS *  |        dS' exp(-(S-S')**2/2/rms^2)                      
+    ;    /smin               /min_bin                                               
+    ;                                                                               
+    ; Analytic solution of second integral is error functions.                      
+    ;
+    """
+
+    if S < Smin or S > Smax:
+        return 0.0
+
+    if ssigma > 1.0e-50:
+        erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
+        #erfs *= 0.5
+        # Should the next line be min/max or binlow/binhigh???
+        # min/max - parameter inferences way off otherwise
+        #return erfs * powerLawFuncWrap(nlaws,S,C,alpha,D,beta,Sbinlow,Sbinhigh,S0,area)
+        return erfs * powerLawFuncWrap(nlaws,S,C,alpha,D,beta,\
+                                       Smin,Smax,S0,gamma,S1,delta,S2,area)
+    else: # Noise-free(!!)
+        # Should the next line be min/max or binlow/binhigh???
+        # THIS NEEDS TO BE THOROUGHLY CHECKED
+        return powerLawFuncWrap(nlaws,S,C,alpha,D,beta,Sbinlow,Sbinhigh,\
+                         S0,gamma,S1,delta,S2,area)
+
+#-------------------------------------------------------------------------------
