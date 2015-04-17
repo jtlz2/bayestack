@@ -7,25 +7,113 @@ mpirun -np 4 ./bayestack.py bayestack_settings.py
 
 """
 
-import os
+import os,time,shutil
+import importlib
 import pymultinest
 from bayestack_settings import *
 from bayestackClasses import countModel
+from utils import touch,remark,dump_variable_values
+from mpi4py import MPI
+import dill
+MPI._p_pickle.dumps = dill.dumps
+MPI._p_pickle.loads = dill.loads
 
 #-------------------------------------------------------------------------------
 
 def main():
 
     settingsf='bayestack_settings'
+    param_file='%s.py'%settingsf
     expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
 
-    try:
-        os.mkdir(outdir)
-    except OSError:
-        pass
+    # Set up MPI
+    world=MPI.COMM_WORLD
+    rank=world.rank
+    size=world.size
+    master = rank==0
 
-    # Run multinest
-    pymultinest.run(expt.loglike,expt.logprior,expt.nparams,\
+    if master:
+        set_module=importlib.import_module(settingsf)
+        globals().update(set_module.__dict__)
+
+    note='MPI processors checked in: rank/size = (%i/%i)' % (rank,size)
+
+    if master:
+        try:
+            os.mkdir(outdir)
+        except OSError:
+            pass
+
+        logf=os.path.join(outdir,logfile)
+        if master and os.path.exists(logf): os.remove(logf)
+        log=open(logf,'w')
+        remark(log,note)
+
+    # Wait here after check-in...
+    world.Barrier()
+    if master: print 'All %i processors checked in...' % size
+
+    # Broadcast global settings variables
+    if master:
+        set_dict = set_module.__dict__
+    else:
+        set_dict = None
+    set_dict = world.bcast(set_dict,root=0)
+
+    if not master:
+        globals().update(set_dict)
+        #print globals()
+
+    # Wait here after broadcast...
+    world.Barrier()
+    if master: print 'All %i processors received OK...' % size
+
+    # Write settings variables to file
+    if master:
+        variablesf=os.path.join(outdir,variablesfile)
+        dump_variable_values(set_module,variablesf,verbose=False)
+
+        print
+        startTime = time.strftime('%X %x %Z')
+        note='Time now is %s' % startTime
+        remark(log,note)
+
+        shutil.copy(param_file,outdir)
+        note='Settings file: %s' % param_file
+        remark(log,note)
+        shutil.copy(datafile,outdir)
+        note='Data file: %s' % datafile
+        remark(log,note)
+
+        # This is to allow import of settings from outdir
+        # i.e. from outdir import * [or whatever]
+        init_file='__init__.py'
+        initf=os.path.join(outdir,init_file)
+        touch(initf)
+
+        note='Bins taken from %s' % datafile
+        remark(log,note)
+        note='# Bin occupancies [i uJy uJy field^-1]:'
+        remark(log,note)
+        for ibin in xrange(nbins-1):
+            try:
+                line='%i %f %f %f'%(ibin+1,bins[ibin],bins[ibin+1],ks[ibin])
+            except IndexError:
+                print "Probably your binstyle doesn't match the datafile bins"
+                sys.exit(0)
+            remark(log,line)
+
+    n_params = 2*(nlaws+1)
+
+    if floatNoise: n_params +=1
+    
+    # run MultiNest
+    if master: t0 = time.time()
+    try:
+        # NB MPI is already init'ed by mpi4py (crashes otherwise)
+        # mode_tolerance=-1e90 is required as a bugfix (in earlier
+        # versions of PyMultiNest)
+        pymultinest.run(expt.loglike,expt.logprior,expt.nparams,\
                     resume=RESUME,verbose=True,\
                     multimodal=multimodal,max_modes=max_modes,write_output=True,\
                     n_live_points=n_live_points,\
@@ -34,8 +122,57 @@ def main():
                     importance_nested_sampling=do_INS,\
                     outputfiles_basename=os.path.join(outdir,outstem),\
                     init_MPI=False)
+    except:
+        return 1
 
+    if master:
+        print '# Bin occupancies:'
+        for ibin in xrange(nbins-1):
+            print ibin+1,bins[ibin],bins[ibin+1],ks[ibin]
 
+        t1 = time.time()
+        dt=t1-t0
+
+        note='Time then was %s' % startTime
+        remark(log,note)
+        stopTime=time.strftime('%X %x %Z')
+        note='Time now is %s' % stopTime
+        remark(log,note)
+        note='Execution took %6.4f sec (~ %i min) with %i cores' % \
+          (dt,int(round(dt/60.0)),size)
+        remark(log,note)
+        note='Arguments: %s' % ' '.join(sys.argv)
+        remark(log,note)
+        
+        note='INS   = %s' % do_INS
+        remark(log,note)
+        note='nlive = %i' % n_live_points
+        remark(log,note)
+        note='Run comment: %s' % comment
+        remark(log,note)
+
+        note='Now execute:'
+        remark(log,note)
+        note='import pylab; from utils import *; import contour_plot'
+        remark(log,note)
+        note='from %s import settings' % outdir
+        remark(log,note)
+        note="contour_plot.contourTri(pylab.loadtxt('%(od)s/%(os)spost_equal_weights.dat'),line=True,outfile='%(od)s/%(tri)s',col=('red','blue'),labels=settings.parameters,ranges=settings.plotRanges,truth=settings.plotTruth,autoscale=False,title='%(od)s')" \
+        % {'od':outdir,'os':outstem,'tri':triangle}
+
+        remark(log,note)
+        note='or\n./plot.py %s' % outdir
+        remark(log,note)
+        note='and\n./reconstruct.py %s' % outdir
+        remark(log,note)
+
+        log.close()
+
+        # Copy the stats file so it's legible on my iPhone, Google, email etc.
+        stats_dotdat= '%(od)s/%(os)sstats.dat' % {'od':outdir,'os':outstem}
+        stats_dottxt= '%(od)s/%(os)sstats.txt' % {'od':outdir,'os':outstem}
+        shutil.copy(stats_dotdat,stats_dottxt)
+        
     return 0
 
 #-------------------------------------------------------------------------------
