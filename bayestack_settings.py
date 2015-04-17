@@ -571,8 +571,8 @@ verbose=False
 sigma=SURVEY_NOISE # uJy
 area=SURVEY_AREA # sq. deg.
 #model=1 # Vary all parameters
-loud=False
-tellthetruth=False
+#loud=False
+#tellthetruth=False
 
 
 #-------------------------------------------------------------------------------

@@ -26,7 +26,7 @@ def main():
 
     # Run multinest
     pymultinest.run(expt.loglike,expt.logprior,expt.nparams,\
-                    resume=False,verbose=True,\
+                    resume=RESUME,verbose=True,\
                     multimodal=multimodal,max_modes=max_modes,write_output=True,\
                     n_live_points=n_live_points,\
                     evidence_tolerance=evidence_tolerance,\
