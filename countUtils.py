@@ -102,3 +102,30 @@ def powerLawFuncWrap(nlaws,S,C,alpha,D,beta,Smin,Smax,S0,gamma,S1,delta,S2,area)
     return
 
 #-------------------------------------------------------------------------------
+
+@profile
+def powerLawFuncErrorFn(Si,C,alpha,Smin,Smax,Sbinlow,Sbinhigh,noise,area):
+
+    """
+    Units:
+            Si, Sbinlow, Sbinhigh, noise - must be the same as each
+                                             other, i.e. Jy or uJy
+            erfs, alpha - dimensionless
+            C - /([Si]*[area]), e.g. Jy^-1 sr^-1, uJy^-1 deg^-2, or some mix
+            Hence units of C are tied to units of Si
+            area is often just set to 1.0 anyway
+    """
+
+    dnds00=True
+    if dnds00 and (Si < Smin or Si > Smax):
+        #print '***Si',Smin,Smax
+        #if False:
+        return 0.0
+
+    erfs = erf((Si-Sbinlow)/(sqrt(2.0)*noise)) - erf((Si-Sbinhigh)/(sqrt(2.0)*noise))
+    erfs *= 0.5
+    n = C * Si**alpha * erfs * area
+
+    return n
+
+#-------------------------------------------------------------------------------
