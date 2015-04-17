@@ -451,6 +451,17 @@ def remark(fHandle,note,verbose=True):
 
 #-------------------------------------------------------------------------------
 
+@profile
+def remarks(fHandle,notes,verbose=True):
+    """
+    Loop over remark function
+    """
+    for note in notes:
+        remark(fHandle,note,verbose=verbose)
+    return
+
+#-------------------------------------------------------------------------------
+
 def reportRelativeEvidence(H0=None,H1=None):
     """
     Print Delta Z report for H0: Z0
