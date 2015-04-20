@@ -195,20 +195,6 @@ class countModel(object):
 
     def realise(self,cube):
         u2Jy=1.0e6
-        #(C,alpha,Smin,Smax,sigma)=cube
-        C=cube[0]
-        alpha=cube[3]
-        Smin=cube[1]
-        Smax=cube[2]
-        sigma=cube[4]
-        beta=-99.0
-        S0=-99.0
-        gamma=-99.0
-        S1=-99.0
-        delta=-99.0
-        S2=-99.0
-        #nlaws=1
-        #print [cube[i] for i in range(5)]
         self.dataRealisation=countUtils.calculateI3(cube,self.parameters,\
                 bins=self.bins,area=self.survey.SURVEY_AREA,dump=None,verbose=False)
         return self.dataRealisation
