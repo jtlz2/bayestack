@@ -194,8 +194,8 @@ class countModel(object):
         return e
 
     def realise(self,cube):
-        self.dataRealisation=countUtils.calculateI3(cube,\
-                self.parameters,bins=self.bins,area=self.survey.SURVEY_AREA)
+        self.dataRealisation=countUtils.calculateI3(cube,self.parameters,\
+                family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA)
         return self.dataRealisation
 
     def transform(self,cube,ndim,nparams):
