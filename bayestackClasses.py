@@ -75,13 +75,16 @@ class model(object):
         self.family=family
 
     def eval(self,vals,params):
-        if self.family=='ppl':
-            self.func=cosmolopy.utils.PiecewisePowerlaw(params['breaks'],\
-                        params['slopes'],externalval=0.0,coefficients=None)
-        elif self.family=='poly':
-            self.func=numpy.poly1d(params['coeffs'])
 
-        return params['amp']*self.func(vals)
+        if self.family=='ppl':
+            self.func=params['amp']*cosmolopy.utils.PiecewisePowerlaw(\
+                        params['breaks'],params['slopes'],\
+                        externalval=0.0,coefficients=None)
+        elif self.family=='poly':
+            self.func=numpy.poly1d(params) # was params['coeffs']
+
+        return self.func(vals)
+
 
 #-------------------------------------------------------------------------------
 
@@ -111,8 +114,10 @@ class countModel(object):
                     {'breaks':['S%i'%ic for ic in xrange(self.nlaws+1)],\
                      'slopes':['a%i'%ic for ic in xrange(self.nlaws)],\
                      'coeffs':['p%i'%ic for ic in xrange(self.nlaws)],\
+                     'limits':['S%i'%ic for ic in xrange(2)],\
                      'amp':['C'],'extra':['noise']}
-        familyMap={'ppl':['breaks','slopes','amp','extra'],'poly':['coeffs','extra']}
+        familyMap={'ppl':['breaks','slopes','amp','extra'],\
+                   'poly':['limits','coeffs','extra']}
         self.paramsStruct=\
           [self.paramsAvail[p] for p in self.paramsAvail if p in familyMap[kind]]
         # --> This defines the order of the parameters:
@@ -136,18 +141,22 @@ class countModel(object):
 
     def parsePriors(self,parameters,floatNoise):
         priorsDict={}
-        iSmax=int([i for i in parameters if i[0]=='S'][-1][-1])
+        iSmax=int([i for i in parameters if i[0]=='S'][-1][-1]) # Smax
         for p in parameters:
-            if p[0]=='C': priorsDict[p]=['LOG',C_MIN,C_MAX]
-            elif p[0]=='S': priorsDict[p]=['U',SMIN_MIN,SMAX_MAX]
-            elif p[0]=='a': priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX]
-            elif p[0]=='n':
+            if self.kind=='ppl':
+                if p[0]=='C': priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
+                elif p[0]=='S': priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
+                elif p[0]=='a': priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
+            elif self.kind=='poly':
+                if p[0]=='p': priorsDict[p]=['U',0.0,1.0e7] # coeffs
+
+            if p[0]=='n': # noise
                 if floatNoise:
                     priorsDict[p]=['U',0.5*SURVEY_NOISE,2.0*SURVEY_NOISE]
                 else:
                     priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
-            if p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX]
-            if p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX]
+            elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
+            elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
         return priorsDict
 
     def setParams(self,params):
@@ -195,8 +204,9 @@ class countModel(object):
         return e
 
     def realise(self,cube):
-        self.dataRealisation=countUtils.calculateI3(cube,self.parameters,\
-                family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA)
+        self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
+                family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA,\
+                model=self.model)
         return self.dataRealisation
 
     def transform(self,cube,ndim,nparams):
@@ -224,7 +234,7 @@ class countModel(object):
 
     def loglike(self,cube,ndim,nparams):
         # Test the break positions if necessary
-        if self.kind=='ppl' and not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i][0]=='S']):
+        if not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i][0]=='S']):
             print '+',
             return -1.0e99
         else:
