@@ -136,6 +136,7 @@ class countModel(object):
 
     def parsePriors(self,parameters,floatNoise):
         priorsDict={}
+        iSmax=int([i for i in parameters if i[0]=='S'][-1][-1])
         for p in parameters:
             if p[0]=='C': priorsDict[p]=['LOG',C_MIN,C_MAX]
             elif p[0]=='S': priorsDict[p]=['U',SMIN_MIN,SMAX_MAX]
@@ -146,7 +147,7 @@ class countModel(object):
                 else:
                     priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
             if p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX]
-            if p=='S1': priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # --> generalize
+            if p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX]
         return priorsDict
 
     def setParams(self,params):
