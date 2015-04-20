@@ -157,7 +157,6 @@ def powerLawFuncQuadS(S,C,alpha,beta,Smin,Smax,S0,gamma,S1,delta,S2,area):
 
 #-------------------------------------------------------------------------------
 
-
 @profile
 def powerLawFuncWrap(nlaws,S,C,alpha,D,beta,Smin,Smax,S0,gamma,S1,delta,S2,area):
 
