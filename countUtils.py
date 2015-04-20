@@ -130,9 +130,9 @@ def powerLawFuncErrorFn(Si,C,alpha,Smin,Smax,Sbinlow,Sbinhigh,noise,area):
 #-------------------------------------------------------------------------------
 
 @profile
-def calculateI3(C,alpha,Smin,Smax,area,noise=None,dump=None,\
-                verbose=False,nlaws=1,D=None,beta=None,S0=None,\
-                gamma=-99.0,S1=-99.0,delta=-99.0,S2=-99.0,bins=None):
+def calculateI3(params,paramsList,bins=None,area=None,\
+                dump=None,verbose=False):
+
     """
     Do this for all bins simultaneously
     Mimic pn_integral.pro:
@@ -152,8 +152,29 @@ def calculateI3(C,alpha,Smin,Smax,area,noise=None,dump=None,\
     ;-  
     """
 
-    nbins=len(bins)
+    C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
+
+    nlaws=int(0.5*len(paramsList)-1)
+
+    C=params[paramsList.index('C')]
+    Smin=params[paramsList.index('S0')]
+    alpha=params[paramsList.index('a0')]
+    if nlaws > 1:
+        beta=params[paramsList.index('a1')]
+        S0=params[paramsList.index('S1')]
+    if nlaws > 2:
+        gamma=params[paramsList.index('a1')]
+        S1=params[paramsList.index('S2')]
+    if nlaws > 3:
+        delta=params[paramsList.index('a2')]
+        S2=params[paramsList.index('S3')]
+
+    iSmax=int([i for i in paramsList if i[0]=='S'][-1][-1])
+    Smax=params[paramsList.index('S%i'%iSmax)]
+
+    noise=params[paramsList.index('noise')]
     
+    nbins=len(bins)
     II = numpy.zeros(nbins-1)
     II2 = numpy.zeros(nbins-1)
     for ibin in xrange(nbins-1):
@@ -163,7 +184,7 @@ def calculateI3(C,alpha,Smin,Smax,area,noise=None,dump=None,\
             II[ibin]=integrate.quad(lambda S:powerLawFuncErrorFn(S,C*1.0e-6*10**(-6.0*alpha),alpha,Smin,Smax,bins[ibin],bins[ibin+1],noise,sqDeg2srr*area),Smin,Smax)[0]
             II2[ibin]=integrate.quad(lambda S:powerLawFuncErrorFn(S,C,alpha,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2srr*area),Smin/1.0e6,Smax/1.0e6)[0]
         elif nlaws in [2,3,4]:
-            II[ibin]=integrate.quad(lambda S:powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,noise/1.0e6,sqDeg2srr*area),Smin/1.0e6,Smax/1.0e6)[0]
+            II[ibin]=integrate.quad(lambda S:powerLawFuncErfsS(S,nlaws,C,alpha,-99.0,beta,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,noise/1.0e6,sqDeg2srr*area),Smin/1.0e6,Smax/1.0e6)[0]
 
     return II
 
