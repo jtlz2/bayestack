@@ -95,11 +95,10 @@ def powerLawFuncS(S,C,alpha,Smin,Smax,area):
     Ketron's equation (9)
     """
 
-    if dnds0 and (S < Smin or S > Smax):
+    if S < Smin or S > Smax:
         return 0.0
     else:
         n = C * (S ** alpha) * area
-        #print n, C, S, alpha, area
         return n
 
 #-------------------------------------------------------------------------------
@@ -121,18 +120,6 @@ def powerLawFuncDoubleS(S,C,alpha,D,beta,Smin,Smax,S0,area):
         n = C * S0**(alpha-beta) * (S ** beta) * area
     return n
 
-    # This was my original double power law
-    if S <= Smin or S > Smax:
-    #if False:
-        return 0.0
-    elif Smin < S <= S0:
-    #elif S <= S0:
-        n = C * (S ** alpha) * area
-    elif S0 < S <= Smax:
-    #elif S > S0:
-        n = D * (S ** beta) * area
-    return n
-
 #-------------------------------------------------------------------------------
 
 @profile
@@ -145,7 +132,6 @@ def powerLawFuncTripleS(S,C,alpha,beta,Smin,Smax,S0,gamma,S1,area):
     elif S0 < S <= S1:
         n = C * S0**(alpha-beta) * (S ** beta) * area
     elif S1 < S <= Smax:
-        #print S,S0,S1,alpha,beta,gamma
         n = C  * S0**(alpha-beta) * S1**(beta-gamma) * (S ** gamma) * area
 
     return n
@@ -164,7 +150,6 @@ def powerLawFuncQuadS(S,C,alpha,beta,Smin,Smax,S0,gamma,S1,delta,S2,area):
     elif S1 < S <= S2:
         n = C  * S0**(alpha-beta) * S1**(beta-gamma) * (S ** gamma) * area
     elif S2 < S <= Smax:
-        #print S,S0,S1,S2,alpha,beta,gamma,delta
         n = C  * S0**(alpha-beta) * S1**(beta-gamma) * \
                  S2**(gamma-delta)* (S**delta) * area
 
