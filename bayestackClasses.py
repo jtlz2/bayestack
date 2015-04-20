@@ -81,7 +81,7 @@ class model(object):
                         params['breaks'],params['slopes'],\
                         externalval=0.0,coefficients=None)
         elif self.family=='poly':
-            self.func=numpy.poly1d(params) # was params['coeffs']
+            self.func=numpy.poly1d(list(reversed(params))) # was params['coeffs']
 
         return self.func(vals)
 
@@ -148,7 +148,7 @@ class countModel(object):
                 elif p[0]=='S': priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
                 elif p[0]=='a': priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
             elif self.kind=='poly':
-                if p[0]=='p': priorsDict[p]=['U',0.0,1.0e7] # coeffs
+                if p[0]=='p': priorsDict[p]=['LOG',1.0e-5,1.0e20] # coeffs
 
             if p[0]=='n': # noise
                 if floatNoise:
