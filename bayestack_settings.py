@@ -27,7 +27,7 @@ binStyle=1
 nlaws=3
 floatNoise=False
 modelFamily='poly'#'ppl'
-outdir='chains_150420a' # based on 140123a
+outdir='chains_150421a' # based on 140123a
 
 
 #-------------------------------------------------------------------------------
@@ -52,11 +52,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-#dataset='sims/150420a'
+#dataset='sims/150421a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150420a'
+run_num_run='150421a'
 #dataset='first'
 #dataset='mca'
 
