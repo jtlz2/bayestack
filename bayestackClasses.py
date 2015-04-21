@@ -148,15 +148,15 @@ class countModel(object):
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
                 elif p.startswith('a'): priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
             elif self.kind=='poly':
-                if p.startswith('p'): priorsDict[p]=['LOG',1.0e-5,1.0e20] # coeffs
+                if p.startswith('p'): priorsDict[p]=['U',-1.0,1.0] # coeffs
 
             if p.startswith('n'): # noise
                 if floatNoise:
                     priorsDict[p]=['U',0.5*SURVEY_NOISE,2.0*SURVEY_NOISE]
                 else:
                     priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
-            elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
-            elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
+            elif p=='S0': priorsDict[p]=['U',1.0,1.0]#SMIN_MIN,SMIN_MAX] # Smin
+            elif p=='S%i'%iSmax: priorsDict[p]=['U',85.0,85.0]#SMAX_MIN,SMAX_MAX] # Smax
         return priorsDict
 
     def setParams(self,params):
