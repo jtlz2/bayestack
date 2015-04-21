@@ -279,7 +279,7 @@ def calculateI3(params,paramsList,bins=None,area=None,\
         delta=params[paramsList.index('a3')]
         S2=params[paramsList.index('S3')]
 
-    iSmax=int([i for i in paramsList if i[0]=='S'][-1][-1])
+    iSmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
     Smax=params[paramsList.index('S%i'%iSmax)]
 
     noise=params[paramsList.index('noise')]

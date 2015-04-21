@@ -141,16 +141,16 @@ class countModel(object):
 
     def parsePriors(self,parameters,floatNoise):
         priorsDict={}
-        iSmax=int([i for i in parameters if i[0]=='S'][-1][-1]) # Smax
+        iSmax=int([i for i in parameters if i.startswith('S')][-1][-1]) # Smax
         for p in parameters:
             if self.kind=='ppl':
-                if p[0]=='C': priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
-                elif p[0]=='S': priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
-                elif p[0]=='a': priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
+                if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
+                elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
+                elif p.startswith('a'): priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
             elif self.kind=='poly':
-                if p[0]=='p': priorsDict[p]=['LOG',1.0e-5,1.0e20] # coeffs
+                if p.startswith('p'): priorsDict[p]=['LOG',1.0e-5,1.0e20] # coeffs
 
-            if p[0]=='n': # noise
+            if p.startswith('n'): # noise
                 if floatNoise:
                     priorsDict[p]=['U',0.5*SURVEY_NOISE,2.0*SURVEY_NOISE]
                 else:
@@ -234,7 +234,7 @@ class countModel(object):
 
     def loglike(self,cube,ndim,nparams):
         # Test the break positions if necessary
-        if not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i][0]=='S']):
+        if not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i].startswith('S')]):
             print '+',
             return -1.0e99
         else:
