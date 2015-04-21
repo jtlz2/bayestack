@@ -89,7 +89,7 @@ def powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin,Smax,\
 
 #-------------------------------------------------------------------------------
 
-def polynomialFuncErfsS(S,modelFunc,Smin,Smax,Sbinlow,Sbinhigh,ssigma,area):
+def polynomialFuncErfsS(S,S_1,coeffs,Smin,Smax,Sbinlow,Sbinhigh,ssigma,aarea):
     """
     """
 
@@ -97,8 +97,8 @@ def polynomialFuncErfsS(S,modelFunc,Smin,Smax,Sbinlow,Sbinhigh,ssigma,area):
         return 0.0
 
     erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
-    
-    return erfs*modelFunc*area
+
+    return erfs * polyFunc(S,S_1,coeffs) * aarea
 
 #-------------------------------------------------------------------------------
 
@@ -210,6 +210,16 @@ def powerLawFuncErrorFn(Si,C,alpha,Smin,Smax,Sbinlow,Sbinhigh,noise,area):
 
 #-------------------------------------------------------------------------------
 
+def polyFunc(S,S_1,c):
+    """ """
+    exponent=0.0
+    for n in range(len(c)):
+        exponent += c[n] * (numpy.log10(S/S_1)**n)
+
+    return 10**exponent
+
+#-------------------------------------------------------------------------------
+
 @profile
 def calculateI(params,paramsList,bins=None,area=None,
                 family=None,dump=None,verbose=False,model=None):
@@ -226,15 +236,17 @@ def calculateI(params,paramsList,bins=None,area=None,
         Smin=params[paramsList.index('S0')]
         Smax=params[paramsList.index('S1')]
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('p')]
-        ncoeffs=len(coeffs)
+#        func=numpy.poly1d(list(reversed(coeffs)))
+#        ncoeffs=len(coeffs)
+        S_1=1.0
         noise=params[paramsList.index('noise')]
 
     for i in range(6): print params[i]
-    nbins=len(bins)
-    II = numpy.zeros(nbins-1)
-    for ibin in xrange(nbins-1):
-        II[ibin]=integrate.quad(lambda S:polynomialFuncErfsS(S,model.eval(S,coeffs),Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),Smin/1.0e6,Smax/1.0e6)[0]
-        print ibin,bins[ibin],bins[ibin+1],II[ibin],model.eval((bins[ibin]+bins[ibin+1])/2.0,coeffs)
+    nbins=len(bins)-1
+    II = numpy.zeros(nbins)
+    for ibin in xrange(nbins):
+        II[ibin]=integrate.quad(lambda S:polynomialFuncErfsS(S,S_1,coeffs,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),Smin/1.0e6,Smax/1.0e6)[0]
+        print ibin,bins[ibin],bins[ibin+1],II[ibin]
     return II
 
 #-------------------------------------------------------------------------------
