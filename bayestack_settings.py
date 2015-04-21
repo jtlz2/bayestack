@@ -24,10 +24,10 @@ print 'Context is %s' % context
 
 dataset='video'
 binStyle=1
-nlaws=1
+nlaws=3
 floatNoise=False
-modelFamily='ppl'
-outdir='chains_150417a' # based on 140123a
+modelFamily='poly'#'ppl'
+outdir='chains_150420a' # based on 140123a
 
 
 #-------------------------------------------------------------------------------
@@ -52,11 +52,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-#dataset='sims/150417a'
+#dataset='sims/150420a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150417a'
+run_num_run='150420a'
 #dataset='first'
 #dataset='mca'
 
@@ -1099,8 +1099,8 @@ evidence_tolerance=0.5 # was 0.5
 
 print 'MOTD: %s' % MOTD
 
-laws={1:'SPL',2:'TPL',3:'XPL',4:'QPL',0:'SKADS'}
-print '****Considering %s model applied to %s law' % (laws[nlaws],laws[NLAWS_SIM])
+#laws={1:'SPL',2:'TPL',3:'XPL',4:'QPL',0:'SKADS'}
+#print '****Considering %s model applied to %s law' % (laws[nlaws],laws[NLAWS_SIM])
 
 #-------------------------------------------------------------------------------
 
