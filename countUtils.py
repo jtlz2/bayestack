@@ -238,7 +238,7 @@ def calculateI(params,paramsList,bins=None,area=None,
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('p')]
 #        func=numpy.poly1d(list(reversed(coeffs)))
 #        ncoeffs=len(coeffs)
-        S_1=1.0
+        S_1=1.0 # ref flux
         noise=params[paramsList.index('noise')]
 
     #for i in range(6): print params[i]
