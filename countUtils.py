@@ -241,12 +241,12 @@ def calculateI(params,paramsList,bins=None,area=None,
         S_1=1.0
         noise=params[paramsList.index('noise')]
 
-    for i in range(6): print params[i]
+    #for i in range(6): print params[i]
     nbins=len(bins)-1
     II = numpy.zeros(nbins)
     for ibin in xrange(nbins):
         II[ibin]=integrate.quad(lambda S:polynomialFuncErfsS(S,S_1,coeffs,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),Smin/1.0e6,Smax/1.0e6)[0]
-        print ibin,bins[ibin],bins[ibin+1],II[ibin]
+        #print ibin,bins[ibin],bins[ibin+1],II[ibin]
     return II
 
 #-------------------------------------------------------------------------------
