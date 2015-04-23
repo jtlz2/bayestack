@@ -7,7 +7,7 @@ from scipy.special import erf
 from priors import Priors
 import countUtils
 from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood
-import cosmolopy
+#import cosmolopy
 
 #-------------------------------------------------------------------------------
 
@@ -77,9 +77,10 @@ class model(object):
     def eval(self,vals,params):
 
         if self.family=='ppl':
-            self.func=params['amp']*cosmolopy.utils.PiecewisePowerlaw(\
-                        params['breaks'],params['slopes'],\
-                        externalval=0.0,coefficients=None)
+            #self.func=params['amp']*cosmolopy.utils.PiecewisePowerlaw(\
+            #            params['breaks'],params['slopes'],\
+            #            externalval=0.0,coefficients=None)
+            self.func=None # temporary
         elif self.family=='poly':
             self.func=numpy.poly1d(list(reversed(params))) # was params['coeffs']
 
@@ -153,7 +154,7 @@ class countModel(object):
             elif self.kind=='poly':
                 if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=['LOG',C_MIN,C_MAX] # bins/poles/nodes
+                if p.startswith('b'): priorsDict[p]=['LOG',1.0e-2,10.0] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:
