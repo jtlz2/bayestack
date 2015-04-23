@@ -115,9 +115,11 @@ class countModel(object):
                      'slopes':['a%i'%ic for ic in xrange(self.nlaws)],\
                      'coeffs':['p%i'%ic for ic in xrange(self.nlaws)],\
                      'limits':['S%i'%ic for ic in xrange(2)],\
+                     'poles':['b%i'%ic for ic in xrange(self.nlaws)],\
                      'amp':['C'],'extra':['noise']}
         familyMap={'ppl':['breaks','slopes','amp','extra'],\
-                   'poly':['limits','coeffs','extra']}
+                   'poly':['limits','coeffs','extra'],\
+                   'bins':['poles','extra']}
         self.paramsStruct=\
           [self.paramsAvail[p] for p in self.paramsAvail if p in familyMap[kind]]
         # --> This defines the order of the parameters:
@@ -141,14 +143,17 @@ class countModel(object):
 
     def parsePriors(self,parameters,floatNoise):
         priorsDict={}
-        iSmax=int([i for i in parameters if i.startswith('S')][-1][-1]) # Smax
+        iSmax=[int(i) if i.startswith('S') else -1 for i in parameters][-1] # Smax
+        print iSmax
         for p in parameters:
             if self.kind=='ppl':
                 if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
                 elif p.startswith('a'): priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
             elif self.kind=='poly':
-                if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # coeffs
+                if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
+            elif self.kind=='bins':
+                if p.startswith('b'): priorsDict[p]=['LOG',C_MIN,C_MAX] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:

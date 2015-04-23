@@ -24,10 +24,10 @@ print 'Context is %s' % context
 
 dataset='video'
 binStyle=1
-nlaws=3
+nlaws=4
 floatNoise=False
-modelFamily='poly'#'ppl'
-outdir='chains_150421a' # based on 140123a
+modelFamily='bins'#'ppl' 'poly'
+outdir='chains_150423a' # based on 140123a
 
 
 #-------------------------------------------------------------------------------
@@ -52,11 +52,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-#dataset='sims/150421a'
+#dataset='sims/150423a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150421a'
+run_num_run='150423a'
 #dataset='first'
 #dataset='mca'
 
