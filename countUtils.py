@@ -7,7 +7,7 @@ from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
 from scipy.special import erf
 from profile_support import profile
-from utils import sqrtTwo
+from utils import sqrtTwo,find_nearest
 from bayestack_settings import * # <-- generalize, localize
 
 #-------------------------------------------------------------------------------
@@ -89,6 +89,7 @@ def powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin,Smax,\
 
 #-------------------------------------------------------------------------------
 
+@profile
 def polynomialFuncErfsS(S,S_1,coeffs,Smin,Smax,Sbinlow,Sbinhigh,ssigma,aarea):
     """
     """
@@ -99,6 +100,20 @@ def polynomialFuncErfsS(S,S_1,coeffs,Smin,Smax,Sbinlow,Sbinhigh,ssigma,aarea):
     erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
 
     return erfs * polyFunc(S,S_1,coeffs) * aarea
+
+#-------------------------------------------------------------------------------
+
+@profile
+def polesFuncErfsS(S,pole_posns,coeffs,Sbinlow,Sbinhigh,ssigma,aarea):
+    """
+    """
+
+    if S < pole_posns[0] or S > pole_posns[-1]:
+        return 0.0
+
+    erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
+
+    return erfs * polesFunc(S,pole_posns,coeffs) * aarea
 
 #-------------------------------------------------------------------------------
 
@@ -210,13 +225,26 @@ def powerLawFuncErrorFn(Si,C,alpha,Smin,Smax,Sbinlow,Sbinhigh,noise,area):
 
 #-------------------------------------------------------------------------------
 
+@profile
 def polyFunc(S,S_1,c):
-    """ """
+    """
+    """
     exponent=0.0
     for n in range(len(c)):
         exponent += c[n] * (numpy.log10(S/S_1)**n)
 
     return 10**exponent
+
+#-------------------------------------------------------------------------------
+
+@profile
+def polesFunc(S,pole_posns,coeffs):
+    """
+    """
+
+    idx,Snearest=find_nearest(pole_posns,S)
+
+    return coeffs[idx]
 
 #-------------------------------------------------------------------------------
 
@@ -241,13 +269,22 @@ def calculateI(params,paramsList,bins=None,area=None,
         S_1=1.0 # ref flux
         noise=params[paramsList.index('noise')]
 
-    #for i in range(6): print params[i]
-    nbins=len(bins)-1
-    II = numpy.zeros(nbins)
-    for ibin in xrange(nbins):
-        II[ibin]=integrate.quad(lambda S:polynomialFuncErfsS(S,S_1,coeffs,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),Smin/1.0e6,Smax/1.0e6)[0]
-        #print ibin,bins[ibin],bins[ibin+1],II[ibin]
-    return II
+        #for i in range(6): print params[i]
+        nbins=len(bins)-1
+        II = numpy.zeros(nbins)
+        for ibin in xrange(nbins):
+            II[ibin]=integrate.quad(lambda S:polynomialFuncErfsS(S,S_1,coeffs,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),Smin/1.0e6,Smax/1.0e6)[0]
+            #print ibin,bins[ibin],bins[ibin+1],II[ibin]
+        return II
+
+    elif family=='bins':
+        amps=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
+        noise=params[paramsList.index('noise')]
+        pole_posns=numpy.logspace(-2,2,10)
+        II = numpy.zeros(nbins)
+        for ibin in xrange(nbins):
+            II[ibin]=integrate.quad(lambda S:polesFuncErfsS(S,pole_posns,coeffs,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),pole_posns[0]/1.0e6,pole_posns[-1]/1.0e6)[0]
+        return II
 
 #-------------------------------------------------------------------------------
 
