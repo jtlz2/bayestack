@@ -278,12 +278,13 @@ def calculateI(params,paramsList,bins=None,area=None,
         return II
 
     elif family=='bins':
-        amps=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
+        coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
         noise=params[paramsList.index('noise')]
         pole_posns=numpy.logspace(-2,2,10)
+        nbins=len(bins)-1
         II = numpy.zeros(nbins)
         for ibin in xrange(nbins):
-            II[ibin]=integrate.quad(lambda S:polesFuncErfsS(S,pole_posns,coeffs,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),pole_posns[0]/1.0e6,pole_posns[-1]/1.0e6)[0]
+            II[ibin]=integrate.quad(lambda S:polesFuncErfsS(S,pole_posns,coeffs,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),pole_posns[0]/1.0e6,pole_posns[-1]/1.0e6)[0]
         return II
 
 #-------------------------------------------------------------------------------
