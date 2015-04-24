@@ -153,7 +153,7 @@ class countModel(object):
             elif self.kind=='poly':
                 if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=['LOG',1.0e-2,100.0] # bins/poles/nodes
+                if p.startswith('b'): priorsDict[p]=['LOG',1.0e-2,1.06] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:
