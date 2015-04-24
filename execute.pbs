@@ -15,6 +15,6 @@ cd $RUNPATH
 date
 pwd
 
-mpiexec.osc -np 48 ./bayestack.py bayestack_settings.py
+mpiexec.osc -np $PBS_NP ./bayestack.py bayestack_settings.py
 date
 
