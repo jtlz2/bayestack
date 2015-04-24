@@ -145,7 +145,6 @@ class countModel(object):
     def parsePriors(self,parameters,floatNoise):
         priorsDict={}
         iSmax=[int(i) if i.startswith('S') else -1 for i in parameters][-1] # Smax
-        print iSmax
         for p in parameters:
             if self.kind=='ppl':
                 if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
