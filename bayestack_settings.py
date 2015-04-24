@@ -24,7 +24,7 @@ print 'Context is %s' % context
 
 dataset='video'
 binStyle=1
-nlaws=10
+nlaws=6
 floatNoise=False
 modelFamily='bins'#'ppl' 'poly'
 outdir='chains_150423a' # based on 140123a
