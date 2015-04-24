@@ -243,6 +243,9 @@ def polesFunc(S,pole_posns,coeffs):
     """
 
     idx,Snearest=find_nearest(pole_posns,S)
+    #print coeffs
+    #print pole_posns,S,idx,S,Snearest
+    #sys.exit(0)
 
     return coeffs[idx]
 
@@ -280,11 +283,12 @@ def calculateI(params,paramsList,bins=None,area=None,
     elif family=='bins':
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
         noise=params[paramsList.index('noise')]
-        pole_posns=numpy.logspace(-2,2,10)
+        pole_posns=numpy.logspace(-2,2,6)
+        assert(len(coeffs)==len(pole_posns)), '***Mismatch in number of poles!!'
         nbins=len(bins)-1
         II = numpy.zeros(nbins)
         for ibin in xrange(nbins):
-            II[ibin]=integrate.quad(lambda S:polesFuncErfsS(S,pole_posns,coeffs,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),pole_posns[0]/1.0e6,pole_posns[-1]/1.0e6)[0]
+            II[ibin]=integrate.quad(lambda S:polesFuncErfsS(S,pole_posns/1.0e6,coeffs,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),pole_posns[0]/1.0e6,pole_posns[-1]/1.0e6)[0]
         return II
 
 #-------------------------------------------------------------------------------
