@@ -153,7 +153,7 @@ class countModel(object):
             elif self.kind=='poly':
                 if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=['LOG',1.0e-2,1.06] # bins/poles/nodes
+                if p.startswith('b'): priorsDict[p]=['LOG',1.0e-2,1.0e6] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:
@@ -238,7 +238,7 @@ class countModel(object):
         return
 
     def loglike(self,cube,ndim,nparams):
-        # Test the break positions if necessary
+        # Test the break positions if necessary (Si present in params list)
         if not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i].startswith('S')]):
             print '+',
             return -1.0e99
