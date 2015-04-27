@@ -7,7 +7,7 @@ from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
 from scipy.special import erf
 from profile_support import profile
-from utils import sqrtTwo,find_nearest
+from utils import sqrtTwo,find_nearest,medianArray
 from bayestack_settings import * # <-- generalize, localize
 
 #-------------------------------------------------------------------------------
@@ -242,12 +242,20 @@ def polesFunc(S,pole_posns,coeffs):
     """
     """
 
-    idx,Snearest=find_nearest(pole_posns,S)
+    
     #print coeffs
-    #print pole_posns,S,idx,S,Snearest
+    #print S,idx,Snearest#,pole_posns[0],pole_posns[-1]
     #sys.exit(0)
+    #print idx,pole_posns[idx],coeffs[idx]
+    counts=calculateDnByDs(pole_posns,coeffs[:-1],eucl=False,verbose=False,\
+                    idl_style=True,errors=False,bright=False,bright_errors=False,
+                    return_all=False)
 
-    return coeffs[idx]
+    idx,Snearest=find_nearest(pole_posns,S)
+    if idx >= len(coeffs)-1: return counts[idx-1]
+    return counts[idx]
+
+    #return coeffs[idx]
 
 #-------------------------------------------------------------------------------
 
@@ -283,12 +291,15 @@ def calculateI(params,paramsList,bins=None,area=None,
     elif family=='bins':
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
         noise=params[paramsList.index('noise')]
-        pole_posns=numpy.logspace(-2,2,6)
+        pole_posns=numpy.logspace(-1,2,11)
+        #pole_posns=numpy.linspace(1.0,85.0,11)
         assert(len(coeffs)==len(pole_posns)), '***Mismatch in number of poles!!'
+
         nbins=len(bins)-1
         II = numpy.zeros(nbins)
         for ibin in xrange(nbins):
             II[ibin]=integrate.quad(lambda S:polesFuncErfsS(S,pole_posns/1.0e6,coeffs,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),pole_posns[0]/1.0e6,pole_posns[-1]/1.0e6)[0]
+            #print II[ibin]
         return II
 
 #-------------------------------------------------------------------------------
