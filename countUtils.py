@@ -13,6 +13,27 @@ from bayestack_settings import * # <-- generalize, localize
 #-------------------------------------------------------------------------------
 
 @profile
+def simulate():
+    """
+    Specify parameters
+    Specify number of sources
+    Build CDF (or set up function)
+    Draw deviates
+    Sample CDF given deviates
+    Add noise
+    Bin
+    Write out
+    Return
+    """
+
+    
+    
+    return
+
+
+#-------------------------------------------------------------------------------
+
+@profile
 def calculateDnByDs(bins,counts,eucl=False,verbose=False,idl_style=True,
                     errors=False,bright=False,bright_errors=False,
                     return_all=False):
@@ -247,15 +268,14 @@ def polesFunc(S,pole_posns,coeffs):
     #print S,idx,Snearest#,pole_posns[0],pole_posns[-1]
     #sys.exit(0)
     #print idx,pole_posns[idx],coeffs[idx]
-    counts=calculateDnByDs(pole_posns,coeffs[:-1],eucl=False,verbose=False,\
-                    idl_style=True,errors=False,bright=False,bright_errors=False,
-                    return_all=False)
+#    counts=calculateDnByDs(pole_posns,coeffs[:-1],eucl=False,verbose=False,\
+#                    idl_style=True,errors=False,bright=False,bright_errors=False,
+#                    return_all=False)
 
-    idx,Snearest=find_nearest(pole_posns,S)
-    if idx >= len(coeffs)-1: return counts[idx-1]
-    return counts[idx]
-
-    #return coeffs[idx]
+    idx,Snearest=find_nearest(pole_posns[:-1],S)
+    #if idx >= len(coeffs)-1: return counts[idx-1]
+    #return counts[idx]
+    return coeffs[idx]/(pole_posns[idx+1]-pole_posns[idx])
 
 #-------------------------------------------------------------------------------
 
@@ -291,9 +311,9 @@ def calculateI(params,paramsList,bins=None,area=None,
     elif family=='bins':
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
         noise=params[paramsList.index('noise')]
-        pole_posns=numpy.logspace(-1,2,11)
+        pole_posns=numpy.logspace(-1,numpy.log10(85.0),len(coeffs)+1)
         #pole_posns=numpy.linspace(1.0,85.0,11)
-        assert(len(coeffs)==len(pole_posns)), '***Mismatch in number of poles!!'
+        assert(len(coeffs)==len(pole_posns)-1), '***Mismatch in number of poles!!'
 
         nbins=len(bins)-1
         II = numpy.zeros(nbins)
