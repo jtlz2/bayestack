@@ -7,6 +7,7 @@ import os
 import numpy
 #import scipy
 from scipy import stats
+from scipy.interpolate import interp1d
 from profile_support import profile
 import pymultinest
 
@@ -39,12 +40,32 @@ def strictly_increasing(L):
 #-------------------------------------------------------------------------------
 
 def poissonLhood(data,realisation):
-    #for i in range(len(data)):
-    #    print i,data[i],realisation[i]
+    for i in range(len(data)):
+        print i,data[i],realisation[i]
     kk=data[numpy.where(realisation > 0)];
     iii=realisation[numpy.where(realisation > 0)]
     loglike = (kk*numpy.log(iii) + kk - kk*numpy.log(kk) - iii).sum()
     return loglike
+
+#-------------------------------------------------------------------------------
+
+def buildCDF(func,x):
+    """
+    Following Russell's prescription [email of 24.1.14]
+    Return an interpolation object useable for a mock generation for
+        an arbitrary function/lambda
+
+    Run as e.g.
+    Ss=numpy.linspace(1.0,100.0,100)
+    y=numpy.array([S**2 for S in Ss])
+    lookup=buildCDF(lambda S:S**2,Ss)
+    Ss_fine=numpy.linspace(1.0,100.0,1000)
+    y_fine=lookup(Ss_fine)
+    """
+
+    y = numpy.array([func(ix) for ix in x])
+    f = interp1d(x,y)
+    return f
 
 #-------------------------------------------------------------------------------
 
