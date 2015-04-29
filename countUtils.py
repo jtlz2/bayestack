@@ -34,6 +34,8 @@ def simulate(family,params,paramsList,bins,\
 
     Look at simulate.ipynb for an example run
 
+    Need to add normalization capability
+    
     Families:
 
     skads
@@ -49,6 +51,9 @@ def simulate(family,params,paramsList,bins,\
 
     poly
     bins
+
+    test
+    
     """
 
     # Test version
@@ -79,7 +84,17 @@ def simulate(family,params,paramsList,bins,\
         function = lambda S:powerLawFuncWrap(nlaws,S,C,alpha,-99.0,beta,\
                                        Smin,Smax,S0,gamma,S1,delta,S2,1.0)
 
-    #function = lambda S:S**2
+    elif family=='test':
+        function = lambda S:S**2
+
+    elif family=='poly':
+        pass
+
+    elif family=='bins':
+        pass
+
+    elif family=='skads':
+        pass
 
     # Set up the 'rough' array
     #Smin=0.0 # uJy
