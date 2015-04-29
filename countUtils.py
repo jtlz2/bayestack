@@ -85,7 +85,11 @@ def simulate(family,params,paramsList,bins,\
         function = lambda S:S**2
 
     elif family=='poly':
-        pass
+        Smin=params[paramsList.index('S0')]
+        Smax=params[paramsList.index('S1')]
+        coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('p')]
+        S_1=1.0
+        function = lambda S:polyFunc(S,S_1,Smin,Smax,coeffs)
 
     elif family=='bins':
         pass
@@ -291,7 +295,7 @@ def polynomialFuncErfsS(S,S_1,coeffs,Smin,Smax,Sbinlow,Sbinhigh,ssigma,aarea):
 
     erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
 
-    return erfs * polyFunc(S,S_1,coeffs) * aarea
+    return erfs * polyFunc(S,S_1,Smin,Smax,coeffs) * aarea
 
 #-------------------------------------------------------------------------------
 
@@ -418,9 +422,13 @@ def powerLawFuncErrorFn(Si,C,alpha,Smin,Smax,Sbinlow,Sbinhigh,noise,area):
 #-------------------------------------------------------------------------------
 
 @profile
-def polyFunc(S,S_1,c):
+def polyFunc(S,S_1,Smin,Smax,c):
     """
     """
+
+    if S < Smin or S > Smax:
+        return 0.0
+    
     exponent=0.0
     for n in range(len(c)):
         exponent += c[n] * (numpy.log10(S/S_1)**n)
