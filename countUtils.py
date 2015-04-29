@@ -100,39 +100,53 @@ def simulate(family,params,paramsList,bins,\
         function = lambda S:polesFunc(S,pole_posns,Smin,Smax,coeffs)
 
     elif family=='skads':
-        pass
+        Smin=params[paramsList.index('S0')]
+        Smax=params[paramsList.index('S1')]
+        R=Jy2muJy*10**numpy.genfromtxt('heywood/1sqdeg_0p02uJy.txt')
+        numpy.ndarray.sort(R)
+        Rmin=SMIN_SKADS; Rmax=SMAX_SKADS
+        iRmin,Rmin=find_nearest(R,Rmin)
+        iRmax,Rmax=find_nearest(R,Rmax)
+        #print iRmin,Rmin,iRmax,Rmax
+        F=R[iRmin:iRmax]
+        N=len(F)
+        if NSKADS is not None:
+            F=numpy.random.choice(F,size=NSKADS,replace=False)
+            N=len(F)
+        print 'NSKADS = %i' % N
 
-    # Set up the 'rough' array
-    gridlength=1000000 # Good enough to prevent bleeding at the edges
-    Ss=numpy.linspace(bins[0],bins[-1],gridlength)
-    values=numpy.array([function(ix) for ix in Ss])
+    if family != 'skads':
+        # Set up the 'rough' array
+        gridlength=1000000 # Good enough to prevent bleeding at the edges
+        Ss=numpy.linspace(bins[0],bins[-1],gridlength)
+        values=numpy.array([function(ix) for ix in Ss])
 
-    # Build the CDF
-    CDF=buildCDF(values)
-    # Create the interpolant object
-    sampler=interp1d(CDF,Ss)
+        # Build the CDF
+        CDF=buildCDF(values)
+        # Create the interpolant object
+        sampler=interp1d(CDF,Ss)
 
-    # Test the sampler extrema for functionality
-    print sampler(0.0),sampler(1.0)
+        # Test the sampler extrema for functionality
+        print sampler(0.0),sampler(1.0)
 
-    # Draw the random deviates
-    R = numpy.random.rand(N)
-    F=sampler(R)
+        # Draw the random deviates
+        R = numpy.random.rand(N)
+        F=sampler(R)
 
-    # Normalize here - this is N2C
-    # Integrate the original function
-    #A=integrate.quad(function,Smin,Smax)[0]
-    # Bin the random samples
-    #bins=numpy.linspace(Smin,Smax,40)
-    #dbin=bins[-1]-bins[-2]
-    #E=numpy.histogram(F,bins=bins)[0]
-    # And calculate their area
-    #C=integrate.trapz(E)*dbin
-    # Gunpowder, treason and....
-    #plt.xlim(0.0,100.0)
-    #plt.xlabel('S / $\mu$Jy')
-    #plt.hist(F,bins=bins)
-    #plt.plot(Ss_fine,values*C/A,'r')
+        # Normalize here - this is N2C
+        # Integrate the original function
+        #A=integrate.quad(function,Smin,Smax)[0]
+        # Bin the random samples
+        #bins=numpy.linspace(Smin,Smax,40)
+        #dbin=bins[-1]-bins[-2]
+        #E=numpy.histogram(F,bins=bins)[0]
+        # And calculate their area
+        #C=integrate.trapz(E)*dbin
+        # Gunpowder, treason and....
+        #plt.xlim(0.0,100.0)
+        #plt.xlabel('S / $\mu$Jy')
+        #plt.hist(F,bins=bins)
+        #plt.plot(Ss_fine,values*C/A,'r')
 
     # Dump noiseless fluxes to file
     if dump is not None:
