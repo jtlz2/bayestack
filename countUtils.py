@@ -40,7 +40,13 @@ def simulate(family,params,paramsList,bins,\
     ppl:
 
     r=countUtils.simulate('ppl',[1000.0,5.0,75.0,-1.6],['C','S0','S1','a0'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
-    
+
+    r=countUtils.simulate('ppl',[1000.0,5.0,25.0,75.0,-1.6,-2.5],['C','S0','S1','S2','a0','a1'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
+
+    r=countUtils.simulate('ppl',[1000.0,5.0,25.0,40.0,75.0,-1.6,-2.5,-1.0],['C','S0','S1','S2','S3','a0','a1','a2'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
+
+    r=countUtils.simulate('ppl',[1000.0,5.0,25.0,40.0,75.0,90.0,-1.6,-2.5,-1.0,2.0],['C','S0','S1','S2','S3','S4','a0','a1','a2','a3'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
+
     poly
     bins
     """
