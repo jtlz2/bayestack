@@ -15,9 +15,10 @@ from bayestack_settings import * # <-- generalize, localize
 
 @profile
 #def simulate(family,params,bins,nsources=None,noise=None,\
-#             outfile='temp.txt',seed=None,dump=False,\
+#             output='temp.txt',seed=None,dump=False,\
 #             verbose=False,output=None,version=2):
-def simulate(seed=None,N=None,noise=None,dump=None):
+def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
+             version=2):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -33,6 +34,8 @@ def simulate(seed=None,N=None,noise=None,dump=None):
     Look at simulate.ipynb for an example run
     """
 
+    if version < 2: return '***Unsupported!!'
+    
     if seed is not None:
         numpy.random.seed(seed=SEED_SIM)
 
@@ -88,6 +91,46 @@ def simulate(seed=None,N=None,noise=None,dump=None):
         print 'Draws (noisy) are in %s' % noisydumpf
         print 'Minimum flux in catalogue = %f' % F.min()
 
+    # Bin up the fluxes
+    counts=numpy.histogram(R,bins=bins)[0]
+    print '-> %i/%i objects observed in total (bin scattering)\n' % (counts.sum(),N)
+
+    # Calculate differential counts
+    idl_style=False
+    dn_by_ds,dn_by_ds_eucl,dn_by_ds_errs,dn_by_ds_b,dn_by_ds_b_errs=\
+      calculateDnByDs(1.0e-6*bins,counts,idl_style=idl_style,return_all=True)
+
+    median_bins=medianArray(bins) # uJy
+    if output is not None:
+        outputf=output
+        #data=numpy.zeros((len(bins),3))
+        s=open(outputf,'w')
+        if version < 2:
+            header='# bin_median ksRaw ksNoisy'
+        else:
+            header='# bin_low_uJy bin_high_uJy bin_median_uJy Ns_tot_obs dnds_srm1Jym1 dnds_eucl_srm1Jy1p5 delta_dnds_eucl_lower_srm1Jy1p5 delta_dnds_eucl_upper_srm1Jy1p5 corr Ncgts_degm2 dNcgts_lower_degm2 dNcgts_upper_degm2'
+        s.write('%s\n'%header)
+        print header
+        for ibin in range(nbins-1):
+            if version < 2:
+                line='%f %i %i' % (median_bins[ibin],-99.0,counts[ibin])
+            else:
+                # See binner.py for dependence on BIN_CORRS/CORR_BINS (omitted here)
+                line='%f %f %f %i %e %f %f %f %f %i %i %i' % \
+                  (bins[ibin],bins[ibin+1],median_bins[ibin],round(counts[ibin]),\
+                   dn_by_ds[ibin]/(sqDeg2sr*AREA_SIM),\
+                   dn_by_ds_eucl[ibin]/(sqDeg2sr*AREA_SIM),\
+                   dn_by_ds_errs[ibin]/(sqDeg2sr*AREA_SIM),\
+                   dn_by_ds_errs[ibin]/(sqDeg2sr*AREA_SIM),\
+                   1.00,\
+                   round(counts[ibin:].sum()*1.00/AREA_SIM),\
+                   round(numpy.sqrt(counts[ibin:].sum()*1.00/AREA_SIM)),\
+                   round(numpy.sqrt(counts[ibin:].sum()*1.00/AREA_SIM)))
+            s.write('%s\n'%line)
+            print line
+        print counts.sum()
+        s.close()
+    
     return F
 
 #-------------------------------------------------------------------------------
