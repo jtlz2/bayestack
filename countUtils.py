@@ -102,12 +102,11 @@ def simulate(family,params,paramsList,bins,\
     elif family=='skads':
         Smin=params[paramsList.index('S0')]
         Smax=params[paramsList.index('S1')]
-        R=Jy2muJy*10**numpy.genfromtxt('heywood/1sqdeg_0p02uJy.txt')
+        skadsf='heywood/1sqdeg_0p02uJy.txt'
+        R=Jy2muJy*10**numpy.genfromtxt(skadsf)
         numpy.ndarray.sort(R)
-        Rmin=SMIN_SKADS; Rmax=SMAX_SKADS
-        iRmin,Rmin=find_nearest(R,Rmin)
-        iRmax,Rmax=find_nearest(R,Rmax)
-        #print iRmin,Rmin,iRmax,Rmax
+        iRmin,Rmin=find_nearest(R,Smin)
+        iRmax,Rmax=find_nearest(R,Smax)
         F=R[iRmin:iRmax]
         N=len(F)
         if NSKADS is not None:
