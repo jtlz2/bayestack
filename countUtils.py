@@ -92,7 +92,12 @@ def simulate(family,params,paramsList,bins,\
         function = lambda S:polyFunc(S,S_1,Smin,Smax,coeffs)
 
     elif family=='bins':
-        pass
+        coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
+        pole_posns=numpy.logspace(-1,numpy.log10(85.0),len(coeffs)+1)
+        assert(len(coeffs)==len(pole_posns)-1), '***Mismatch in number of poles!!'
+        Smin=pole_posns[0]
+        Smax=pole_posns[-1]
+        function = lambda S:polesFunc(S,pole_posns,Smin,Smax,coeffs)
 
     elif family=='skads':
         pass
@@ -300,16 +305,16 @@ def polynomialFuncErfsS(S,S_1,coeffs,Smin,Smax,Sbinlow,Sbinhigh,ssigma,aarea):
 #-------------------------------------------------------------------------------
 
 @profile
-def polesFuncErfsS(S,pole_posns,coeffs,Sbinlow,Sbinhigh,ssigma,aarea):
+def polesFuncErfsS(S,pole_posns,coeffs,Smin,Smax,Sbinlow,Sbinhigh,ssigma,aarea):
     """
     """
-
-    if S < pole_posns[0] or S > pole_posns[-1]:
+    
+    if S < Smin or S > Smax:
         return 0.0
 
     erfs=0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
 
-    return erfs * polesFunc(S,pole_posns,coeffs) * aarea
+    return erfs * polesFunc(S,pole_posns,Smin,Smax,coeffs) * aarea
 
 #-------------------------------------------------------------------------------
 
@@ -438,10 +443,12 @@ def polyFunc(S,S_1,Smin,Smax,c):
 #-------------------------------------------------------------------------------
 
 @profile
-def polesFunc(S,pole_posns,coeffs):
+def polesFunc(S,pole_posns,Smin,Smax,coeffs):
     """
     """
 
+    if S < Smin or S > Smax:
+        return 0.0
     
     #print coeffs
     #print S,idx,Snearest#,pole_posns[0],pole_posns[-1]
@@ -497,7 +504,7 @@ def calculateI(params,paramsList,bins=None,area=None,
         nbins=len(bins)-1
         II = numpy.zeros(nbins)
         for ibin in xrange(nbins):
-            II[ibin]=integrate.quad(lambda S:polesFuncErfsS(S,pole_posns/1.0e6,coeffs,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),pole_posns[0]/1.0e6,pole_posns[-1]/1.0e6)[0]
+            II[ibin]=integrate.quad(lambda S:polesFuncErfsS(S,pole_posns/1.0e6,coeffs,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),pole_posns[0]/1.0e6,pole_posns[-1]/1.0e6)[0]
             #print II[ibin]
         return II
 
