@@ -49,7 +49,7 @@ def poissonLhood(data,realisation):
 
 #-------------------------------------------------------------------------------
 
-def buildCDF(func,x):
+def interpol(func,x):
     """
     Following Russell's prescription [email of 24.1.14]
     Return an interpolation object useable for a mock generation for
