@@ -17,8 +17,9 @@ from bayestack_settings import * # <-- generalize, localize
 #def simulate(family,params,bins,nsources=None,noise=None,\
 #             output='temp.txt',seed=None,dump=False,\
 #             verbose=False,output=None,version=2):
-def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
-             version=2,verbose=False):
+def simulate(family,params,paramsList,bins,\
+             seed=None,N=None,noise=None,output=None,\
+             dump=None,version=2,verbose=False,area=1.0):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -32,20 +33,53 @@ def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
     Return
 
     Look at simulate.ipynb for an example run
+
+    Families:
+
+    skads
+    ppl:
+
+    r=countUtils.simulate('ppl',[1000.0,5.0,75.0,-1.6],['C','S0','S1','a0'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
+    
+    poly
+    bins
     """
 
+    # Test version
     if version < 2: return '***Unsupported!!'
-    
+
+    # Initialize seed for variates AND any noise
     if seed is not None:
         numpy.random.seed(seed=SEED_SIM)
 
-    function = lambda S:S**2
+    if family=='ppl':
+        C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
+        nlaws=int(0.5*len(paramsList)-1)
+        C=params[paramsList.index('C')]
+        Smin=params[paramsList.index('S0')]
+        alpha=params[paramsList.index('a0')]
+        if nlaws > 1:
+            beta=params[paramsList.index('a1')]
+            S0=params[paramsList.index('S1')]
+        if nlaws > 2:
+            gamma=params[paramsList.index('a2')]
+            S1=params[paramsList.index('S2')]
+        if nlaws > 3:
+            delta=params[paramsList.index('a3')]
+            S2=params[paramsList.index('S3')]
+        iSmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
+        Smax=params[paramsList.index('S%i'%iSmax)]
+
+        function = lambda S:powerLawFuncWrap(nlaws,S,C,alpha,-99.0,beta,\
+                                       Smin,Smax,S0,gamma,S1,delta,S2,1.0)
+
+    #function = lambda S:S**2
 
     # Set up the 'rough' array
-    Smin=0.0 # uJy
-    Smax=100.0 # uJy
-    gridlength=10000
-    Ss=numpy.linspace(Smin,Smax,gridlength)
+    #Smin=0.0 # uJy
+    #Smax=100.0 # uJy
+    gridlength=1000000 # Good enough to prevent bleeding at the edges
+    Ss=numpy.linspace(bins[0],bins[-1],gridlength)
     values=numpy.array([function(ix) for ix in Ss])
 
     # Build the CDF
@@ -53,20 +87,21 @@ def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
     # Create the interpolant object
     sampler=interp1d(CDF,Ss)
 
+    # Test the sampler extrema for functionality
+    print sampler(0.0),sampler(1.0)
+
     # Draw the random deviates
     R = numpy.random.rand(N)
     F=sampler(R)
 
     # Integrate the original function
-    A=integrate.quad(function,Smin,Smax)[0]
-
+    #A=integrate.quad(function,Smin,Smax)[0]
     # Bin the random samples
-    bins=numpy.linspace(Smin,Smax,40)
-    dbin=bins[-1]-bins[-2]
-    E=numpy.histogram(F,bins=bins)[0]
+    #bins=numpy.linspace(Smin,Smax,40)
+    #dbin=bins[-1]-bins[-2]
+    #E=numpy.histogram(F,bins=bins)[0]
     # And calculate their area
-    C=integrate.trapz(E)*dbin
-
+    #C=integrate.trapz(E)*dbin
     # Gunpowder, treason and....
     #plt.xlim(0.0,100.0)
     #plt.xlabel('S / $\mu$Jy')
@@ -75,9 +110,9 @@ def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
 
     # Dump noiseless fluxes to file
     if dump is not None:
-        dumpf=dump
-        numpy.savetxt(dumpf,F)
-        print 'Draws (noiseless) are in %s' % dumpf
+        puredumpf=dump
+        numpy.savetxt(puredumpf,F)
+        print 'Draws (noiseless) are in %s' % puredumpf
 
     # Add noise if requested
     if noise is not None:
@@ -86,15 +121,15 @@ def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
 
     # Dump noisy fluxes to file
     if dump is not None:
-        noisydumpf='%s_noisy.txt' % dumpf.split('.')[0]
+        noisydumpf='%s_noisy.txt' % puredumpf.split('.')[0]
         numpy.savetxt(noisydumpf,F)
         print 'Draws (noisy) are in %s' % noisydumpf
         print 'Minimum flux in catalogue = %f' % F.min()
 
     # Bin up the fluxes
-    counts=numpy.histogram(R,bins=bins)[0]
+    counts=numpy.histogram(F,bins=bins)[0]
     print '-> %i/%i objects observed in total (bin scattering)\n' % (counts.sum(),N)
-
+    
     # Calculate differential counts
     idl_style=False
     dn_by_ds,dn_by_ds_eucl,dn_by_ds_errs,dn_by_ds_b,dn_by_ds_b_errs=\
@@ -103,7 +138,6 @@ def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
     median_bins=medianArray(bins) # uJy
     if output is not None:
         outputf=output
-        #data=numpy.zeros((len(bins),3))
         s=open(outputf,'w')
         if version < 2:
             header='# bin_median ksRaw ksNoisy'
@@ -111,21 +145,21 @@ def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
             header='# bin_low_uJy bin_high_uJy bin_median_uJy Ns_tot_obs dnds_srm1Jym1 dnds_eucl_srm1Jy1p5 delta_dnds_eucl_lower_srm1Jy1p5 delta_dnds_eucl_upper_srm1Jy1p5 corr Ncgts_degm2 dNcgts_lower_degm2 dNcgts_upper_degm2'
         s.write('%s\n'%header)
         if verbose: print header
-        for ibin in range(nbins-1):
+        for ibin in range(len(bins)-1):
             if version < 2:
                 line='%f %i %i' % (median_bins[ibin],-99.0,counts[ibin])
             else:
                 # See binner.py for dependence on BIN_CORRS/CORR_BINS (omitted here)
                 line='%f %f %f %i %e %f %f %f %f %i %i %i' % \
                   (bins[ibin],bins[ibin+1],median_bins[ibin],round(counts[ibin]),\
-                   dn_by_ds[ibin]/(sqDeg2sr*AREA_SIM),\
-                   dn_by_ds_eucl[ibin]/(sqDeg2sr*AREA_SIM),\
-                   dn_by_ds_errs[ibin]/(sqDeg2sr*AREA_SIM),\
-                   dn_by_ds_errs[ibin]/(sqDeg2sr*AREA_SIM),\
+                   dn_by_ds[ibin]/(sqDeg2sr*area),\
+                   dn_by_ds_eucl[ibin]/(sqDeg2sr*area),\
+                   dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
+                   dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
                    1.00,\
-                   round(counts[ibin:].sum()*1.00/AREA_SIM),\
-                   round(numpy.sqrt(counts[ibin:].sum()*1.00/AREA_SIM)),\
-                   round(numpy.sqrt(counts[ibin:].sum()*1.00/AREA_SIM)))
+                   round(counts[ibin:].sum()*1.00/area),\
+                   round(numpy.sqrt(counts[ibin:].sum()*1.00/area)),\
+                   round(numpy.sqrt(counts[ibin:].sum()*1.00/area)))
             s.write('%s\n'%line)
             if verbose: print line
         print counts.sum()
