@@ -38,26 +38,23 @@ def simulate(seed=None,N=None,noise=None):
 
     function = lambda S:S**2
 
+    # Set up the 'rough' array
     Smin=0.0 # uJy
     Smax=100.0 # uJy
-    
-    gridlength=1000
+    gridlength=10000
     Ss=numpy.linspace(Smin,Smax,gridlength)
-    y=numpy.array([function(S) for S in Ss])
-    lookup=interpol(function,Ss)
-    Ss_fine=numpy.linspace(Smin,Smax,gridlength*10)
-    values=lookup(Ss_fine)
+    values=numpy.array([function(ix) for ix in Ss])
 
     # Build the CDF
     CDF=buildCDF(values)
+    # Create the interpolant object
+    sampler=interp1d(CDF,Ss)
 
-    Ss_fine2=numpy.linspace(Smin,Smax,gridlength*10)
-    sampler=interp1d(CDF,Ss_fine2)
-
+    # Draw the random deviates
     R = numpy.random.rand(N)
     F=sampler(R)
 
-    # Integrate the original S**2 function
+    # Integrate the original function
     A=integrate.quad(function,Smin,Smax)[0]
 
     # Bin the random samples
@@ -73,6 +70,7 @@ def simulate(seed=None,N=None,noise=None):
     #plt.hist(F,bins=bins)
     #plt.plot(Ss_fine,values*C/A,'r')
 
+    # Add noise if requested
     if noise is not None:
         numpy.random.seed(seed=SEED_SIM)
         F+=numpy.random.normal(0.0,noise,N)
