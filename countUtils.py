@@ -18,7 +18,7 @@ from bayestack_settings import * # <-- generalize, localize
 #             output='temp.txt',seed=None,dump=False,\
 #             verbose=False,output=None,version=2):
 def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
-             version=2):
+             version=2,verbose=False):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -110,7 +110,7 @@ def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
         else:
             header='# bin_low_uJy bin_high_uJy bin_median_uJy Ns_tot_obs dnds_srm1Jym1 dnds_eucl_srm1Jy1p5 delta_dnds_eucl_lower_srm1Jy1p5 delta_dnds_eucl_upper_srm1Jy1p5 corr Ncgts_degm2 dNcgts_lower_degm2 dNcgts_upper_degm2'
         s.write('%s\n'%header)
-        print header
+        if verbose: print header
         for ibin in range(nbins-1):
             if version < 2:
                 line='%f %i %i' % (median_bins[ibin],-99.0,counts[ibin])
@@ -127,7 +127,7 @@ def simulate(seed=None,N=None,noise=None,output=None,dump=None,\
                    round(numpy.sqrt(counts[ibin:].sum()*1.00/AREA_SIM)),\
                    round(numpy.sqrt(counts[ibin:].sum()*1.00/AREA_SIM)))
             s.write('%s\n'%line)
-            print line
+            if verbose: print line
         print counts.sum()
         s.close()
     
