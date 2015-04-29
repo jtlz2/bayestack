@@ -56,9 +56,6 @@ def simulate(family,params,paramsList,bins,\
     
     """
 
-    # Test version
-    if version < 2: return '***Unsupported!!'
-
     # Initialize seed for variates AND any noise
     if seed is not None:
         numpy.random.seed(seed=SEED_SIM)
@@ -97,8 +94,6 @@ def simulate(family,params,paramsList,bins,\
         pass
 
     # Set up the 'rough' array
-    #Smin=0.0 # uJy
-    #Smax=100.0 # uJy
     gridlength=1000000 # Good enough to prevent bleeding at the edges
     Ss=numpy.linspace(bins[0],bins[-1],gridlength)
     values=numpy.array([function(ix) for ix in Ss])
@@ -115,6 +110,7 @@ def simulate(family,params,paramsList,bins,\
     R = numpy.random.rand(N)
     F=sampler(R)
 
+    # Normalize here - this is N2C
     # Integrate the original function
     #A=integrate.quad(function,Smin,Smax)[0]
     # Bin the random samples
@@ -135,7 +131,7 @@ def simulate(family,params,paramsList,bins,\
         numpy.savetxt(puredumpf,F)
         print 'Draws (noiseless) are in %s' % puredumpf
 
-    # Add noise if requested
+    # Now add noise if requested
     if noise is not None:
         numpy.random.seed(seed=SEED_SIM)
         F+=numpy.random.normal(0.0,noise,N)
@@ -147,8 +143,26 @@ def simulate(family,params,paramsList,bins,\
         print 'Draws (noisy) are in %s' % noisydumpf
         print 'Minimum flux in catalogue = %f' % F.min()
 
+    idl_style=False
+    writeCountsFile(output,bins,F,area,idl_style=idl_style,verbose=verbose)
+
+    return F
+
+#-------------------------------------------------------------------------------
+
+@profile
+def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
+                    version=2,verbose=None):
+    """
+    Write an array of fluxes to a binned counts file
+    """
+
+    # Test version
+    if version < 2: return '***Unsupported!!'
+
     # Bin up the fluxes
-    counts=numpy.histogram(F,bins=bins)[0]
+    counts=numpy.histogram(fluxes,bins=bins)[0]
+    N=len(fluxes)
     print '-> %i/%i objects observed in total (bin scattering)\n' % (counts.sum(),N)
     
     # Calculate differential counts
@@ -186,7 +200,7 @@ def simulate(family,params,paramsList,bins,\
         print counts.sum()
         s.close()
     
-    return F
+    return
 
 #-------------------------------------------------------------------------------
 
