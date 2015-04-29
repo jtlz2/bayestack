@@ -17,7 +17,7 @@ from bayestack_settings import * # <-- generalize, localize
 #def simulate(family,params,bins,nsources=None,noise=None,\
 #             outfile='temp.txt',seed=None,dump=False,\
 #             verbose=False,output=None,version=2):
-def simulate(seed=None,N=None,noise=None):
+def simulate(seed=None,N=None,noise=None,dump=None):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -70,13 +70,25 @@ def simulate(seed=None,N=None,noise=None):
     #plt.hist(F,bins=bins)
     #plt.plot(Ss_fine,values*C/A,'r')
 
+    # Dump noiseless fluxes to file
+    if dump is not None:
+        dumpf=dump
+        numpy.savetxt(dumpf,F)
+        print 'Draws (noiseless) are in %s' % dumpf
+
     # Add noise if requested
     if noise is not None:
         numpy.random.seed(seed=SEED_SIM)
         F+=numpy.random.normal(0.0,noise,N)
-    
-    return F
 
+    # Dump noisy fluxes to file
+    if dump is not None:
+        noisydumpf='%s_noisy.txt' % dumpf.split('.')[0]
+        numpy.savetxt(noisydumpf,F)
+        print 'Draws (noisy) are in %s' % noisydumpf
+        print 'Minimum flux in catalogue = %f' % F.min()
+
+    return F
 
 #-------------------------------------------------------------------------------
 
