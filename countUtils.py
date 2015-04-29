@@ -5,30 +5,79 @@ Support functions for bayestack, bayestackClasses and lumfunc
 import numpy
 from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
+from scipy.interpolate import interp1d
 from scipy.special import erf
 from profile_support import profile
-from utils import sqrtTwo,find_nearest,medianArray
+from utils import sqrtTwo,find_nearest,medianArray,interpol,buildCDF
 from bayestack_settings import * # <-- generalize, localize
 
 #-------------------------------------------------------------------------------
 
 @profile
-def simulate():
+#def simulate(family,params,bins,nsources=None,noise=None,\
+#             outfile='temp.txt',seed=None,dump=False,\
+#             verbose=False,output=None,version=2):
+def simulate(seed=None,N=None,noise=None):
     """
-    Specify parameters
+    Based on lumfunc.simtable()
+    Specify family + parameters
     Specify number of sources
     Build CDF (or set up function)
     Draw deviates
     Sample CDF given deviates
-    Add noise
+    Add noise (None or some value)
     Bin
     Write out
     Return
+
+    Look at simulate.ipynb for an example run
     """
 
+    if seed is not None:
+        numpy.random.seed(seed=SEED_SIM)
+
+    function = lambda S:S**2
+
+    Smin=0.0 # uJy
+    Smax=100.0 # uJy
     
+    gridlength=1000
+    Ss=numpy.linspace(Smin,Smax,gridlength)
+    y=numpy.array([function(S) for S in Ss])
+    lookup=interpol(function,Ss)
+    Ss_fine=numpy.linspace(Smin,Smax,gridlength*10)
+    values=lookup(Ss_fine)
+
+    # Build the CDF
+    CDF=buildCDF(values)
+
+    Ss_fine2=numpy.linspace(Smin,Smax,gridlength*10)
+    sampler=interp1d(CDF,Ss_fine2)
+
+    R = numpy.random.rand(N)
+    F=sampler(R)
+
+    # Integrate the original S**2 function
+    A=integrate.quad(function,Smin,Smax)[0]
+
+    # Bin the random samples
+    bins=numpy.linspace(Smin,Smax,40)
+    dbin=bins[-1]-bins[-2]
+    E=numpy.histogram(F,bins=bins)[0]
+    # And calculate their area
+    C=integrate.trapz(E)*dbin
+
+    # Gunpowder, treason and....
+    #plt.xlim(0.0,100.0)
+    #plt.xlabel('S / $\mu$Jy')
+    #plt.hist(F,bins=bins)
+    #plt.plot(Ss_fine,values*C/A,'r')
+
+    if noise is not None:
+        numpy.random.seed(seed=SEED_SIM)
+        F+=numpy.random.normal(0.0,noise,N)
     
-    return
+    return F
 
 
 #-------------------------------------------------------------------------------
