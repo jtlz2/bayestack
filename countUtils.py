@@ -20,7 +20,7 @@ from bayestack_settings import * # <-- generalize, localize
 def simulate(family,params,paramsList,bins,\
              seed=None,N=None,noise=None,output=None,\
              dump=None,version=2,verbose=False,area=1.0,\
-             skadsf=None):
+             skadsf=None,pole_posns=None):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -116,7 +116,8 @@ def simulate(family,params,paramsList,bins,\
 
     elif family=='bins':
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
-        pole_posns=numpy.logspace(-1,numpy.log10(85.0),len(coeffs)+1)
+        if pole_posns is None:
+            pole_posns=numpy.logspace(-1,numpy.log10(85.0),len(coeffs)+1)
         assert(len(coeffs)==len(pole_posns)-1), '***Mismatch in number of poles!!'
         Smin=pole_posns[0]
         Smax=pole_posns[-1]
@@ -155,7 +156,7 @@ def simulate(family,params,paramsList,bins,\
         print Smin,sampler(0.0)
         print Smax,sampler(0.99999)
         assert(numpy.isclose(sampler(0.0),Smin)[0])
-        assert(numpy.isclose(sampler(0.99999),Smax)[0])
+        assert(numpy.isclose(sampler(0.99999),Smax,atol=1.0e-3)[0])
 
         # Draw the random deviates
         R = numpy.random.rand(N)
