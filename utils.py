@@ -73,7 +73,7 @@ def buildCDF(values):
     """
     Given an array, accumulate it and normalize to the interval U[0,1]
     """
-    return (values.cumsum()-values.cumsum()[0])/values.cumsum()[-1] 
+    return (values.cumsum()-values.cumsum()[0])/values.cumsum()[-1]
 
 #-------------------------------------------------------------------------------
 
