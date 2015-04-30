@@ -44,10 +44,10 @@ def main():
     note='Settings file: %s' % param_file
     print note
 
-    r=countUtils.simulate(simFamily,simParams,simParamsList,\
+    r=simulate(simFamily,simParams,simParamsList,\
                           simBins,seed=SEED_SIM,N=NSIM,area=AREA_SIM,\
                           noise=NOISE_SIM,dump=DUMP,output=OUTPUT,\
-                          verbose=verbose)
+                          verbose=True)
         
     return 0
 
