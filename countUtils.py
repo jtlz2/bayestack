@@ -508,7 +508,7 @@ def polesFunc(S,pole_posns,Smin,Smax,coeffs):
     idx,Snearest=find_nearest(pole_posns[:-1],S)
     #if idx >= len(coeffs)-1: return counts[idx-1]
     #return counts[idx]
-    return coeffs[idx]/(pole_posns[idx+1]-pole_posns[idx])
+    return coeffs[idx]#/(pole_posns[idx+1]-pole_posns[idx])
 
 #-------------------------------------------------------------------------------
 
