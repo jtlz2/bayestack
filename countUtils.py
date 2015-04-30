@@ -123,7 +123,7 @@ def simulate(family,params,paramsList,bins,\
     if family != 'skads':
         # Set up the 'rough' array
         gridlength=1000000 # Good enough to prevent bleeding at the edges
-        Ss=numpy.linspace(bins[0],bins[-1],gridlength)
+        Ss=numpy.linspace(Smin,Smax,gridlength)
         values=numpy.array([function(ix) for ix in Ss])
 
         # Build the CDF
@@ -132,7 +132,8 @@ def simulate(family,params,paramsList,bins,\
         sampler=interp1d(CDF,Ss)
 
         # Test the sampler extrema for functionality
-        print sampler(0.0),sampler(1.0)
+        assert(sampler(0.0)==Smin)
+        assert(sampler(1.0)==Smax)
 
         # Draw the random deviates
         R = numpy.random.rand(N)
