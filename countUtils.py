@@ -53,7 +53,12 @@ def simulate(family,params,paramsList,bins,\
 
     r=countUtils.simulate('ppl',[1000.0,5.0,25.0,40.0,75.0,90.0,-1.6,-2.5,-1.0,2.0],['C','S0','S1','S2','S3','S4','a0','a1','a2','a3'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
 
-    poly
+    poly:
+
+    
+    
+    r=countUtils.simulate('poly',[5.0,75.0,1.0,-1.0,5.0],['S0','S1','p0','p1','p2'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
+    
     bins
 
     test
@@ -131,9 +136,9 @@ def simulate(family,params,paramsList,bins,\
         # Create the interpolant object
         sampler=interp1d(CDF,Ss)
 
-        # Test the sampler extrema for functionality
-        assert(sampler(0.0)==Smin)
-        assert(sampler(1.0)==Smax)
+        # Test the sampler extrema match
+        assert(numpy.isclose(sampler(0.0),Smin)[0])
+        assert(numpy.isclose(sampler(1.0),Smax)[0])
 
         # Draw the random deviates
         R = numpy.random.rand(N)
@@ -348,7 +353,7 @@ def powerLawFuncS(S,C,alpha,Smin,Smax,area):
     Ketron's equation (9)
     """
 
-    if S < Smin or S > Smax:
+    if S <= Smin or S >= Smax:
         return 0.0
     else:
         n = C * (S ** alpha) * area
@@ -455,7 +460,7 @@ def polyFunc(S,S_1,Smin,Smax,c):
     """
     """
 
-    if S < Smin or S > Smax:
+    if S <= Smin or S >= Smax:
         return 0.0
     
     exponent=0.0
@@ -471,7 +476,7 @@ def polesFunc(S,pole_posns,Smin,Smax,coeffs):
     """
     """
 
-    if S < Smin or S > Smax:
+    if S <= Smin or S >= Smax:
         return 0.0
     
     #print coeffs
