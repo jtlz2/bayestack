@@ -38,12 +38,15 @@ def simulate(family,params,paramsList,bins,\
     Need to add normalization capability
     
     Families:
+    ========
 
     skads:
+    -----
 
     r=countUtils.simulate('skads',[0.01,85.0],['S0','S1'],numpy.linspace(-60.0,100.0,26),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
     
     ppl:
+    ---
 
     r=countUtils.simulate('ppl',[1000.0,5.0,75.0,-1.6],['C','S0','S1','a0'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
 
@@ -54,15 +57,24 @@ def simulate(family,params,paramsList,bins,\
     r=countUtils.simulate('ppl',[1000.0,5.0,25.0,40.0,75.0,90.0,-1.6,-2.5,-1.0,2.0],['C','S0','S1','S2','S3','S4','a0','a1','a2','a3'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
 
     poly:
+    ----
 
-    
+    r=countUtils.simulate('poly',[5.0,75.0,1.0],['S0','S1','p0'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
+
+    r=countUtils.simulate('poly',[5.0,75.0,1.0,-1.0],['S0','S1','p0','p1'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
     
     r=countUtils.simulate('poly',[5.0,75.0,1.0,-1.0,5.0],['S0','S1','p0','p1','p2'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
     
-    bins
+    bins:
+    ----
 
-    test
     
+
+    test:
+    ----
+
+    
+
     """
 
     # Initialize seed for variates AND any noise
@@ -91,6 +103,8 @@ def simulate(family,params,paramsList,bins,\
                                        Smin,Smax,S0,gamma,S1,delta,S2,1.0)
 
     elif family=='test':
+        Smin=params[paramsList.index('S0')]
+        Smax=params[paramsList.index('S1')]
         function = lambda S:S**2
 
     elif family=='poly':
@@ -133,10 +147,13 @@ def simulate(family,params,paramsList,bins,\
 
         # Build the CDF
         CDF=buildCDF(values)
+        #numpy.savetxt('cdf.txt',CDF)
         # Create the interpolant object
         sampler=interp1d(CDF,Ss)
 
-        # Test the sampler extrema match
+        # Test that the sampler extrema match
+        print Smin,sampler(0.0)
+        print Smax,sampler(1.0)
         assert(numpy.isclose(sampler(0.0),Smin)[0])
         assert(numpy.isclose(sampler(1.0),Smax)[0])
 
@@ -151,10 +168,10 @@ def simulate(family,params,paramsList,bins,\
         A=integrate.quad(function,Smin,Smax)[0]
         print A,N
         # Bin the random samples
-        bins=numpy.linspace(Smin,Smax,100)
-        E=numpy.histogram(F,bins=bins)[0]
+        bbins=numpy.linspace(Smin,Smax,100)
+        E=numpy.histogram(F,bins=bbins)[0]
         # And calculate their area
-        G=integrate.trapz(E,x=medianArray(bins))
+        G=integrate.trapz(E,x=medianArray(bbins))
         print G
         print G/A
         # Gunpowder, treason and....
@@ -181,6 +198,7 @@ def simulate(family,params,paramsList,bins,\
         print 'Draws (noisy) are in %s' % noisydumpf
         print 'Minimum flux in catalogue = %f' % F.min()
 
+    # Write counts file
     idl_style=False
     writeCountsFile(output,bins,F,area,idl_style=idl_style,verbose=verbose)
 
