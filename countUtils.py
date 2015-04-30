@@ -102,6 +102,7 @@ def simulate(family,params,paramsList,bins,\
     elif family=='skads':
         Smin=params[paramsList.index('S0')]
         Smax=params[paramsList.index('S1')]
+        function=None
         skadsf='heywood/1sqdeg_0p02uJy.txt'
         R=Jy2muJy*10**numpy.genfromtxt(skadsf)
         numpy.ndarray.sort(R)
@@ -133,19 +134,23 @@ def simulate(family,params,paramsList,bins,\
         F=sampler(R)
 
         # Normalize here - this is N2C
+        # EITHER N is specified explicitly
+        # BOTH N2C and C2N are useful
         # Integrate the original function
-        #A=integrate.quad(function,Smin,Smax)[0]
+        A=integrate.quad(function,Smin,Smax)[0]
+        print A,N
         # Bin the random samples
-        #bins=numpy.linspace(Smin,Smax,40)
-        #dbin=bins[-1]-bins[-2]
-        #E=numpy.histogram(F,bins=bins)[0]
+        bins=numpy.linspace(Smin,Smax,100)
+        E=numpy.histogram(F,bins=bins)[0]
         # And calculate their area
-        #C=integrate.trapz(E)*dbin
+        G=integrate.trapz(E,x=medianArray(bins))
+        print G
+        print G/A
         # Gunpowder, treason and....
         #plt.xlim(0.0,100.0)
         #plt.xlabel('S / $\mu$Jy')
         #plt.hist(F,bins=bins)
-        #plt.plot(Ss_fine,values*C/A,'r')
+        #plt.plot(Ss_fine,values*G/A,'r')
 
     # Dump noiseless fluxes to file
     if dump is not None:
