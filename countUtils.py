@@ -153,9 +153,9 @@ def simulate(family,params,paramsList,bins,\
 
         # Test that the sampler extrema match
         print Smin,sampler(0.0)
-        print Smax,sampler(1.0)
+        print Smax,sampler(0.99999)
         assert(numpy.isclose(sampler(0.0),Smin)[0])
-        assert(numpy.isclose(sampler(1.0),Smax)[0])
+        assert(numpy.isclose(sampler(0.99999),Smax)[0])
 
         # Draw the random deviates
         R = numpy.random.rand(N)
