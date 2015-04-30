@@ -148,7 +148,6 @@ def simulate(family,params,paramsList,bins,\
 
         # Build the CDF
         CDF=buildCDF(values)
-        #numpy.savetxt('cdf.txt',CDF)
         # Create the interpolant object
         sampler=interp1d(CDF,Ss)
 
