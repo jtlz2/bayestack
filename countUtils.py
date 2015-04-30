@@ -19,7 +19,7 @@ from bayestack_settings import * # <-- generalize, localize
 #             verbose=False,output=None,version=2):
 def simulate(family,params,paramsList,bins,\
              seed=None,N=None,noise=None,output=None,\
-             dump=None,version=2,verbose=False,area=1.0,\
+             dump=None,version=2,verbose=False,area=None,\
              skadsf=None,pole_posns=None):
     """
     Based on lumfunc.simtable()
@@ -255,7 +255,9 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
             if verbose: print line
         print counts.sum()
         s.close()
-    
+
+        print 'Look in %s' % outputf
+
     return
 
 #-------------------------------------------------------------------------------
