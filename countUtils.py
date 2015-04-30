@@ -8,7 +8,7 @@ from scipy import integrate,stats
 from scipy.interpolate import interp1d
 from scipy.special import erf
 from profile_support import profile
-from utils import sqrtTwo,find_nearest,medianArray,interpol,buildCDF
+from utils import sqrtTwo,find_nearest,medianArray,interpol,buildCDF,Jy2muJy
 from bayestack_settings import * # <-- generalize, localize
 
 #-------------------------------------------------------------------------------
@@ -19,7 +19,8 @@ from bayestack_settings import * # <-- generalize, localize
 #             verbose=False,output=None,version=2):
 def simulate(family,params,paramsList,bins,\
              seed=None,N=None,noise=None,output=None,\
-             dump=None,version=2,verbose=False,area=1.0):
+             dump=None,version=2,verbose=False,area=1.0,\
+             skadsf=None):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -38,7 +39,10 @@ def simulate(family,params,paramsList,bins,\
     
     Families:
 
-    skads
+    skads:
+
+    r=countUtils.simulate('skads',[0.01,85.0],['S0','S1'],numpy.linspace(-60.0,100.0,26),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
+    
     ppl:
 
     r=countUtils.simulate('ppl',[1000.0,5.0,75.0,-1.6],['C','S0','S1','a0'],numpy.linspace(-20.0,100.0,22),seed=1234,N=40000,noise=17.0,dump='R.txt',output='dummy.txt',verbose=True)
@@ -103,16 +107,17 @@ def simulate(family,params,paramsList,bins,\
         Smin=params[paramsList.index('S0')]
         Smax=params[paramsList.index('S1')]
         function=None
-        skadsf='heywood/1sqdeg_0p02uJy.txt'
+        if skadsf is None:
+            skadsf='skads/1sqdeg_0p02uJy.txt'
         R=Jy2muJy*10**numpy.genfromtxt(skadsf)
         numpy.ndarray.sort(R)
         iRmin,Rmin=find_nearest(R,Smin)
         iRmax,Rmax=find_nearest(R,Smax)
         F=R[iRmin:iRmax]
+        print '%i/%i sources ingested after Smin/Smax cuts' % (len(F),len(R))
+        if N is not None:
+            F=numpy.random.choice(F,size=N,replace=False)
         N=len(F)
-        if NSKADS is not None:
-            F=numpy.random.choice(F,size=NSKADS,replace=False)
-            N=len(F)
         print 'NSKADS = %i' % N
 
     if family != 'skads':
@@ -190,7 +195,7 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
     # Bin up the fluxes
     counts=numpy.histogram(fluxes,bins=bins)[0]
     N=len(fluxes)
-    print '-> %i/%i objects observed in total (bin scattering)\n' % (counts.sum(),N)
+    print '-> %i/%i objects observed in total (after binning)\n' % (counts.sum(),N)
     
     # Calculate differential counts
     idl_style=False
