@@ -15,7 +15,7 @@ param_file=sys.argv[-1]
 #setf='%s' % param_file.split('.')[-2]
 # Import the settings variables
 if __name__=='__main__':
-    setf='simulate_settings'
+    setf='bayestack_settings'
 else:
     setf='%s'%param_file
 
