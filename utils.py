@@ -39,9 +39,10 @@ def strictly_increasing(L):
 
 #-------------------------------------------------------------------------------
 
-def poissonLhood(data,realisation):
-    for i in range(len(data)):
-        print i,data[i],realisation[i]
+def poissonLhood(data,realisation,silent=True):
+    if not silent:
+        for i in range(len(data)):
+            print i,data[i],realisation[i]
     kk=data[numpy.where(realisation > 0)];
     iii=realisation[numpy.where(realisation > 0)]
     loglike = (kk*numpy.log(iii) + kk - kk*numpy.log(kk) - iii).sum()
