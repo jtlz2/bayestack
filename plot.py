@@ -14,7 +14,6 @@ Usage:
 import os,sys
 import importlib
 import numpy
-#if os.getenv('PBS_O_HOST') is not None and 'baltasar' not in os.getenv('PBS_O_HOST'):
 if os.getenv('PBS_O_HOST') not in [None,'baltasar']:
     from matplotlib import pyplot as plt
 import pylab
@@ -75,7 +74,7 @@ def main():
     # Plot for publication
     line=False
     autoscale=True
-    title=''#'%s - %s'%(outdir,dataset)
+    title=''
     truth=None
     extn='pdf'
     bundle=contour_plot.contourTri(chain,\
