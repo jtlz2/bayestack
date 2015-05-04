@@ -53,8 +53,8 @@ def main():
     expt=countModel(modelFamily,nlaws,setf,dataset,binStyle,floatNoise)
     # Insert hacks here
     #plotRanges['C']=[0,200]
-    labelDict=dict((name,name) for name in ['S0', 'S1', 'noise', 'p0', 'p1', 'p2'])
-    plotTruth=dict((name,-99.0) for name in ['S0', 'S1', 'noise', 'p0', 'p1', 'p2'])
+    labelDict=dict((name,name) for name in expt.parameters)
+    plotTruth=dict((name,-99.0) for name in expt.parameters)
     plotRanges=dict((k,v[-2:]) for (k,v) in expt.priorsDict.items())
 
     # Load the data
