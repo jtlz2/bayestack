@@ -22,7 +22,7 @@ print 'Context is %s' % context
 
 # New-style settings <-- bayestack.py
 
-dataset='video'
+#dataset='sim'
 binStyle=1
 nlaws=6
 floatNoise=False
@@ -31,7 +31,7 @@ outdir='chains_150428a' # based on 140123a
 
 # New-style settings <-- simulate.py
 
-dataset='video'
+#dataset='video'
 binStyle=1
 nlaws=6
 floatNoise=False
@@ -76,7 +76,7 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-#dataset='sims/150504a'
+dataset='sims/150504a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
