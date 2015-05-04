@@ -21,9 +21,10 @@ import pylab
 from profile_support import profile
 from utils import *
 import contour_plot
+from bayestackClasses import countModel
 
 param_file=sys.argv[-1]
-setf='%s.settings' % param_file
+setf='%s.bayestack_settings' % param_file
 #param_dir=sys.argv[-1]
 #param_file='settings.py'
 #param_file=os.path.join(param_dir,param_file)
@@ -48,9 +49,15 @@ def main():
     set_module=importlib.import_module(setf)
     globals().update(set_module.__dict__)
 
+    # Load prior ranges etc.
+    expt=countModel(modelFamily,nlaws,setf,dataset,binStyle,floatNoise)
     # Insert hacks here
     #plotRanges['C']=[0,200]
+    labelDict=dict((name,name) for name in ['S0', 'S1', 'noise', 'p0', 'p1', 'p2'])
+    plotTruth=dict((name,-99.0) for name in ['S0', 'S1', 'noise', 'p0', 'p1', 'p2'])
+    plotRanges=dict((k,v[-2:]) for (k,v) in expt.priorsDict.items())
 
+    # Load the data
     chain=pylab.loadtxt('%s/1-post_equal_weights.dat'%outdir)
 
     # Local plot
@@ -60,7 +67,7 @@ def main():
     truth=plotTruth
     bundle=contour_plot.contourTri(chain,\
                             line=line,outfile='%s/%s'%(outdir,triangle),\
-                            col=('red','blue'),labels=parameters,\
+                            col=('red','blue'),labels=expt.parameters,\
                             ranges=plotRanges,truth=truth,\
                             autoscale=autoscale,title=title,\
                             labelDict=labelDict)
@@ -74,13 +81,13 @@ def main():
     bundle=contour_plot.contourTri(chain,\
                             line=line,\
                             outfile='%s/triangle-%s-publn.%s'%(outdir,run_num,extn),\
-                            labels=parameters,\
+                            labels=expt.parameters,\
                             ranges=plotRanges,truth=truth,\
                             autoscale=autoscale,title=title,\
                             binsize=50,labelDict=labelDict)
 
-    stats=fetchStats(outdir,parameters,plotTruth)
-    printLaTeX(parameters,stats,dump=outdir)
+    #stats=fetchStats(outdir,parameters,plotTruth)
+    #printLaTeX(parameters,stats,dump=outdir)
 
 
 #-------------------------------------------------------------------------------
