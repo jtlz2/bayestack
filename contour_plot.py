@@ -279,6 +279,8 @@ def contourTri(chain,**kwargs):
 
         if 'labelDict' in kwargs and kwargs['labelDict'] is not None:
             labelDict=kwargs['labelDict']
+        else:
+            labelDict=dict((name,name) for name in parameters)
 
         # Set the axis labels only for left and bottom:
         #print ax[ipanel].get_xlabel(),ax[ipanel].get_ylabel()
