@@ -22,21 +22,12 @@ print 'Context is %s' % context
 
 # New-style settings <-- bayestack.py
 
-#dataset='sim'
-binStyle=1
-nlaws=6
-floatNoise=False
-modelFamily='bins'#'ppl' 'poly'
-outdir='chains_150428a' # based on 140123a
-
-# New-style settings <-- simulate.py
-
 #dataset='video'
 binStyle=1
-nlaws=6
+nlaws=3
 floatNoise=False
-modelFamily='bins'#'ppl' 'poly'
-outdir='chains_150504a' # based on 140123a
+modelFamily='ppl'#'ppl' 'poly'
+outdir='chains_150504b' # based on 140123a
 
 simFamily='skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
@@ -45,8 +36,8 @@ simParams=[SMIN_SIM,SMAX_SIM]
 simParamsList=['S0','S1']
 simBins=numpy.linspace(-60.0,100.0,26)
 SEED_SIM=1234
-NSIM=40000
-NOISE_SIM=17.0 # uJy
+NSIM=72000
+NOISE_SIM=16.2 # uJy
 dump='R.txt'
 output='dummy.txt'
 verbose=True
@@ -62,7 +53,7 @@ RESUME=False # Turn checkpointing on
 nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
-#outdir='chains_150504a' # based on 140123a
+#outdir='chains_150504b' # based on 140123a
 run_num=outdir.split('_')[-1]
 #if context=='l': outdir=os.path.join('/home/jtlz2/bartolomeu/output',outdir)
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
@@ -76,11 +67,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150504a'
+dataset='sims/150504b'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150504a'
+run_num_run='150504b'
 #dataset='first'
 #dataset='mca'
 
