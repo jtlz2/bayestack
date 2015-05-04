@@ -254,7 +254,7 @@ class countModel(object):
         else:
             #self.transform(cube,ndim,nparams)
             #print self.currentPhysParams
-            return poissonLhood(self.data,self.realise(cube))
+            return poissonLhood(self.data,self.realise(cube),silent=True)
 
     def __str__(self):
         return self.name
