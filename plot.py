@@ -86,8 +86,8 @@ def main():
                             autoscale=autoscale,title=title,\
                             binsize=50,labelDict=labelDict)
 
-    #stats=fetchStats(outdir,parameters,plotTruth)
-    #printLaTeX(parameters,stats,dump=outdir)
+    stats=fetchStats(outdir,expt.parameters,plotTruth)
+    printLaTeX(expt.parameters,stats,dump=outdir)
 
 
 #-------------------------------------------------------------------------------
