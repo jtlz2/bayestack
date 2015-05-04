@@ -99,6 +99,7 @@ class countModel(object):
 
     def __init__(self,kind,order,settingsf,whichSurvey,whichBins,floatNoise):
         # Import settings
+        print 'Settings file is %s' % settingsf
         set_module=importlib.import_module(settingsf)
         globals().update(set_module.__dict__)
 
