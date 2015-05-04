@@ -41,8 +41,7 @@ def main():
     if DUMP: DUMP=os.path.join(outdir,DUMP)
 
     shutil.copy(param_file,outdir)
-    note='Settings file: %s' % param_file
-    print note
+    print 'Settings file: %s' % param_file
 
     r=simulate(simFamily,simParams,simParamsList,\
                           simBins,seed=SEED_SIM,N=NSIM,area=AREA_SIM,\
