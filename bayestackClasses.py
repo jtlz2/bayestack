@@ -20,14 +20,15 @@ class surveySetup(object):
 
     def __init__(self,whichSurvey):
         self.whichSurvey=whichSurvey
-        if whichSurvey == 'video':
+        if whichSurvey in ['video'] \
+          or 'sim' in whichSurvey:
             self.datafile=os.path.join(whichSurvey,'all_test_41_150120a.txt')
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
             self.SURVEY_AREA=1.0 *(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
             self.SURVEY_NOISE=16.2 # uJy [median; mean=16.3]
             self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
-
+            
 #-------------------------------------------------------------------------------
 
 class binSetup(object):
@@ -136,16 +137,23 @@ class countModel(object):
 
         # Set up data and bins
         self.survey=surveySetup(whichSurvey)
+        if 'sim' in whichSurvey:
+            self.survey.datafile=datafile
         self.binScheme=binSetup(whichBins)
         self.bins=self.binScheme.bins
         self.nbins=self.binScheme.nbins
+        # Load the data and rederive the bins
         self.data,self.bins=self.loadData(self.survey.datafile)
+        self.nbins=len(self.bins)-1
 
         return
 
     def parsePriors(self,parameters,floatNoise):
         priorsDict={}
-        iSmax=int([i for i in parameters if i.startswith('S')][-1][-1]) # Smax
+        try: # temporary hack
+            iSmax=int([i for i in parameters if i.startswith('S')][-1][-1]) # Smax
+        except IndexError:
+            iSmax=-1
         for p in parameters:
             if self.kind=='ppl':
                 if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
