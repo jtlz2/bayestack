@@ -144,7 +144,7 @@ class countModel(object):
 
     def parsePriors(self,parameters,floatNoise):
         priorsDict={}
-        iSmax=[int(i) if i.startswith('S') else -1 for i in parameters][-1] # Smax
+        iSmax=int([i for i in parameters if i.startswith('S')][-1][-1]) # Smax
         for p in parameters:
             if self.kind=='ppl':
                 if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
@@ -153,7 +153,7 @@ class countModel(object):
             elif self.kind=='poly':
                 if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=['LOG',1.0e-2,1.0e6] # bins/poles/nodes
+                if p.startswith('b'): priorsDict[p]=['LOG',1.0e3,1.0e10] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:
