@@ -10,7 +10,7 @@ import sys,os
 import numpy
 import pylab
 from scipy import interpolate
-from lumfunc import *
+#from lumfunc import *
 import line_profiler
 from utils import *
 #from settings import *
