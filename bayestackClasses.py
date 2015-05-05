@@ -18,18 +18,19 @@ class surveySetup(object):
     survey=surveySetup(whichSurvey)
     """
 
-    def __init__(self,whichSurvey):
+    def __init__(self,whichSurvey,datafile,area,noise):
         self.whichSurvey=whichSurvey
-        if whichSurvey in ['video','sdss'] \
-          or 'sim' in whichSurvey:
-            self.datafile=os.path.join(whichSurvey,'all_test_41_150120a.txt')
-            if whichSurvey in ['sdss']:
-                self.datafile=os.path.join(whichSurvey,'sdss_dr12s1.txt')
+        self.datafile=datafile
+        if whichSurvey in ['video'] or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
             self.SURVEY_AREA=1.0 *(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
             self.SURVEY_NOISE=16.2 # uJy [median; mean=16.3]
             self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
+        elif whichSurvey in ['sdss']:
+            self.SURVEY_AREA=area # sq.deg.
+            self.SURVEY_NOISE=noise # uJy [median=??; mean=??]
+
             
 #-------------------------------------------------------------------------------
 
@@ -138,12 +139,12 @@ class countModel(object):
         self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
 
         # Set up data and bins
-        self.survey=surveySetup(whichSurvey)
+        self.survey=surveySetup(whichSurvey,datafile,SURVEY_AREA,SURVEY_NOISE)
         if 'sim' in whichSurvey:
             self.survey.datafile=datafile
-        self.binScheme=binSetup(whichBins)
-        self.bins=self.binScheme.bins
-        self.nbins=self.binScheme.nbins
+        #self.binScheme=binSetup(whichBins)
+        #self.bins=self.binScheme.bins
+        #self.nbins=self.binScheme.nbins
         # Load the data and rederive the bins
         self.data,self.bins=self.loadData(self.survey.datafile)
         self.nbins=len(self.bins)-1
@@ -160,11 +161,11 @@ class countModel(object):
             if self.kind=='ppl':
                 if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
-                elif p.startswith('a'): priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
+                elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
-                if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
+                if p.startswith('p'): priorsDict[p]=['U',POLYCOEFF_MIN,POLYCOEFF_MAX] # #coeffs
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=['LOG',1.0e3,1.0e10] # bins/poles/nodes
+                if p.startswith('b'): priorsDict[p]=['LOG',POLEMAPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:
