@@ -138,9 +138,9 @@ class countModel(object):
         self.survey=surveySetup(whichSurvey,datafile)
         if 'sim' in whichSurvey:
             self.survey.datafile=datafile
-        self.binScheme=binSetup(whichBins)
-        self.bins=self.binScheme.bins
-        self.nbins=self.binScheme.nbins
+        #self.binScheme=binSetup(whichBins)
+        #self.bins=self.binScheme.bins
+        #self.nbins=self.binScheme.nbins
         # Load the data and rederive the bins
         self.data,self.bins=self.loadData(self.survey.datafile)
         self.nbins=len(self.bins)-1
