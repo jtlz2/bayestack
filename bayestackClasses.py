@@ -20,7 +20,7 @@ class surveySetup(object):
 
     def __init__(self,whichSurvey):
         self.whichSurvey=whichSurvey
-        if whichSurvey in ['video'] \
+        if whichSurvey in ['video','sdss'] \
           or 'sim' in whichSurvey:
             self.datafile=os.path.join(whichSurvey,'all_test_41_150120a.txt')
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
