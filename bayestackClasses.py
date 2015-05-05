@@ -18,19 +18,16 @@ class surveySetup(object):
     survey=surveySetup(whichSurvey)
     """
 
-    def __init__(self,whichSurvey):
+    def __init__(self,whichSurvey,datafile):
         self.whichSurvey=whichSurvey
-        if whichSurvey in ['video','sdss'] \
-          or 'sim' in whichSurvey:
-            self.datafile=os.path.join(whichSurvey,'all_test_41_150120a.txt')
-            if whichSurvey in ['sdss']:
-                self.datafile=os.path.join(whichSurvey,'sdss_dr12s1.txt')
+        self.datafile=datafile
+        if whichSurvey in ['video','sdss'] or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
             self.SURVEY_AREA=1.0 *(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
             self.SURVEY_NOISE=16.2 # uJy [median; mean=16.3]
             self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
-            
+
 #-------------------------------------------------------------------------------
 
 class binSetup(object):
@@ -138,7 +135,7 @@ class countModel(object):
         self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
 
         # Set up data and bins
-        self.survey=surveySetup(whichSurvey)
+        self.survey=surveySetup(whichSurvey,datafile)
         if 'sim' in whichSurvey:
             self.survey.datafile=datafile
         self.binScheme=binSetup(whichBins)
