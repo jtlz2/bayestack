@@ -137,16 +137,18 @@ def main():
                'nlive = %i' % n_live_points,\
                'Run comment: %s' % comment,\
                'Now execute:',\
-               'import pylab; from utils import *; import contour_plot',\
-               'from %s import settings' % outdir,\
-               "contour_plot.contourTri(pylab.loadtxt('%(od)s/%(os)spost_equal_weights.dat'),line=True,outfile='%(od)s/%(tri)s',col=('red','blue'),labels=settings.parameters,ranges=settings.plotRanges,truth=settings.plotTruth,autoscale=False,title='%(od)s')" \
-               % {'od':outdir,'os':outstem,'tri':triangle},\
-               'or\n./plot.py %s' % outdir,\
-                'and\n./reconstruct.py %s' % outdir]
+               '\n./plot.py %s' % outdir,\
+               'and\n./reconstruct.py %s' % outdir]
+               #'import pylab; from utils import *; import contour_plot',\
+               #'from %s import settings' % outdir,\
+               #"contour_plot.contourTri(pylab.loadtxt('%(od)s/%(os)spost_equal_weights.dat'),line=True,outfile='%(od)s/%(tri)s',col=('red','blue'),labels=settings.parameters,ranges=settings.plotRanges,truth=settings.plotTruth,autoscale=False,title='%(od)s')" \
+               #% {'od':outdir,'os':outstem,'tri':triangle},\
 
         remarks(log,notes)
         log.close()
 
+        print 'Parameters were:',expt.parameters
+        
         # Copy the stats file so it's legible on my iPhone, Google, email etc.
         stats_dotdat= '%(od)s/%(os)sstats.dat' % {'od':outdir,'os':outstem}
         stats_dottxt= '%(od)s/%(os)sstats.txt' % {'od':outdir,'os':outstem}
