@@ -34,21 +34,6 @@ class surveySetup(object):
             
 #-------------------------------------------------------------------------------
 
-class binSetup(object):
-    """
-    binScheme=binSetup(whichBins)
-    """
-    
-    def __init__(self,whichBins):
-        self.whichBins=whichBins
-        bins=numpy.array([-108.0,-80.0,-50.0,-30.0,-20.0,-10.0,-5.0,-2.5,-1.0,-0.5,0.0,0.5,1.0,2.5,5.0,7.5,10.0,15.0,20.0,25.0,30.0,40.0,50.0,65.0,85.0])
-
-        self.bins=bins
-        nbins=len(bins)-1
-        self.nbins=nbins
-
-#-------------------------------------------------------------------------------
-
 class model(object):
 
     """
@@ -142,9 +127,6 @@ class countModel(object):
         self.survey=surveySetup(whichSurvey,datafile,SURVEY_AREA,SURVEY_NOISE)
         if 'sim' in whichSurvey:
             self.survey.datafile=datafile
-        #self.binScheme=binSetup(whichBins)
-        #self.bins=self.binScheme.bins
-        #self.nbins=self.binScheme.nbins
         # Load the data and rederive the bins
         self.data,self.bins=self.loadData(self.survey.datafile)
         self.nbins=len(self.bins)-1
