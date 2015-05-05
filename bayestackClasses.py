@@ -163,9 +163,9 @@ class countModel(object):
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
                 elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
-                if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
+                if p.startswith('p'): priorsDict[p]=['U',POLYCOEFF_MIN,POLYCOEFF_MAX] # #coeffs
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=['LOG',1.0e3,1.0e10] # bins/poles/nodes
+                if p.startswith('b'): priorsDict[p]=['LOG',POLEMAPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:

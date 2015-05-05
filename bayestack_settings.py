@@ -949,6 +949,15 @@ C_MAX=1.0e7
 #SLOPE_MIN=SLOPE_MAX=SLOPE_TRUE    # delta fn on slope
 #======================================================
 
+# Priors for polynomial coefficients
+POLYCOEFF_MIN=-3.0
+POLYCOEFF_MAX=3.0
+
+# Priors for bin/pole/node amplitudes
+POLEAMPS_MIN=1.0e3
+POLEAMPS_MAX=1.0e10
+
+
 #D_MIN=1.0
 #D_MAX=100.0
 BETA_MIN=-2.5
