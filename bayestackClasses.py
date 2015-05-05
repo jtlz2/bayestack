@@ -24,7 +24,7 @@ class surveySetup(object):
           or 'sim' in whichSurvey:
             self.datafile=os.path.join(whichSurvey,'all_test_41_150120a.txt')
             if whichSurvey in ['sdss']:
-                self.datafile=os.path.join(whichSurvey,'sdss_dr12s2.txt')
+                self.datafile=os.path.join(whichSurvey,'sdss_dr12s1.txt')
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
             self.SURVEY_AREA=1.0 *(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
             self.SURVEY_NOISE=16.2 # uJy [median; mean=16.3]
