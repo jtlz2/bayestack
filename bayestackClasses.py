@@ -123,11 +123,8 @@ class countModel(object):
         self.priors=Priors()
         self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
 
-        # Set up data and bins
+        # Load the data and derive the bins
         self.survey=surveySetup(whichSurvey,datafile,SURVEY_AREA,SURVEY_NOISE)
-        if 'sim' in whichSurvey:
-            self.survey.datafile=datafile
-        # Load the data and rederive the bins
         self.data,self.bins=self.loadData(self.survey.datafile)
         self.nbins=len(self.bins)-1
 
