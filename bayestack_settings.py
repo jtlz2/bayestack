@@ -954,6 +954,7 @@ POLYCOEFF_MIN=-3.0
 POLYCOEFF_MAX=3.0
 
 # Priors for bin/pole/node amplitudes
+POLEAMPS_PRIOR='LOG'
 POLEAMPS_MIN=1.0e3
 POLEAMPS_MAX=1.0e10
 

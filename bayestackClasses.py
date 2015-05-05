@@ -159,13 +159,13 @@ class countModel(object):
             iSmax=-1
         for p in parameters:
             if self.kind=='ppl':
-                if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
+                if p.startswith('C'): priorsDict[p]=[C_PRIOR,C_MIN,C_MAX] # amplitude
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
                 elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
                 if p.startswith('p'): priorsDict[p]=['U',POLYCOEFF_MIN,POLYCOEFF_MAX] # #coeffs
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=['LOG',POLEMAPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
+                if p.startswith('b'): priorsDict[p]=[POLEAMPS_PRIOR,POLEAMPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:
