@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -N 150505a
+#PBS -N 150505b
 #PBS -o $HOME/bayestack/bayestack/chains_$PBS_JOBNAME/output-$PBS_JOBID.log
 #PBS -e $HOME/bayestack/bayestack/chains_$PBS_JOBNAME/output-$PBS_JOBID.err
 #PBS -S /bin/bash
