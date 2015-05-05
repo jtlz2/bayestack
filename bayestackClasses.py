@@ -160,7 +160,7 @@ class countModel(object):
             if self.kind=='ppl':
                 if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
-                elif p.startswith('a'): priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
+                elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
                 if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
             elif self.kind=='bins':

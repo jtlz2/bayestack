@@ -27,7 +27,7 @@ binStyle=1
 nlaws=3
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150504b' # based on 140123a
+outdir='chains_150505a' # based on 140123a
 
 simFamily='skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
@@ -180,7 +180,7 @@ batch_sim=False
 nbatch=1000
 
 NLAWS_SIM=0
-ALPHA_SIM=-2.0
+SLOPE_SIM=-2.0
 ##N_SIM=621114
 N_SIM=None
 ##N_SIM=100000
@@ -193,7 +193,7 @@ DUMP='fluxes.txt'
 #DUMP=None
 
 # FIRST large-area basis
-#ALPHA_SIM=-1.5
+#SLOPE_SIM=-1.5
 #C_SIM=20.0
 #SMIN_SIM=104.5
 #SMAX_SIM=715.0
@@ -201,14 +201,14 @@ DUMP='fluxes.txt'
 #AREA_SIM=100.0
 
 # VIDEO basis
-ALPHA_SIM=-1.94
+SLOPE_SIM=-1.94
 C_SIM=10.0
 SMIN_SIM=0.491
 SMAX_SIM=853.0
 NOISE_SIM=16.2
 AREA_SIM=1.0
 
-ALPHA_SIM=-1.95
+SLOPE_SIM=-1.95
 C_SIM=10.0
 SMIN_SIM=0.49
 SMAX_SIM=850
@@ -216,7 +216,7 @@ NOISE_SIM=16.2
 AREA_SIM=1.0
 
 # VIDEO-style simulation (pre-flight run)
-ALPHA_SIM=-1.95
+SLOPE_SIM=-1.95
 #C_SIM=10.0
 C_SIM=10.0
 SMIN_SIM=0.49
@@ -241,7 +241,7 @@ NSKADS=None#72000 # or None to use all available sources for simulation
 NSKADS_RESCALING=1.0
 
 # VIDEO > 5-sigma style sim (pre-flight run)
-#ALPHA_SIM=-1.95
+#SLOPE_SIM=-1.95
 #C_SIM=10.0
 #SMIN_SIM=50.0
 #SMAX_SIM=850.0
@@ -253,7 +253,7 @@ NSKADS_RESCALING=1.0
 
 
 # VVDF style sim
-#ALPHA_SIM=-2.0
+#SLOPE_SIM=-2.0
 #C_SIM=35.0
 #SMIN_SIM=80.0
 #SMAX_SIM=800.0
@@ -263,7 +263,7 @@ NSKADS_RESCALING=1.0
 
 # Ketron's Table 1
 #C_SIM=40.0
-#ALPHA_SIM=-1.50
+#SLOPE_SIM=-1.50
 #SMIN_SIM=1.00
 #SMAX_SIM=20.00
 #NOISE_SIM=10.0
@@ -509,28 +509,28 @@ else:
 
 # These are the truths
 C_FIRST=7.2
-ALPHA_FIRST=-2.11
+SLOPE_FIRST=-2.11
 SMIN_FIRST=104.5
 SMAX_FIRST=715.0
 
 C_RANDOM=4.5
-ALPHA_RANDOM=-1.66
+SLOPE_RANDOM=-1.66
 SMIN_RANDOM=1.03
 SMAX_RANDOM=872.5
 
 C_TARGET=19.7
-ALPHA_TARGET=-2.32
+SLOPE_TARGET=-2.32
 SMIN_TARGET=110.3
 SMAX_TARGET=839.3
 
-ALPHA_VVDF=-2.28
-CONVERT_VVDF=10**(-3*ALPHA_VVDF)*sqDeg2sr/1.0e3
+SLOPE_VVDF=-2.28
+CONVERT_VVDF=10**(-3*SLOPE_VVDF)*sqDeg2sr/1.0e3
 C_VVDF=57.54/CONVERT_VVDF
 SMIN_VVDF=80.0
 SMAX_VVDF=600.0
 
-ALPHA_VVDF2=-1.79
-CONVERT_VVDF2=10**(-3*ALPHA_VVDF2)*sqDeg2sr/1.0e3
+SLOPE_VVDF2=-1.79
+CONVERT_VVDF2=10**(-3*SLOPE_VVDF2)*sqDeg2sr/1.0e3
 C_VVDF2=75.86/CONVERT_VVDF2
 SMIN_VVDF2=600.0
 SMAX_VVDF2=119230.0
@@ -550,33 +550,33 @@ binstyle='video2014'
 #-------------------------------------------------------------------------------
 
 # Set up the truths
-C_TRUE=ALPHA_TRUE=SMIN_TRUE=SMAX_TRUE=BETA_TRUE=\
+C_TRUE=SLOPE_TRUE=SMIN_TRUE=SMAX_TRUE=BETA_TRUE=\
   S0_TRUE=GAMMA_TRUE=S1_TRUE=DELTA_TRUE=S2_TRUE=-99.0
 if dataset == 'cosmos':
     C_TRUE=C_TARGET
-    ALPHA_TRUE=ALPHA_TARGET
+    SLOPE_TRUE=SLOPE_TARGET
     SMIN_TRUE=SMIN_TARGET
     SMAX_TRUE=SMAX_TARGET
 elif dataset == 'first':
     C_TRUE=C_FIRST
-    ALPHA_TRUE=ALPHA_FIRST
+    SLOPE_TRUE=SLOPE_FIRST
     SMIN_TRUE=SMIN_FIRST
     SMAX_TRUE=SMAX_FIRST
 elif dataset == 'vvdf':
     C_TRUE=C_VVDF
-    ALPHA_TRUE=ALPHA_VVDF
+    SLOPE_TRUE=SLOPE_VVDF
     SMIN_TRUE=SMIN_VVDF
     SMAX_TRUE=SMAX_VVDF
 elif 'sim' in dataset or 'kmw' in dataset:
     C_TRUE=C_SIM
-    ALPHA_TRUE=ALPHA_SIM
+    SLOPE_TRUE=SLOPE_SIM
     SMIN_TRUE=SMIN_SIM
     SMAX_TRUE=SMAX_SIM
     BETA_TRUE=BETA_SIM
     S0_TRUE=S0_SIM
-    CONVERT_C_TRUE=10.0**(6.0*(ALPHA_SIM+2.5))
+    CONVERT_C_TRUE=10.0**(6.0*(SLOPE_SIM+2.5))
     C_TRUE=CONVERT_C_TRUE/C_SIM
-    print '-> Adjusted C_TRUE for ALPHA factor'
+    print '-> Adjusted C_TRUE for SLOPE factor'
 
 #-------------------------------------------------------------------------------
 
@@ -788,8 +788,8 @@ dbins=numpy.gradient(bins)
 
 #C_MIN=1.0
 #C_MAX=300.0
-#ALPHA_MIN=-2.5
-#ALPHA_MAX=-0.1
+#SLOPE_MIN=-2.5
+#SLOPE_MAX=-0.1
 #SMIN_MIN=1.0
 #SMIN_MAX=500.0
 #SMAX_MIN=500.0
@@ -812,11 +812,11 @@ else:
     C_MAX=5000.0
 C_MAX=100000.0
 
-ALPHA_MIN=-2.5
-ALPHA_MAX=-0.1
+SLOPE_MIN=-2.5
+SLOPE_MAX=-0.1
 
 #C_MIN=C_MAX=C_TRUE
-#ALPHA_MIN=ALPHA_MAX=ALPHA_TRUE
+#SLOPE_MIN=SLOPE_MAX=SLOPE_TRUE
 
 #SMIN_MIN=1.0        # uJy
 #SMIN_MAX=300.0
@@ -847,7 +847,7 @@ SMAX_MAX=1000.0
 #C_MAX=1.0e6
 #SMIN_MIN=SMIN_MAX=SMIN_TRUE       # delta fn on Smin
 #SMAX_MIN=SMAX_MAX=SMAX_TRUE      # delta fn on Smax
-#ALPHA_MIN=ALPHA_MAX=ALPHA_TRUE
+#SLOPE_MIN=SLOPE_MAX=SLOPE_TRUE
 #C_MIN=C_MAX=C_TRUE
 
 # Ketron Table 1 priors
@@ -934,19 +934,19 @@ C_MAX=1.0e7
 #SMIN_MIN=SMIN_MAX=1.0       # delta fn on Smin
 #SMAX_MIN=SMAX_MAX=20.0      # delta fn on Smax
 #C_MIN=C_MAX=40.0            # delta fn on C
-#ALPHA_MIN=ALPHA_MAX=-1.5    # delta fn on alpha
+#SLOPE_MIN=SLOPE_MAX=-1.5    # delta fn on slope
 
 #SMIN_MIN=SMIN_MAX=110.0       # delta fn on Smin
 #SMAX_MIN=SMAX_MAX=839.0      # delta fn on Smax
 #C_MIN=C_MAX=19.7            # delta fn on C
-#ALPHA_MIN=ALPHA_MAX=-2.32    # delta fn on alpha
+#SLOPE_MIN=SLOPE_MAX=-2.32    # delta fn on slope
 
 #======================================================
 # delta-fn settings:
 #SMIN_MIN=SMIN_MAX=SMIN_TRUE       # delta fn on Smin
 #SMAX_MIN=SMAX_MAX=SMAX_TRUE      # delta fn on Smax
 #C_MIN=C_MAX=C_TRUE            # delta fn on C
-#ALPHA_MIN=ALPHA_MAX=ALPHA_TRUE    # delta fn on alpha
+#SLOPE_MIN=SLOPE_MAX=SLOPE_TRUE    # delta fn on slope
 #======================================================
 
 #D_MIN=1.0
@@ -1008,33 +1008,33 @@ assert(SMAX_MIN >= SMIN_MAX), 'Smin/Smax priors must not overlap!'
 # Set up the parameters for triangle plots and reconstruction
 
 if nlaws == 1:
-    parameters=['C','alpha','Smin','Smax']
+    parameters=['C','slope','Smin','Smax']
     plotRanges={'C':[C_MIN,C_MAX],
-                'alpha':[ALPHA_MIN,ALPHA_MAX],
+                'slope':[SLOPE_MIN,SLOPE_MAX],
                 'Smin':[SMIN_MIN,SMIN_MAX],
                 'Smax':[SMAX_MIN,SMAX_MAX]}
     plotTruth={'C':C_TRUE,
-               'alpha':ALPHA_TRUE,
+               'slope':SLOPE_TRUE,
                'Smin':SMIN_TRUE,
                'Smax':SMAX_TRUE}
 elif nlaws == 2:
-    parameters=['C','alpha','Smin','Smax','beta','S0']
+    parameters=['C','slope','Smin','Smax','beta','S0']
     plotRanges={'C':[C_MIN,C_MAX],
-                'alpha':[ALPHA_MIN,ALPHA_MAX],
+                'slope':[SLOPE_MIN,SLOPE_MAX],
                 'Smin':[SMIN_MIN,SMIN_MAX],
                 'Smax':[SMAX_MIN,SMAX_MAX],
                 'beta':[BETA_MIN,BETA_MAX],
                 'S0':[S0_MIN,S0_MAX]}
     plotTruth={'C':C_TRUE,
-               'alpha':ALPHA_TRUE,
+               'slope':SLOPE_TRUE,
                'Smin':SMIN_TRUE,
                'Smax':SMAX_TRUE,
                'beta':BETA_TRUE,
                'S0':S0_TRUE}
 elif nlaws == 3:
-    parameters=['C','alpha','Smin','Smax','beta','S0','gamma','S1']
+    parameters=['C','slope','Smin','Smax','beta','S0','gamma','S1']
     plotRanges={'C':[C_MIN,C_MAX],
-                'alpha':[ALPHA_MIN,ALPHA_MAX],
+                'slope':[SLOPE_MIN,SLOPE_MAX],
                 'Smin':[SMIN_MIN,SMIN_MAX],
                 'Smax':[SMAX_MIN,SMAX_MAX],
                 'beta':[BETA_MIN,BETA_MAX],
@@ -1042,7 +1042,7 @@ elif nlaws == 3:
                 'gamma':[GAMMA_MIN,GAMMA_MAX],
                 'S1':[S1_MIN,S1_MAX]}
     plotTruth={'C':C_TRUE,
-               'alpha':ALPHA_TRUE,
+               'slope':SLOPE_TRUE,
                'Smin':SMIN_TRUE,
                'Smax':SMAX_TRUE,
                'beta':BETA_TRUE,
@@ -1050,9 +1050,9 @@ elif nlaws == 3:
                'gamma':GAMMA_TRUE,
                'S1':S1_TRUE}
 elif nlaws == 4:
-    parameters=['C','alpha','Smin','Smax','beta','S0','gamma','S1','delta','S2']
+    parameters=['C','slope','Smin','Smax','beta','S0','gamma','S1','delta','S2']
     plotRanges={'C':[C_MIN,C_MAX],
-                'alpha':[ALPHA_MIN,ALPHA_MAX],
+                'slope':[SLOPE_MIN,SLOPE_MAX],
                 'Smin':[SMIN_MIN,SMIN_MAX],
                 'Smax':[SMAX_MIN,SMAX_MAX],
                 'beta':[BETA_MIN,BETA_MAX],
@@ -1062,7 +1062,7 @@ elif nlaws == 4:
                 'delta':[DELTA_MIN,DELTA_MAX],
                 'S2':[S2_MIN,S2_MAX]}
     plotTruth={'C':C_TRUE,
-               'alpha':ALPHA_TRUE,
+               'slope':SLOPE_TRUE,
                'Smin':SMIN_TRUE,
                'Smax':SMAX_TRUE,
                'beta':BETA_TRUE,
@@ -1087,7 +1087,7 @@ POINTS_OFFSET=0.0
 #PLOT_XMAX=10000.0  # uJy
 PLOT_LABEL=''
 labelDict={'C':r'$C/$Jy$^{-1}$sr$^{-1}$',\
-           'alpha':r'$\alpha$','Smin':r'$S_{\mathrm{min}}$/$\mu$Jy',\
+           'slope':r'$\alpha$','Smin':r'$S_{\mathrm{min}}$/$\mu$Jy',\
            'Smax':r'$S_{\mathrm{max}}$/$\mu$Jy','beta':r'$\beta$',\
            'S0':r'$S_0/\mu$Jy','gamma':r'$\gamma$','S1':r'$S_1/\mu$Jy',\
            'delta':r'$\delta$','S2':r'$S_2/\mu$Jy','sigma':r'$\sigma/\mu$Jy'}
