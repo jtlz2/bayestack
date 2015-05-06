@@ -120,11 +120,6 @@ def main():
 
     if master:
         stopTime=time.strftime('%X %x %Z')
-
-        #print '# Bin occupancies:'
-        #for ibin in xrange(nbins-1):
-        #    print ibin+1,bins[ibin],bins[ibin+1],ks[ibin]
-
         t1 = time.time()
         dt=t1-t0
 
