@@ -123,6 +123,9 @@ def main():
         t1 = time.time()
         dt=t1-t0
 
+        # Touch the output dir so Dropbox detects it
+        touch(outdir)
+        
         notes=['Time then was %s' % startTime,\
                'Time now is %s' % stopTime,\
                'Execution took %6.4f sec (~ %i min) with %i cores' % \
