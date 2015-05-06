@@ -75,7 +75,7 @@ def main():
         dump_variable_values(set_module,variablesf,verbose=False)
 
         startTime = time.strftime('%X %x %Z')
-        shutil.copy(param_file,outdir)
+        shutil.copy(param_file,os.path.join(outdir,'bayestack_settings.py'))
         shutil.copy(datafile,outdir)
         notes=['Time now is %s' % startTime,\
                'Settings file: %s' % param_file,\
