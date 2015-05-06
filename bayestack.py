@@ -123,7 +123,7 @@ def main():
         t1 = time.time()
         dt=t1-t0
 
-        # Touch the output dir so Dropbox detects it
+        # Touch the output dir so Dropbox picks it up
         touch(outdir)
         
         notes=['Time then was %s' % startTime,\
@@ -137,10 +137,6 @@ def main():
                'Now execute:',\
                '\n./plot.py %s' % outdir,\
                'and\n./reconstruct.py %s' % outdir]
-               #'import pylab; from utils import *; import contour_plot',\
-               #'from %s import settings' % outdir,\
-               #"contour_plot.contourTri(pylab.loadtxt('%(od)s/%(os)spost_equal_weights.dat'),line=True,outfile='%(od)s/%(tri)s',col=('red','blue'),labels=settings.parameters,ranges=settings.plotRanges,truth=settings.plotTruth,autoscale=False,title='%(od)s')" \
-               #% {'od':outdir,'os':outstem,'tri':triangle},\
 
         remarks(log,notes)
         log.close()
