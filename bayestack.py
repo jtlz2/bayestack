@@ -7,7 +7,7 @@ mpirun -np 4 ./bayestack.py bayestack_settings.py
 
 """
 
-import os,time,shutil
+import os,sys,time,shutil
 import importlib
 import pymultinest
 from bayestack_settings import *
@@ -18,12 +18,13 @@ import dill
 MPI._p_pickle.dumps = dill.dumps
 MPI._p_pickle.loads = dill.loads
 
+param_file=sys.argv[-1]
+
 #-------------------------------------------------------------------------------
 
 def main():
 
-    settingsf='bayestack_settings'
-    param_file='%s.py'%settingsf
+    settingsf=param_file.split('.')[-2]
     expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
 
     # Set up MPI
