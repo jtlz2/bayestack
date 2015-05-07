@@ -50,6 +50,17 @@ def poissonLhood(data,realisation,silent=True):
 
 #-------------------------------------------------------------------------------
 
+def interpola(v, x, y,kind='linear'):
+    if v <= x[0]:
+        return y[0]+(y[1]-y[0])/(x[1]-x[0])*(v-x[0])
+    elif v >= x[-1]:
+        return y[-2]+(y[-1]-y[-2])/(x[-1]-x[-2])*(v-x[-2])
+    else:
+        f = interp1d(x, y, kind=kind) 
+        return f(v)
+
+#-------------------------------------------------------------------------------
+
 def extrap1d(interpolator):
     """
     http://stackoverflow.com/questions/2745329/how-to-make-scipy-interpolate-give-an-extrapolated-result-beyond-the-input-range
