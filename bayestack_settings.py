@@ -12,6 +12,7 @@ context='cmdline'
 if    'reconstruct' in exe: context='r'
 elif  'simulate'    in exe: context='s'
 elif  'lumfunc'     in exe: context='l'
+elif  'bayestack'   in exe: context='y'
 elif  'plot'        in exe: context='p'
 elif  'binner'      in exe: context='b'
 elif  'extractor'   in exe: context='e'
@@ -27,14 +28,14 @@ binStyle=1
 nlaws=3
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150505a' # based on 140123a
+outdir='chains_150507a' # based on 140123a
 
-simFamily='skads' # 'ppl' 'poly' 'bins' 'test'
+simFamily= 'array' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
 SMAX_SIM=85.0 # uJy
 simParams=[SMIN_SIM,SMAX_SIM]
 simParamsList=['S0','S1']
-simBins=numpy.linspace(-60.0,100.0,26)
+simBins=numpy.linspace(-65.0,85.0,26)
 SEED_SIM=1234
 NSIM=72000
 NOISE_SIM=16.2 # uJy
@@ -53,7 +54,7 @@ RESUME=False # Turn checkpointing on
 nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
-#outdir='chains_150504b' # based on 140123a
+#outdir='chains_150506a' # based on 140123a
 run_num=outdir.split('_')[-1]
 #if context=='l': outdir=os.path.join('/home/jtlz2/bartolomeu/output',outdir)
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
@@ -67,11 +68,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150504b'
+dataset='sims/150507a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150504b'
+run_num_run='150507a'
 #dataset='first'
 #dataset='mca'
 
@@ -470,7 +471,7 @@ if os.path.exists(datafile):
         datafile='%s/sim_extracted.txt' % dataset
     data=numpy.genfromtxt(datafile)
 
-    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca']:
+    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca','sdss']:
         bin_medians = data[:,2] # uJy [not that they are ever used -?]
         # In the table file, counts are for that SURVEY_AREA (so process THOSE)
         ksRaw       = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
@@ -499,7 +500,8 @@ if os.path.exists(datafile):
     else:
         ks=ksRaw
 else:
-    print '***Cannot find an existing data file!! (%s)' % datafile
+    if context=='y':
+        print '***Cannot find an existing data file!! (%s)' % datafile
     if context=='l':
         x=os.path.join(dataset,'crash.txt')
         open(x, 'a').close()
