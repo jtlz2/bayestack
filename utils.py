@@ -5,7 +5,7 @@ Also includes some useful constants
 
 import os
 import numpy
-#import scipy
+import scipy
 from scipy import stats
 from scipy.interpolate import interp1d
 from profile_support import profile
@@ -49,6 +49,29 @@ def poissonLhood(data,realisation,silent=True):
     return loglike
 
 #-------------------------------------------------------------------------------
+
+def extrap1d(interpolator):
+    """
+    http://stackoverflow.com/questions/2745329/how-to-make-scipy-interpolate-give-an-extrapolated-result-beyond-the-input-range
+    """
+    xs = interpolator.x
+    ys = interpolator.y
+
+    def pointwise(x):
+        if x < xs[0]:
+            return ys[0]+(x-xs[0])*(ys[1]-ys[0])/(xs[1]-xs[0])
+        elif x > xs[-1]:
+            return ys[-1]+(x-xs[-1])*(ys[-1]-ys[-2])/(xs[-1]-xs[-2])
+        else:
+            return interpolator(x)
+
+    def ufunclike(xs):
+        return scipy.array(map(pointwise, scipy.array(xs)))
+
+    return ufunclike
+
+#-------------------------------------------------------------------------------
+
 
 def interpol(func,x):
     """
