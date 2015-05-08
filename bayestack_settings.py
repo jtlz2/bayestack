@@ -25,10 +25,10 @@ print 'Context is %s' % context
 
 #dataset='video'
 binStyle=1
-nlaws=3
+nlaws=4
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150507a' # based on 140123a
+outdir='chains_150508b' # based on 140123a
 
 simFamily= 'array' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
@@ -54,7 +54,7 @@ RESUME=False # Turn checkpointing on
 nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
-#outdir='chains_150506a' # based on 140123a
+#outdir='chains_150508a' # based on 140123a
 run_num=outdir.split('_')[-1]
 #if context=='l': outdir=os.path.join('/home/jtlz2/bartolomeu/output',outdir)
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
@@ -68,11 +68,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150507a'
+dataset='sims/150508b'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150507a'
+run_num_run='150508b'
 #dataset='first'
 #dataset='mca'
 
@@ -234,7 +234,8 @@ SMIN_SKADS=0.01 # uJy
 SMAX_SKADS=85.0 # uJy
 #SMAX_SKADS=600000.0 # uJy
 
-SIM_DO_CAT_NOISE=True
+
+SIM_DO_CAT_NOISE=False
 SKADS_GO_VIA_MAP=True
 NSKADS=None#72000 # or None to use all available sources for simulation
 #NSKADS_RESCALING=373936.0/71962.0
@@ -271,8 +272,8 @@ NSKADS_RESCALING=1.0
 
 D_SIM=-99.0
 BETA_SIM=S0_SIM=GAMMA_SIM=S1_SIM=DELTA_SIM=S2_SIM=-99.0
-if NLAWS_SIM==0:
-    print 'Running SKADS sim'
+#if NLAWS_SIM==0:
+#    print 'Running SKADS sim'
 if NLAWS_SIM==1:
     BETA_SIM=-99.0
     S0_SIM=-99.0
@@ -1131,3 +1132,4 @@ print 'MOTD: %s' % MOTD
 
 #-------------------------------------------------------------------------------
 
+#NOISE_SIM=None
