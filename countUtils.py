@@ -208,7 +208,7 @@ def simulate(family,params,paramsList,bins,\
         print 'Draws (noiseless) are in %s' % puredumpf
 
     # Now add noise if requested
-    if noise is not None:
+    if SIM_DO_CAT_NOISE:
         numpy.random.seed(seed=SEED_SIM)
         F+=numpy.random.normal(0.0,noise,N)
 
