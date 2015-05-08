@@ -2,14 +2,20 @@
 Support functions for bayestack, bayestackClasses and lumfunc
 """
 
+import sys
+import importlib
 import numpy
 from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
 from scipy.interpolate import interp1d
 from scipy.special import erf
 from profile_support import profile
-from utils import sqrtTwo,find_nearest,medianArray,interpol,buildCDF,Jy2muJy
-from bayestack_settings import * # <-- generalize, localize
+from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,interpol,buildCDF,Jy2muJy,interpola
+
+param_file=sys.argv[-1]
+settingsf=param_file.split('.')[-2]
+set_module=importlib.import_module(settingsf)
+globals().update(set_module.__dict__)
 
 #-------------------------------------------------------------------------------
 
@@ -20,7 +26,7 @@ from bayestack_settings import * # <-- generalize, localize
 def simulate(family,params,paramsList,bins,\
              seed=None,N=None,noise=None,output=None,\
              dump=None,version=2,verbose=False,area=None,\
-             skadsf=None,pole_posns=None):
+             skadsf=None,pole_posns=None,simarrayf=None):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -73,7 +79,9 @@ def simulate(family,params,paramsList,bins,\
     test:
     ----
 
-    
+    array:
+    -----
+
 
     """
 
@@ -115,13 +123,27 @@ def simulate(family,params,paramsList,bins,\
         function = lambda S:polyFunc(S,S_1,Smin,Smax,coeffs)
 
     elif family=='bins':
+        Smin=params[paramsList.index('S0')]
+        Smax=params[paramsList.index('S1')]
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
         if pole_posns is None:
-            pole_posns=numpy.logspace(-1,numpy.log10(85.0),len(coeffs)+1)
+            pole_posns=numpy.logspace(numpy.log10(Smin),numpy.log10(Smax),len(coeffs)+1)
         assert(len(coeffs)==len(pole_posns)-1), '***Mismatch in number of poles!!'
         Smin=pole_posns[0]
         Smax=pole_posns[-1]
         function = lambda S:polesFunc(S,pole_posns,Smin,Smax,coeffs)
+
+    elif family=='array':
+        Smin=params[paramsList.index('S0')]
+        Smax=params[paramsList.index('S1')]
+        if simarrayf is None:
+            simarrayf='sims/150507a/sim_extracted.txt'
+        dataMatrix=numpy.genfromtxt(simarrayf)
+        dndsInArr=dataMatrix[:,4]
+        binsDogleg=numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
+        binsMedian=dataMatrix[:,2]
+        assert((medianArray(binsDogleg)==binsMedian).all()), '***bin mismatch!'
+        function=lambda S:arrayFunc(S,binsMedian,dndsInArr,Smin,Smax)
 
     elif family=='skads':
         Smin=params[paramsList.index('S0')]
@@ -145,7 +167,6 @@ def simulate(family,params,paramsList,bins,\
         gridlength=1000000 # Good enough to prevent bleeding at the edges
         Ss=numpy.linspace(Smin,Smax,gridlength)
         values=numpy.array([function(ix) for ix in Ss])
-
         # Build the CDF
         CDF=buildCDF(values)
         # Create the interpolant object
@@ -155,7 +176,7 @@ def simulate(family,params,paramsList,bins,\
         print Smin,sampler(0.0)
         print Smax,sampler(0.99999)
         assert(numpy.isclose(sampler(0.0),Smin)[0])
-        assert(numpy.isclose(sampler(0.99999),Smax,atol=1.0e-3)[0])
+#        assert(numpy.isclose(sampler(0.99999),Smax,atol=1.0e-3)[0])
 
         # Draw the random deviates
         R = numpy.random.rand(N)
@@ -312,7 +333,6 @@ def calculateDnByDs(bins,counts,eucl=False,verbose=False,idl_style=True,
     return dn_by_ds
 
 #-------------------------------------------------------------------------------
-
 
 @profile
 def powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin,Smax,\
@@ -488,6 +508,21 @@ def polyFunc(S,S_1,Smin,Smax,c):
         exponent += c[n] * (numpy.log10(S/S_1)**n)
 
     return 10**exponent
+
+#-------------------------------------------------------------------------------
+
+@profile
+def arrayFunc(S,binCentres,dndsInArray,Smin,Smax):
+    """
+    Truncate outside [Smin,Smax]
+    AND
+    linearly extrapolate outside bin centres
+    """
+
+    if S <= Smin or S >= Smax:
+        return 0.0
+
+    return interpola(S,binCentres,dndsInArray,kind='linear')
 
 #-------------------------------------------------------------------------------
 
