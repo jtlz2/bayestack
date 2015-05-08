@@ -148,6 +148,7 @@ def main():
         stats_dotdat= '%(od)s/%(os)sstats.dat' % {'od':outdir,'os':outstem}
         stats_dottxt= '%(od)s/%(os)sstats.txt' % {'od':outdir,'os':outstem}
         shutil.copy(stats_dotdat,stats_dottxt)
+        print 'Run finished.'
         
     return 0
 
