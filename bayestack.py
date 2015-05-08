@@ -48,6 +48,8 @@ def main():
     if master:
         try:
             os.mkdir(outdir)
+            # Fix permissions
+            os.chmod(outdir,0755)
         except OSError:
             pass
 
