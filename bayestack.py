@@ -10,7 +10,6 @@ mpirun -np 4 ./bayestack.py bayestack_settings.py
 import os,sys,time,shutil
 import importlib
 import pymultinest
-from bayestack_settings import *
 from bayestackClasses import countModel
 from utils import touch,remark,remarks,dump_variable_values
 from mpi4py import MPI
@@ -18,7 +17,13 @@ import dill
 MPI._p_pickle.dumps = dill.dumps
 MPI._p_pickle.loads = dill.loads
 
-param_file=sys.argv[-1]
+__name_cached=__name__
+if __name__=='__main__':
+    param_file=sys.argv[-1]
+    settingsf=param_file.split('.')[-2]
+    set_module=importlib.import_module(settingsf)
+    globals().update(set_module.__dict__)
+    __name__=__name_cached
 
 #-------------------------------------------------------------------------------
 
