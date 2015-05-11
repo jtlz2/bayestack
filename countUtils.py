@@ -136,21 +136,22 @@ def simulate(family,params,paramsList,bins,\
     elif family=='array':
         Smin=params[paramsList.index('S0')]
         Smax=params[paramsList.index('S1')]
-        if simarrayf is None:
-            simarrayf='sims/150507a/sim_extracted.txt'
+        assert(simarrayf is not None), '***Need to specify an input simulation!'
+        print 'Reading %s...' % simarrayf
         dataMatrix=numpy.genfromtxt(simarrayf)
         dndsInArr=dataMatrix[:,4]
         binsDogleg=numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
         binsMedian=dataMatrix[:,2]
         assert((medianArray(binsDogleg)==binsMedian).all()), '***bin mismatch!'
+        Smin=binsDogleg[0]; Smax=binsDogleg[-1]
         function=lambda S:arrayFunc(S,binsMedian,dndsInArr,Smin,Smax)
 
     elif family=='skads':
         Smin=params[paramsList.index('S0')]
         Smax=params[paramsList.index('S1')]
         function=None
-        if skadsf is None:
-            skadsf='skads/1sqdeg_0p02uJy.txt'
+        assert(skadsf is not None), '***Need to specify input SKADS file!'
+        print 'Reading %s...' % skadsf
         R=Jy2muJy*10**numpy.genfromtxt(skadsf)
         numpy.ndarray.sort(R)
         iRmin,Rmin=find_nearest(R,Smin)

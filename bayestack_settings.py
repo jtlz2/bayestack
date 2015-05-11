@@ -28,9 +28,9 @@ binStyle=1
 nlaws=4
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150508b' # based on 140123a
+outdir='chains_150511a' # based on 140123a
 
-simFamily= 'array' # 'skads' # 'ppl' 'poly' 'bins' 'test'
+simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
 SMAX_SIM=85.0 # uJy
 simParams=[SMIN_SIM,SMAX_SIM]
@@ -42,9 +42,9 @@ NOISE_SIM=16.2 # uJy
 dump='R.txt'
 output='dummy.txt'
 verbose=True
-skadsf='skads/1sqdeg_0p02uJy.txt'
-
-
+skadsFile='skads/1sqdeg_0p02uJy.txt'
+simArrayFile='sims/150511a/sim_noiseless.txt'
+simPolePosns=None
 
 #-------------------------------------------------------------------------------
 
@@ -68,11 +68,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150508b'
+dataset='sims/150511a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150508b'
+run_num_run='150511a'
 #dataset='first'
 #dataset='mca'
 

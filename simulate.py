@@ -46,7 +46,8 @@ def main():
     r=simulate(simFamily,simParams,simParamsList,\
                           simBins,seed=SEED_SIM,N=NSIM,area=AREA_SIM,\
                           noise=NOISE_SIM,dump=DUMP,output=OUTPUT,\
-                          verbose=True)
+                          verbose=True,skadsf=skadsFile,\
+                          simarrayf=simArrayFile,pole_posns=simPolePosns)
         
     return 0
 
