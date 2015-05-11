@@ -7,7 +7,8 @@ mpirun -np 4 ./bayestack.py bayestack_settings.py
 
 """
 
-import os,sys,time,shutil
+import os,sys
+import time,shutil,glob
 import importlib
 import pymultinest
 from bayestackClasses import countModel
@@ -155,6 +156,11 @@ def main():
         stats_dotdat= '%(od)s/%(os)sstats.dat' % {'od':outdir,'os':outstem}
         stats_dottxt= '%(od)s/%(os)sstats.txt' % {'od':outdir,'os':outstem}
         shutil.copy(stats_dotdat,stats_dottxt)
+
+        # Now make all the files world readable
+        globlist=glob.glob(os.path.join(outdir,'*'))
+        [os.chmod(f,644) for f in globlist]
+        
         print 'Run finished.'
         
     return 0
