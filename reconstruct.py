@@ -46,8 +46,8 @@ def main():
     nsamp=x.shape[0]
     ncols=x.shape[1] # The fifth [seventh] column is the posterior value
     # There must be a better way, but:
-    z=numpy.zeros((nsamp,ncols+nbins-1))
-    z[:,:-(nbins-1)]=x
+    z=numpy.zeros((nsamp,ncols+expt.nbins-1))
+    z[:,:-(expt.nbins-1)]=x
     # Shift posterior values to end
     z[:,-1]=z[:,ncols-1] # Copy...
     z[:,ncols-1]=0.0     # ...and blank
@@ -61,23 +61,20 @@ def main():
     summary=numpy.genfromtxt(summf)[-1,:]
     drawmap=summary[-(ncols+1):-2]
 
-    #print '--> Calculating *ML* reconstruction'
-    #drawmap=drawml
+    if False:
+        print '--> Calculating *ML* reconstruction'
+        drawmap=drawml
     power=2.5
-    BM=medianArray(bins)
-    NB=len(BM)
 
-    ymap=numpy.zeros(NB)
-    dataMAP=expt.realise(drawmap)
-    for ibin in xrange(NB):
-        ymap[ibin]=dataMAP[ibin]
+    #ymap=numpy.zeros(expt.nbins)
+    # Need to convert drawmap into correct units etc.
+    ymap=expt.realise(drawmap)
 
     for isamp in xrange(nsamp):
         draw=z[isamp,:]
         dataRealisation=expt.realise(draw)
-        for ibin in xrange(NB):
-            S_mJy=BM[ibin] # mJy
-            S_uJy=1000.0*S_mJy # mJy -> uJy
+        for ibin in xrange(expt.nbins):
+            S_uJy=expt.binsMedian[ibin] # mJy
             S_Jy=S_uJy/1.0e6 # uJy -> Jy
             z[isamp,ncols-1+ibin]=dataRealisation[ibin]
 
@@ -90,11 +87,11 @@ def main():
     numpy.savetxt(reconf,recons)
 
     # Generate stats here...
-    s=numpy.zeros((nbins-1,6))
-    s[:,0]=BM
+    s=numpy.zeros((expt.nbins-1,6))
+    s[:,0]=expt.binsMedian
 
     print '# ibin flux fit low high dlower dupper skew kurtosis'
-    for ibin in xrange(nbins-1):
+    for ibin in xrange(expt.nbins-1):
         x = recons[:,ibin]
         # Remove NaNs from stats vectors
         # http://stackoverflow.com/questions/11620914/removing-nan-values-from-an-array
