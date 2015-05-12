@@ -20,7 +20,7 @@ import pylab
 import pofd
 
 param_file=sys.argv[-1]
-setf='%s.settings' % param_file
+setf='%s.bayestack_settings' % param_file
 #try:
 #    execfile(param_file)
 #except IOError:
