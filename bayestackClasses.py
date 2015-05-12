@@ -1,3 +1,28 @@
+"""
+Support classes for bayestack etc.
+
+Jonathan Zwart
+May 2015
+
+Especially countModel, e.g.
+
+expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
+
+then exposes
+
+expt.parameters
+expt.data
+expt.realise()
+expt.logprior()
+expt.loglike()
+expt.dn_by_ds()
+expt.confusionNoiseSquared()
+
+etc.
+
+"""
+
+
 import os
 import importlib
 import numpy

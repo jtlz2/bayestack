@@ -1,5 +1,9 @@
 """
 Support functions for bayestack, bayestackClasses and lumfunc
+
+Jonathan Zwart
+May 2015
+
 """
 
 import os,sys
