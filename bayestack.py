@@ -159,8 +159,11 @@ def main():
 
         # Now make all the files world readable
         globlist=glob.glob(os.path.join(outdir,'*'))
+        print 'Globlist:'
+        print globlist
         [os.chmod(f,644) for f in globlist]
-        
+        print 'End Globlist'
+
         print 'Run finished.'
         
     return 0
