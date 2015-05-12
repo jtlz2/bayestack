@@ -14,6 +14,7 @@ from profile_support import profile
 from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,interpol,buildCDF,Jy2muJy,interpola
 
 potential_settings=glob.glob(os.path.join(sys.argv[-1],'*settings*py'))
+print potential_settings
 assert(len(potential_settings)==1), '***More than one potential settings file!'
 settingsf='.'.join([sys.argv[-1],potential_settings[0].split('/')[-1].split('.')[-2]])
 set_module=importlib.import_module(settingsf)
@@ -563,6 +564,7 @@ def calculateI(params,paramsList,bins=None,area=None,
 
     """
     pn_integral, but for various different function families
+    Flux arguments to this function are in uJy
     """
 
     if family=='ppl':
