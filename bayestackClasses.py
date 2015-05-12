@@ -12,6 +12,9 @@ then exposes
 
 expt.parameters
 expt.data
+expt.bins
+expt.nbins
+expt.binsMedian
 expt.realise()
 expt.logprior()
 expt.loglike()
