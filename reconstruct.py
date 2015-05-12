@@ -79,7 +79,7 @@ def main():
     # Save the raw reconstructions
     reconf='recon_raw.txt'
     reconf=os.path.join(outdir,reconf)
-    recons=z[:,ncols-1:-1]
+    recons=z[:,ncols-1:]
     numpy.savetxt(reconf,recons)
 
     # Generate stats here...
