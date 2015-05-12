@@ -18,7 +18,7 @@ if 'chains' in sys.argv[-1]:
     assert(len(potential_settings)==1), '***More than one potential settings file!'
     settingsf='.'.join([sys.argv[-1],potential_settings[0].split('/')[-1].split('.')[-2]])
 else:
-    settingsf=sys.argv[-1]
+    settingsf=sys.argv[-1].split('.')[-2]
 
 set_module=importlib.import_module(settingsf)
 globals().update(set_module.__dict__)
