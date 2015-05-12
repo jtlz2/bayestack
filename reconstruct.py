@@ -14,6 +14,7 @@ Usage:
 import os,sys
 import importlib
 import numpy
+from scipy import stats
 import pymultinest
 from bayestackClasses import countModel
 from utils import sqDeg2sr,calculate_confidence,peak_confidence,medianArray
@@ -64,21 +65,16 @@ def main():
     if False:
         print '--> Calculating *ML* reconstruction'
         drawmap=drawml
+
+    # Convert drawmap into correct units etc.
     power=2.5
-
-    #ymap=numpy.zeros(expt.nbins)
-    # Need to convert drawmap into correct units etc.
-    ymap=expt.realise(drawmap)
-
+    #?*sqDeg2sr*expt.survey.SURVEY_AREA
+    ymap=expt.realise(expt.convertPosterior(drawmap,power))
     for isamp in xrange(nsamp):
-        draw=z[isamp,:]
-        dataRealisation=expt.realise(draw)
-        for ibin in xrange(expt.nbins):
-            S_uJy=expt.binsMedian[ibin] # mJy
-            S_Jy=S_uJy/1.0e6 # uJy -> Jy
-            z[isamp,ncols-1+ibin]=dataRealisation[ibin]
+        z[isamp,ncols-1:]=expt.realise(expt.convertPosterior(z[isamp,:],power))
 
-    z[numpy.where(z==0.0)]='NaN' # 0.0 -> NaN blanking
+    # Blanking, 0.0 -> NaN
+    z[numpy.where(z==0.0)]='NaN'
 
     # Save the raw reconstructions
     reconf='recon_raw.txt'
@@ -87,11 +83,11 @@ def main():
     numpy.savetxt(reconf,recons)
 
     # Generate stats here...
-    s=numpy.zeros((expt.nbins-1,6))
+    s=numpy.zeros((expt.nbins,6))
     s[:,0]=expt.binsMedian
 
     print '# ibin flux fit low high dlower dupper skew kurtosis'
-    for ibin in xrange(expt.nbins-1):
+    for ibin in xrange(expt.nbins):
         x = recons[:,ibin]
         # Remove NaNs from stats vectors
         # http://stackoverflow.com/questions/11620914/removing-nan-values-from-an-array
