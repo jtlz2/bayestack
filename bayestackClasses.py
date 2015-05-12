@@ -6,7 +6,7 @@ from scipy import integrate
 from scipy.special import erf
 from priors import Priors
 import countUtils
-from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood
+from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood,medianArray
 #import cosmolopy
 
 #-------------------------------------------------------------------------------
@@ -127,6 +127,7 @@ class countModel(object):
         self.survey=surveySetup(whichSurvey,datafile,SURVEY_AREA,SURVEY_NOISE)
         self.data,self.bins=self.loadData(self.survey.datafile)
         self.nbins=len(self.bins)-1
+        self.binsMedian=medianArray(self.bins)
 
         return
 
