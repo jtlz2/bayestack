@@ -200,6 +200,19 @@ class countModel(object):
         e=0.5*(erf((S-Sbinlow)/(sqrtTwo*sigma)) - erf((S-Sbinhigh)/(sqrtTwo*sigma)))
         return e
 
+    def convertPosterior(self,draw,power):
+        for p in self.parameters:
+            #if p.startswith('S') or p.startswith('n'): # uJy -> Jy
+            #    self.currentPhysParams[self.parameters.index(p)] \
+            #      = draw[self.parameters.index(p)]/1.0e6
+            if p.startswith('a'): # x S^{power}
+                self.currentPhysParams[self.parameters.index(p)] \
+                  = draw[self.parameters.index(p)]+power
+            else: # pass
+                self.currentPhysParams[self.parameters.index(p)] \
+                  = draw[self.parameters.index(p)]
+        return self.currentPhysParams
+
     def realise(self,cube):
         self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
                 family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA,\
