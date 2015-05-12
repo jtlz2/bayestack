@@ -2,8 +2,9 @@
 Support functions for bayestack, bayestackClasses and lumfunc
 """
 
-import sys
+import os,sys
 import importlib
+import glob
 import numpy
 from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
@@ -12,17 +13,15 @@ from scipy.special import erf
 from profile_support import profile
 from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,interpol,buildCDF,Jy2muJy,interpola
 
-param_file=sys.argv[-1]
-settingsf=param_file.split('.')[-2]
+potential_settings=glob.glob(os.path.join(sys.argv[-1],'*settings*py'))
+assert(len(potential_settings)==1), '***More than one potential settings file!'
+settingsf='.'.join([sys.argv[-1],potential_settings[0].split('/')[-1].split('.')[-2]])
 set_module=importlib.import_module(settingsf)
 globals().update(set_module.__dict__)
 
 #-------------------------------------------------------------------------------
 
 @profile
-#def simulate(family,params,bins,nsources=None,noise=None,\
-#             output='temp.txt',seed=None,dump=False,\
-#             verbose=False,output=None,version=2):
 def simulate(family,params,paramsList,bins,\
              seed=None,N=None,noise=None,output=None,\
              dump=None,version=2,verbose=False,area=None,\
@@ -144,7 +143,15 @@ def simulate(family,params,paramsList,bins,\
         binsMedian=dataMatrix[:,2]
         assert((medianArray(binsDogleg)==binsMedian).all()), '***bin mismatch!'
         Smin=binsDogleg[0]; Smax=binsDogleg[-1]
+        if not SIM_DO_CAT_NOISE:
+            Smin=-5.01#-2.01 # binsMedian[0]
+        print dndsInArr
         function=lambda S:arrayFunc(S,binsMedian,dndsInArr,Smin,Smax)
+
+        #function2=lambda S:arrayFunc(S,binsMedian,dndsInArr,Smin,Smax)
+        #for x in numpy.linspace(-10.0,100.0,500):
+        #    print x,function(x),function2(x)
+        #sys.exit(0)
 
     elif family=='skads':
         Smin=params[paramsList.index('S0')]
@@ -176,7 +183,7 @@ def simulate(family,params,paramsList,bins,\
         # Test that the sampler extrema match
         print Smin,sampler(0.0)
         print Smax,sampler(0.99999)
-        assert(numpy.isclose(sampler(0.0),Smin)[0])
+#        assert(numpy.isclose(sampler(0.0),Smin)[0])
 #        assert(numpy.isclose(sampler(0.99999),Smax,atol=1.0e-3)[0])
 
         # Draw the random deviates
@@ -188,14 +195,14 @@ def simulate(family,params,paramsList,bins,\
         # BOTH N2C and C2N are useful
         # Integrate the original function
         A=integrate.quad(function,Smin,Smax)[0]
-        print A,N
+#        print A,N
         # Bin the random samples
         bbins=numpy.linspace(Smin,Smax,100)
         E=numpy.histogram(F,bins=bbins)[0]
         # And calculate their area
         G=integrate.trapz(E,x=medianArray(bbins))
-        print G
-        print G/A
+#        print G
+#        print G/A
         # Gunpowder, treason and....
         #plt.xlim(0.0,100.0)
         #plt.xlabel('S / $\mu$Jy')
