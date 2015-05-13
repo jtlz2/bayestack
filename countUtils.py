@@ -286,7 +286,7 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
             if version < 2:
                 line='%f %i %i' % (median_bins[ibin],-99.0,counts[ibin])
             else:
-                line='%f %f %f %i %e %f %f %f %f %i %i %i' % \
+                line='%f %f %f %i %e %e %e %e %f %i %i %i' % \
                   (bins[ibin],bins[ibin+1],median_bins[ibin],round(counts[ibin]),\
                    dn_by_ds[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_eucl[ibin]/(sqDeg2sr*area),\
