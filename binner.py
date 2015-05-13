@@ -5,7 +5,7 @@ This is binner.py
 Jonathan Zwart
 May 2015
 
-Bin data set for bayestack.py/lumfunc.py
+Bin data set for bayestack.py
 
 Usage:
 
@@ -14,17 +14,14 @@ Usage:
 """
 
 import os,sys,shutil
-import ctypes
-import time,threading
 import importlib
 import numpy
 from math import exp,log,log10,sqrt,isinf,isnan
 from scipy import integrate,stats
 from profile_support import profile
 from utils import *
-import lumfunc
+import countUtils
 import matplotlib.pyplot as plt
-import matplotlib.mlab as mlab
 
 __name_cached=__name__
 param_file=sys.argv[-1]
@@ -130,18 +127,17 @@ def main():
     #   -> These are for SURVEY_AREA sq. deg.
     # idl_style or not....? - NO
     idl_s=False
-    dn_by_ds=lumfunc.calculateDnByDs(1.0e-6*bins,counts,eucl=False,idl_style=idl_s)
+    dn_by_ds=countUtils.calculateDnByDs(1.0e-6*bins,counts,eucl=False,idl_style=idl_s)
         #/(sqDeg2sr*SURVEY_AREA)
         #*10**6.0/(SURVEY_AREA*sqDeg2sr)
-    dn_by_ds_eucl=lumfunc.calculateDnByDs(1.0e-6*bins,counts,eucl=True,idl_style=idl_s)
+    dn_by_ds_eucl=countUtils.calculateDnByDs(1.0e-6*bins,counts,eucl=True,idl_style=idl_s)
         #/(sqDeg2sr*SURVEY_AREA)
     #  *10.0**-9.0/(SURVEY_AREA*sqDeg2sr)
-    dn_by_ds_errs=lumfunc.calculateDnByDs(1.0e-6*bins,counts,errors=True,idl_style=idl_s)
+    dn_by_ds_errs=countUtils.calculateDnByDs(1.0e-6*bins,counts,errors=True,idl_style=idl_s)
 
     # Determine the bin medians, as usual
     median_bins=medianArray(bins) # uJy
     print median_bins
-
 
     # ...and write the binned data to file
     if BOUT_CAT is not None:
