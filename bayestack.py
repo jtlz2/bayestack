@@ -25,7 +25,7 @@ if __name__=='__main__':
     settingsf=param_file.split('.')[-2]
     set_module=importlib.import_module(settingsf)
     globals().update(set_module.__dict__)
-    __name__=__name_cached
+__name__=__name_cached
 
 #-------------------------------------------------------------------------------
 
