@@ -97,9 +97,8 @@ def main():
 
     # idl_style or not....? - NO
     idl_s=False
-    dn_by_ds=countUtils.calculateDnByDs(1.0e-6*bins,counts,eucl=False,idl_style=idl_s)
-    dn_by_ds_eucl=countUtils.calculateDnByDs(1.0e-6*bins,counts,eucl=True,idl_style=idl_s)
-    dn_by_ds_errs=countUtils.calculateDnByDs(1.0e-6*bins,counts,errors=True,idl_style=idl_s)
+    dn_by_ds,dn_by_ds_eucl,dn_by_ds_errs,dn_by_ds_b,dn_by_ds_b_errs=\
+      countUtils.calculateDnByDs(1.0e-6*bins,counts,idl_style=idl_s,return_all=True)
 
     # Determine the bin medians, as usual
     median_bins=medianArray(bins) # uJy
