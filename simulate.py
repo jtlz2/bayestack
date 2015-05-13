@@ -9,24 +9,9 @@ import importlib
 from utils import *
 from countUtils import simulate
 
-__name_cached=__name__
 param_file=sys.argv[-1]
-
-#setf='%s' % param_file.split('.')[-2]
-# Import the settings variables
-if __name__=='__main__':
-    setf='bayestack_settings'
-else:
-    setf='%s'%param_file
-
-set_module=importlib.import_module(setf)
-globals().update(set_module.__dict__)
-__name__=__name_cached
-
-#try:
-#    execfile(param_file)
-#except IOError:
-#    from settings import *
+setf='%s' % param_file.split('.')[-2]
+print '%s is using %s' % (__name__,setf)
 
 #-------------------------------------------------------------------------------
 
@@ -34,18 +19,19 @@ def main():
     """
     """
 
-    global OUTPUT,DUMP
+    # Import the settings variables
+    set_module=importlib.import_module(setf)
+    globals().update(set_module.__dict__)
 
     if not os.path.exists(outdir): os.mkdir(outdir)
-    OUTPUT=os.path.join(outdir,OUTPUT)
-    if DUMP: DUMP=os.path.join(outdir,DUMP)
 
     shutil.copy(param_file,outdir)
     print 'Settings file: %s' % param_file
 
     r=simulate(simFamily,simParams,simParamsList,\
                           simBins,seed=SEED_SIM,N=NSIM,area=AREA_SIM,\
-                          noise=NOISE_SIM,dump=DUMP,output=OUTPUT,\
+                          noise=NOISE_SIM,dump=os.path.join(outdir,DUMP),\
+                          output=os.path.join(outdir,OUTPUT),\
                           verbose=True,skadsf=skadsFile,\
                           simarrayf=simArrayFile,pole_posns=simPolePosns)
         
