@@ -91,42 +91,12 @@ def main():
         #cat=cat[numpy.where(numpy.abs(cat[:,BIN_COL_CLIP])>BIN_CAT_CLIP)]
 
     print 'S/uJy: %f -> %f' % (numpy.min(cat[:,BIN_COL]),numpy.max(cat[:,BIN_COL]))
-    # Bin the raw data...
-    # bins is in uJy; cat is also now in uJy
-    counts=numpy.histogram(cat[:,BIN_COL],bins=bins)[0] # uJy in SURVEY_AREA sq. deg.
 
-    # idl_style or not....? - NO
     idl_s=False
-    dn_by_ds,dn_by_ds_eucl,dn_by_ds_errs,dn_by_ds_b,dn_by_ds_b_errs=\
-      countUtils.calculateDnByDs(1.0e-6*bins,counts,idl_style=idl_s,return_all=True)
+    countUtils.writeCountsFile(BOUT_CAT,bins,cat[:,BIN_COL],SURVEY_AREA,\
+                               idl_style=idl_s,verbose=True,corrs=CORR_BINS)
 
-    # Determine the bin medians, as usual
-    median_bins=medianArray(bins) # uJy
-
-    # ...and write the binned data to file
-    if BOUT_CAT is not None:
-        outputf=BOUT_CAT
-        s=open(outputf,'w')
-        header='# bin_low_uJy bin_high_uJy bin_median_uJy Ns_tot_obs dnds_srm1Jym1 dnds_eucl_srm1Jy1p5 delta_dnds_eucl_lower_srm1Jy1p5 delta_dnds_eucl_upper_srm1Jy1p5 corr Ncgts_degm2 dNcgts_lower_degm2 dNcgts_upper_degm2'
-        s.write('%s\n'%header)
-        print header
-        for ibin in range(nbins-1):
-            ccc=counts[ibin:].sum()*CORR_BINS[ibin]/SURVEY_AREA
-            line='%f %f %f %i %e %e %e %e %f %i %i %i' % \
-              (bins[ibin],bins[ibin+1],median_bins[ibin],int(round(counts[ibin])),\
-               dn_by_ds[ibin]/(sqDeg2sr*SURVEY_AREA),\
-               dn_by_ds_eucl[ibin]/(sqDeg2sr*SURVEY_AREA),\
-               dn_by_ds_errs[ibin]/(sqDeg2sr*SURVEY_AREA),\
-               dn_by_ds_errs[ibin]/(sqDeg2sr*SURVEY_AREA),\
-               CORR_BINS[ibin],\
-               round(ccc),round(sqrt(ccc)),round(sqrt(ccc)))
-            s.write('%s\n'%line)
-            print line
-        print '-> There are %i sources in total' % counts.sum()
-        s.close()
-
-        print '-> Look in %s' % outputf
-
+    if True:
         # Now plot a histogram of fluxes to file, with fine binning
         print 'Flux range/uJy = %f -> %f' % (cat[:,BIN_COL].min(),cat[:,BIN_COL].max())
         fig = plt.figure()
