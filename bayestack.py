@@ -134,7 +134,7 @@ def main():
         dt=t1-t0
 
         # Touch the output dir so Dropbox picks it up
-        touch(outdir)
+        #touch(outdir)
         
         notes=['Time then was %s' % startTime,\
                'Time now is %s' % stopTime,\
