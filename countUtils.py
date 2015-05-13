@@ -248,7 +248,7 @@ def simulate(family,params,paramsList,bins,\
 
 @profile
 def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
-                    version=2,verbose=None):
+                    version=2,verbose=None,corrs=None):
     """
     Write an array of fluxes to a binned counts file
     """
@@ -267,6 +267,12 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
       calculateDnByDs(1.0e-6*bins,counts,idl_style=idl_style,return_all=True)
 
     median_bins=medianArray(bins) # uJy
+    NB=len(median_bins)
+
+    # Set up the corrections
+    if corrs is None:
+        corrs=numpy.ones(NB)
+
     if output is not None:
         outputf=output
         s=open(outputf,'w')
@@ -276,18 +282,17 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
             header='# bin_low_uJy bin_high_uJy bin_median_uJy Ns_tot_obs dnds_srm1Jym1 dnds_eucl_srm1Jy1p5 delta_dnds_eucl_lower_srm1Jy1p5 delta_dnds_eucl_upper_srm1Jy1p5 corr Ncgts_degm2 dNcgts_lower_degm2 dNcgts_upper_degm2'
         s.write('%s\n'%header)
         if verbose: print header
-        for ibin in range(len(bins)-1):
+        for ibin in range(NB):
             if version < 2:
                 line='%f %i %i' % (median_bins[ibin],-99.0,counts[ibin])
             else:
-                # See binner.py for dependence on BIN_CORRS/CORR_BINS (omitted here)
                 line='%f %f %f %i %e %f %f %f %f %i %i %i' % \
                   (bins[ibin],bins[ibin+1],median_bins[ibin],round(counts[ibin]),\
                    dn_by_ds[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_eucl[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
-                   1.00,\
+                   corrs[ibin],\
                    round(counts[ibin:].sum()*1.00/area),\
                    round(numpy.sqrt(counts[ibin:].sum()*1.00/area)),\
                    round(numpy.sqrt(counts[ibin:].sum()*1.00/area)))
