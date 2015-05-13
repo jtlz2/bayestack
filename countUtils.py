@@ -15,7 +15,8 @@ from scipy import integrate,stats
 from scipy.interpolate import interp1d
 from scipy.special import erf
 from profile_support import profile
-from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,interpol,buildCDF,Jy2muJy,interpola
+from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,\
+                           interpol,buildCDF,Jy2muJy,interpola
 
 if 'chains' in sys.argv[-1]:
     potential_settings=glob.glob(os.path.join(sys.argv[-1],'*settings*py'))
@@ -24,8 +25,10 @@ if 'chains' in sys.argv[-1]:
 else:
     settingsf=sys.argv[-1].split('.')[-2]
 
+print '%s is using %s' % (__name__,settingsf)
 set_module=importlib.import_module(settingsf)
 globals().update(set_module.__dict__)
+
 
 #-------------------------------------------------------------------------------
 
