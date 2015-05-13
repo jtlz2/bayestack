@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 
 """
+This is simulate.py
+Jonathan Zwart
+May 2015
+
 Simulate data set for bayestack.py
+
+Usage:
+
+./simulate.py SETTINGS_FILE.py
+
 """
 
 import os,sys,shutil

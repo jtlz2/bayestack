@@ -1,10 +1,16 @@
 #!/usr/bin/env python
-##!/Library/Frameworks/EPD64.framework/Versions/Current/bin/python
-##!/usr/bin/python
 
 """
-Bin data for lumfunc
-Output to XXXX.txt
+This is binner.py
+Jonathan Zwart
+May 2015
+
+Bin data set for bayestack.py/lumfunc.py
+
+Usage:
+
+./binner.py SETTINGS_FILE.py
+
 """
 
 import os,sys,shutil
