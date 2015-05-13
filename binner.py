@@ -102,7 +102,6 @@ def main():
 
     # Determine the bin medians, as usual
     median_bins=medianArray(bins) # uJy
-    print median_bins
 
     # ...and write the binned data to file
     if BOUT_CAT is not None:
