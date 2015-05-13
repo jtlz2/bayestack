@@ -26,9 +26,18 @@ beamFac=pi/(4.0*log(2.0))
 #-------------------------------------------------------------------------------
 
 @profile
-def touch(fname, times=None):
+def touch(fname):
+    cmd='touch %s' %fname
+    os.system(cmd)
+    return
+
+#-------------------------------------------------------------------------------
+
+@profile
+def touch2(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
+    return
 
 #-------------------------------------------------------------------------------
 
