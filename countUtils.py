@@ -26,8 +26,11 @@ else:
     settingsf=sys.argv[-1].split('.')[-2]
 
 print '%s is using %s' % (__name__,settingsf)
-set_module=importlib.import_module(settingsf)
-globals().update(set_module.__dict__)
+try:
+    set_module=importlib.import_module(settingsf)
+    globals().update(set_module.__dict__)
+except:
+    print '***Warning: Settings not loaded'
 
 
 #-------------------------------------------------------------------------------
