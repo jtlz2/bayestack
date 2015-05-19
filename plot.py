@@ -97,6 +97,7 @@ def main():
     stats=fetchStats(outdir,expt.parameters,plotTruth)
     printLaTeX(expt.parameters,stats,dump=outdir)
 
+    return 0
 
 #-------------------------------------------------------------------------------
 
