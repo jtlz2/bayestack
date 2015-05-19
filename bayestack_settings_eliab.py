@@ -12,7 +12,6 @@ context='cmdline'
 if    'reconstruct' in exe: context='r'
 elif  'simulate'    in exe: context='s'
 elif  'lumfunc'     in exe: context='l'
-elif  'bayestack'   in exe: context='y'
 elif  'plot'        in exe: context='p'
 elif  'binner'      in exe: context='b'
 elif  'extractor'   in exe: context='e'
@@ -25,26 +24,26 @@ print 'Context is %s' % context
 
 #dataset='video'
 binStyle=1
-nlaws=4
+nlaws=2
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150511a' # based on 140123a
+outdir='chains_150505b' # based on 140123a
 
-simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
+simFamily='skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
 SMAX_SIM=85.0 # uJy
 simParams=[SMIN_SIM,SMAX_SIM]
 simParamsList=['S0','S1']
-simBins=numpy.linspace(-65.0,85.0,26)
+simBins=numpy.linspace(-60.0,100.0,26)
 SEED_SIM=1234
 NSIM=72000
 NOISE_SIM=16.2 # uJy
 dump='R.txt'
 output='dummy.txt'
 verbose=True
-skadsFile='skads/1sqdeg_0p02uJy.txt'
-simArrayFile='sims/150511a/sim_noiseless.txt'
-simPolePosns=None
+skadsf='skads/1sqdeg_0p02uJy.txt'
+
+
 
 #-------------------------------------------------------------------------------
 
@@ -54,13 +53,13 @@ RESUME=False # Turn checkpointing on
 nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
-#outdir='chains_150508a' # based on 140123a
+#outdir='chains_150504b' # based on 140123a
 run_num=outdir.split('_')[-1]
 #if context=='l': outdir=os.path.join('/home/jtlz2/bartolomeu/output',outdir)
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
 logfile='README.txt'
 variablesfile='variables.txt'
-comment='Rearchitecting'
+comment='First run sdss'
 SEED_SAMP=1234 # [-1 for clock]
 #floatNoise=False
 
@@ -68,11 +67,12 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150511a'
+#dataset='sims/150504b'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150511a'
+dataset='sdss'
+run_num_run='150505b'
 #dataset='first'
 #dataset='mca'
 
@@ -234,8 +234,7 @@ SMIN_SKADS=0.01 # uJy
 SMAX_SKADS=85.0 # uJy
 #SMAX_SKADS=600000.0 # uJy
 
-
-SIM_DO_CAT_NOISE=False
+SIM_DO_CAT_NOISE=True
 SKADS_GO_VIA_MAP=True
 NSKADS=None#72000 # or None to use all available sources for simulation
 #NSKADS_RESCALING=373936.0/71962.0
@@ -272,8 +271,8 @@ NSKADS_RESCALING=1.0
 
 D_SIM=-99.0
 BETA_SIM=S0_SIM=GAMMA_SIM=S1_SIM=DELTA_SIM=S2_SIM=-99.0
-#if NLAWS_SIM==0:
-#    print 'Running SKADS sim'
+if NLAWS_SIM==0:
+    print 'Running SKADS sim'
 if NLAWS_SIM==1:
     BETA_SIM=-99.0
     S0_SIM=-99.0
@@ -334,6 +333,10 @@ elif dataset == 'mca':
     datafile='bondi2003_mca.txt'
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
+elif dataset == 'sdss':
+    datafile='sdss_dr12s1.txt'
+    SURVEY_AREA=14555.0
+    SURVEY_NOISE=150.0
 
 #-------------------------------------------------------------------------------
 
@@ -501,8 +504,7 @@ if os.path.exists(datafile):
     else:
         ks=ksRaw
 else:
-    if context=='y':
-        print '***Cannot find an existing data file!! (%s)' % datafile
+    print '***Cannot find an existing data file!! (%s)' % datafile
     if context=='l':
         x=os.path.join(dataset,'crash.txt')
         open(x, 'a').close()
@@ -873,8 +875,8 @@ SMIN_MIN=0.01        # uJy
 SMIN_MAX=20.0 # Was 20.0
 #SMIN_MIN=0.05        # uJy
 #SMIN_MAX=1.0
-SMAX_MIN=20.0      # uJy
-SMAX_MAX=100.0
+SMAX_MIN=150.0      # uJy
+SMAX_MAX=750.0
 
 # Based on S0=30 uJy - give SMAX the freedom to be roughly there
 #SMAX_MIN=20.0      # uJy
@@ -1132,4 +1134,3 @@ print 'MOTD: %s' % MOTD
 
 #-------------------------------------------------------------------------------
 
-#NOISE_SIM=None

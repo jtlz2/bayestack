@@ -1,26 +1,45 @@
 """
 Support functions for bayestack, bayestackClasses and lumfunc
+
+Jonathan Zwart
+May 2015
+
 """
 
+import os,sys
+import importlib
+import glob
 import numpy
 from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
 from scipy.interpolate import interp1d
 from scipy.special import erf
 from profile_support import profile
-from utils import sqrtTwo,find_nearest,medianArray,interpol,buildCDF,Jy2muJy
-from bayestack_settings import * # <-- generalize, localize
+from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,\
+                           interpol,buildCDF,Jy2muJy,interpola
+
+if 'chains' in sys.argv[-1]:
+    potential_settings=glob.glob(os.path.join(sys.argv[-1],'*settings*py'))
+    assert(len(potential_settings)==1), '***More than one potential settings file!'
+    settingsf='.'.join([sys.argv[-1],potential_settings[0].split('/')[-1].split('.')[-2]])
+else:
+    settingsf=sys.argv[-1].split('.')[-2]
+
+print '%s is using %s' % (__name__,settingsf)
+try:
+    set_module=importlib.import_module(settingsf)
+    globals().update(set_module.__dict__)
+except:
+    print '***Warning: Settings not loaded'
+
 
 #-------------------------------------------------------------------------------
 
 @profile
-#def simulate(family,params,bins,nsources=None,noise=None,\
-#             output='temp.txt',seed=None,dump=False,\
-#             verbose=False,output=None,version=2):
 def simulate(family,params,paramsList,bins,\
              seed=None,N=None,noise=None,output=None,\
              dump=None,version=2,verbose=False,area=None,\
-             skadsf=None,pole_posns=None):
+             skadsf=None,pole_posns=None,simarrayf=None):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -73,7 +92,9 @@ def simulate(family,params,paramsList,bins,\
     test:
     ----
 
-    
+    array:
+    -----
+
 
     """
 
@@ -115,20 +136,43 @@ def simulate(family,params,paramsList,bins,\
         function = lambda S:polyFunc(S,S_1,Smin,Smax,coeffs)
 
     elif family=='bins':
+        Smin=params[paramsList.index('S0')]
+        Smax=params[paramsList.index('S1')]
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('b')]
         if pole_posns is None:
-            pole_posns=numpy.logspace(-1,numpy.log10(85.0),len(coeffs)+1)
+            pole_posns=numpy.logspace(numpy.log10(Smin),numpy.log10(Smax),len(coeffs)+1)
         assert(len(coeffs)==len(pole_posns)-1), '***Mismatch in number of poles!!'
         Smin=pole_posns[0]
         Smax=pole_posns[-1]
         function = lambda S:polesFunc(S,pole_posns,Smin,Smax,coeffs)
 
+    elif family=='array':
+        Smin=params[paramsList.index('S0')]
+        Smax=params[paramsList.index('S1')]
+        assert(simarrayf is not None), '***Need to specify an input simulation!'
+        print 'Reading %s...' % simarrayf
+        dataMatrix=numpy.genfromtxt(simarrayf)
+        dndsInArr=dataMatrix[:,4]
+        binsDogleg=numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
+        binsMedian=dataMatrix[:,2]
+        assert((medianArray(binsDogleg)==binsMedian).all()), '***bin mismatch!'
+        Smin=binsDogleg[0]; Smax=binsDogleg[-1]
+        if not SIM_DO_CAT_NOISE:
+            Smin=-5.01#-2.01 # binsMedian[0]
+        print dndsInArr
+        function=lambda S:arrayFunc(S,binsMedian,dndsInArr,Smin,Smax)
+
+        #function2=lambda S:arrayFunc(S,binsMedian,dndsInArr,Smin,Smax)
+        #for x in numpy.linspace(-10.0,100.0,500):
+        #    print x,function(x),function2(x)
+        #sys.exit(0)
+
     elif family=='skads':
         Smin=params[paramsList.index('S0')]
         Smax=params[paramsList.index('S1')]
         function=None
-        if skadsf is None:
-            skadsf='skads/1sqdeg_0p02uJy.txt'
+        assert(skadsf is not None), '***Need to specify input SKADS file!'
+        print 'Reading %s...' % skadsf
         R=Jy2muJy*10**numpy.genfromtxt(skadsf)
         numpy.ndarray.sort(R)
         iRmin,Rmin=find_nearest(R,Smin)
@@ -145,7 +189,6 @@ def simulate(family,params,paramsList,bins,\
         gridlength=1000000 # Good enough to prevent bleeding at the edges
         Ss=numpy.linspace(Smin,Smax,gridlength)
         values=numpy.array([function(ix) for ix in Ss])
-
         # Build the CDF
         CDF=buildCDF(values)
         # Create the interpolant object
@@ -154,8 +197,8 @@ def simulate(family,params,paramsList,bins,\
         # Test that the sampler extrema match
         print Smin,sampler(0.0)
         print Smax,sampler(0.99999)
-        assert(numpy.isclose(sampler(0.0),Smin)[0])
-        assert(numpy.isclose(sampler(0.99999),Smax,atol=1.0e-3)[0])
+#        assert(numpy.isclose(sampler(0.0),Smin)[0])
+#        assert(numpy.isclose(sampler(0.99999),Smax,atol=1.0e-3)[0])
 
         # Draw the random deviates
         R = numpy.random.rand(N)
@@ -166,14 +209,14 @@ def simulate(family,params,paramsList,bins,\
         # BOTH N2C and C2N are useful
         # Integrate the original function
         A=integrate.quad(function,Smin,Smax)[0]
-        print A,N
+#        print A,N
         # Bin the random samples
         bbins=numpy.linspace(Smin,Smax,100)
         E=numpy.histogram(F,bins=bbins)[0]
         # And calculate their area
         G=integrate.trapz(E,x=medianArray(bbins))
-        print G
-        print G/A
+#        print G
+#        print G/A
         # Gunpowder, treason and....
         #plt.xlim(0.0,100.0)
         #plt.xlabel('S / $\mu$Jy')
@@ -187,7 +230,7 @@ def simulate(family,params,paramsList,bins,\
         print 'Draws (noiseless) are in %s' % puredumpf
 
     # Now add noise if requested
-    if noise is not None:
+    if SIM_DO_CAT_NOISE:
         numpy.random.seed(seed=SEED_SIM)
         F+=numpy.random.normal(0.0,noise,N)
 
@@ -208,7 +251,7 @@ def simulate(family,params,paramsList,bins,\
 
 @profile
 def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
-                    version=2,verbose=None):
+                    version=2,verbose=None,corrs=None):
     """
     Write an array of fluxes to a binned counts file
     """
@@ -227,6 +270,12 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
       calculateDnByDs(1.0e-6*bins,counts,idl_style=idl_style,return_all=True)
 
     median_bins=medianArray(bins) # uJy
+    NB=len(median_bins)
+
+    # Set up the corrections
+    if corrs is None:
+        corrs=numpy.ones(NB)
+
     if output is not None:
         outputf=output
         s=open(outputf,'w')
@@ -236,18 +285,17 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
             header='# bin_low_uJy bin_high_uJy bin_median_uJy Ns_tot_obs dnds_srm1Jym1 dnds_eucl_srm1Jy1p5 delta_dnds_eucl_lower_srm1Jy1p5 delta_dnds_eucl_upper_srm1Jy1p5 corr Ncgts_degm2 dNcgts_lower_degm2 dNcgts_upper_degm2'
         s.write('%s\n'%header)
         if verbose: print header
-        for ibin in range(len(bins)-1):
+        for ibin in range(NB):
             if version < 2:
                 line='%f %i %i' % (median_bins[ibin],-99.0,counts[ibin])
             else:
-                # See binner.py for dependence on BIN_CORRS/CORR_BINS (omitted here)
-                line='%f %f %f %i %e %f %f %f %f %i %i %i' % \
+                line='%f %f %f %i %e %e %e %e %f %i %i %i' % \
                   (bins[ibin],bins[ibin+1],median_bins[ibin],round(counts[ibin]),\
                    dn_by_ds[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_eucl[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
-                   1.00,\
+                   corrs[ibin],\
                    round(counts[ibin:].sum()*1.00/area),\
                    round(numpy.sqrt(counts[ibin:].sum()*1.00/area)),\
                    round(numpy.sqrt(counts[ibin:].sum()*1.00/area)))
@@ -312,7 +360,6 @@ def calculateDnByDs(bins,counts,eucl=False,verbose=False,idl_style=True,
     return dn_by_ds
 
 #-------------------------------------------------------------------------------
-
 
 @profile
 def powerLawFuncErfsS(S,nlaws,C,alpha,D,beta,Smin,Smax,\
@@ -492,6 +539,21 @@ def polyFunc(S,S_1,Smin,Smax,c):
 #-------------------------------------------------------------------------------
 
 @profile
+def arrayFunc(S,binCentres,dndsInArray,Smin,Smax):
+    """
+    Truncate outside [Smin,Smax]
+    AND
+    linearly extrapolate outside bin centres
+    """
+
+    if S <= Smin or S >= Smax:
+        return 0.0
+
+    return interpola(S,binCentres,dndsInArray,kind='linear')
+
+#-------------------------------------------------------------------------------
+
+@profile
 def polesFunc(S,pole_posns,Smin,Smax,coeffs):
     """
     """
@@ -520,6 +582,7 @@ def calculateI(params,paramsList,bins=None,area=None,
 
     """
     pn_integral, but for various different function families
+    Flux arguments to this function are in uJy
     """
 
     if family=='ppl':

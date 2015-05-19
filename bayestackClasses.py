@@ -1,3 +1,31 @@
+"""
+Support classes for bayestack etc.
+
+Jonathan Zwart
+May 2015
+
+Especially countModel, e.g.
+
+expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
+
+then exposes
+
+expt.parameters
+expt.data
+expt.bins
+expt.nbins
+expt.binsMedian
+expt.realise()
+expt.logprior()
+expt.loglike()
+expt.dn_by_ds()
+expt.confusionNoiseSquared()
+
+etc.
+
+"""
+
+
 import os
 import importlib
 import numpy
@@ -6,7 +34,7 @@ from scipy import integrate
 from scipy.special import erf
 from priors import Priors
 import countUtils
-from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood
+from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood,medianArray
 #import cosmolopy
 
 #-------------------------------------------------------------------------------
@@ -18,32 +46,20 @@ class surveySetup(object):
     survey=surveySetup(whichSurvey)
     """
 
-    def __init__(self,whichSurvey):
+    def __init__(self,whichSurvey,datafile,area,noise):
         self.whichSurvey=whichSurvey
-        if whichSurvey in ['video'] \
-          or 'sim' in whichSurvey:
-            self.datafile=os.path.join(whichSurvey,'all_test_41_150120a.txt')
+        self.datafile=datafile
+        if whichSurvey in ['video'] or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
             self.SURVEY_AREA=1.0 *(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
             self.SURVEY_NOISE=16.2 # uJy [median; mean=16.3]
             self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
+        elif whichSurvey in ['sdss']:
+            self.SURVEY_AREA=area # sq.deg.
+            self.SURVEY_NOISE=noise # uJy [median=??; mean=??]
+
             
-#-------------------------------------------------------------------------------
-
-class binSetup(object):
-    """
-    binScheme=binSetup(whichBins)
-    """
-    
-    def __init__(self,whichBins):
-        self.whichBins=whichBins
-        bins=numpy.array([-108.0,-80.0,-50.0,-30.0,-20.0,-10.0,-5.0,-2.5,-1.0,-0.5,0.0,0.5,1.0,2.5,5.0,7.5,10.0,15.0,20.0,25.0,30.0,40.0,50.0,65.0,85.0])
-
-        self.bins=bins
-        nbins=len(bins)-1
-        self.nbins=nbins
-
 #-------------------------------------------------------------------------------
 
 class model(object):
@@ -135,16 +151,11 @@ class countModel(object):
         self.priors=Priors()
         self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
 
-        # Set up data and bins
-        self.survey=surveySetup(whichSurvey)
-        if 'sim' in whichSurvey:
-            self.survey.datafile=datafile
-        self.binScheme=binSetup(whichBins)
-        self.bins=self.binScheme.bins
-        self.nbins=self.binScheme.nbins
-        # Load the data and rederive the bins
+        # Load the data and derive the bins
+        self.survey=surveySetup(whichSurvey,datafile,SURVEY_AREA,SURVEY_NOISE)
         self.data,self.bins=self.loadData(self.survey.datafile)
         self.nbins=len(self.bins)-1
+        self.binsMedian=medianArray(self.bins)
 
         return
 
@@ -156,13 +167,13 @@ class countModel(object):
             iSmax=-1
         for p in parameters:
             if self.kind=='ppl':
-                if p.startswith('C'): priorsDict[p]=['LOG',C_MIN,C_MAX] # amplitude
+                if p.startswith('C'): priorsDict[p]=[C_PRIOR,C_MIN,C_MAX] # amplitude
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
-                elif p.startswith('a'): priorsDict[p]=['U',ALPHA_MIN,ALPHA_MAX] # slopes
+                elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
-                if p.startswith('p'): priorsDict[p]=['U',-3.0,3.0] # #coeffs
+                if p.startswith('p'): priorsDict[p]=['U',POLYCOEFF_MIN,POLYCOEFF_MAX] # #coeffs
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=['LOG',1.0e3,1.0e10] # bins/poles/nodes
+                if p.startswith('b'): priorsDict[p]=[POLEAMPS_PRIOR,POLEAMPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
 
             if p.startswith('n'): # noise
                 if floatNoise:
@@ -216,6 +227,19 @@ class countModel(object):
         Sbinlow,Sbinhigh=Sbin
         e=0.5*(erf((S-Sbinlow)/(sqrtTwo*sigma)) - erf((S-Sbinhigh)/(sqrtTwo*sigma)))
         return e
+
+    def convertPosterior(self,draw,power):
+        for p in self.parameters:
+            #if p.startswith('S') or p.startswith('n'): # uJy -> Jy
+            #    self.currentPhysParams[self.parameters.index(p)] \
+            #      = draw[self.parameters.index(p)]/1.0e6
+            if p.startswith('a'): # x S^{power}
+                self.currentPhysParams[self.parameters.index(p)] \
+                  = draw[self.parameters.index(p)]+power
+            else: # pass
+                self.currentPhysParams[self.parameters.index(p)] \
+                  = draw[self.parameters.index(p)]
+        return self.currentPhysParams
 
     def realise(self,cube):
         self.dataRealisation=countUtils.calculateI(cube,self.parameters,\

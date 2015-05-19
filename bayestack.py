@@ -7,23 +7,31 @@ mpirun -np 4 ./bayestack.py bayestack_settings.py
 
 """
 
-import os,time,shutil
+import os,sys
+import time,shutil,glob
 import importlib
 import pymultinest
-from bayestack_settings import *
 from bayestackClasses import countModel
 from utils import touch,remark,remarks,dump_variable_values
+
 from mpi4py import MPI
 import dill
 MPI._p_pickle.dumps = dill.dumps
 MPI._p_pickle.loads = dill.loads
 
+__name_cached=__name__
+if __name__=='__main__':
+    param_file=sys.argv[-1]
+    settingsf=param_file.split('.')[-2]
+    set_module=importlib.import_module(settingsf)
+    globals().update(set_module.__dict__)
+__name__=__name_cached
+
 #-------------------------------------------------------------------------------
 
 def main():
 
-    settingsf='bayestack_settings'
-    param_file='%s.py'%settingsf
+    settingsf=param_file.split('.')[-2]
     expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
 
     # Set up MPI
@@ -42,6 +50,8 @@ def main():
     if master:
         try:
             os.mkdir(outdir)
+            # Fix permissions
+            os.chmod(outdir,0755)
         except OSError:
             pass
 
@@ -75,7 +85,7 @@ def main():
         dump_variable_values(set_module,variablesf,verbose=False)
 
         startTime = time.strftime('%X %x %Z')
-        shutil.copy(param_file,outdir)
+        shutil.copy(param_file,os.path.join(outdir,'bayestack_settings.py'))
         shutil.copy(datafile,outdir)
         notes=['Time now is %s' % startTime,\
                'Settings file: %s' % param_file,\
@@ -120,14 +130,12 @@ def main():
 
     if master:
         stopTime=time.strftime('%X %x %Z')
-
-        #print '# Bin occupancies:'
-        #for ibin in xrange(nbins-1):
-        #    print ibin+1,bins[ibin],bins[ibin+1],ks[ibin]
-
         t1 = time.time()
         dt=t1-t0
 
+        # Touch the output dir so Dropbox picks it up
+        touch(outdir)
+        
         notes=['Time then was %s' % startTime,\
                'Time now is %s' % stopTime,\
                'Execution took %6.4f sec (~ %i min) with %i cores' % \
@@ -137,20 +145,27 @@ def main():
                'nlive = %i' % n_live_points,\
                'Run comment: %s' % comment,\
                'Now execute:',\
-               'import pylab; from utils import *; import contour_plot',\
-               'from %s import settings' % outdir,\
-               "contour_plot.contourTri(pylab.loadtxt('%(od)s/%(os)spost_equal_weights.dat'),line=True,outfile='%(od)s/%(tri)s',col=('red','blue'),labels=settings.parameters,ranges=settings.plotRanges,truth=settings.plotTruth,autoscale=False,title='%(od)s')" \
-               % {'od':outdir,'os':outstem,'tri':triangle},\
-               'or\n./plot.py %s' % outdir,\
-                'and\n./reconstruct.py %s' % outdir]
+               '\n./plot.py %s' % outdir,\
+               'and\n./reconstruct.py %s' % outdir]
 
         remarks(log,notes)
         log.close()
 
+        print 'Parameters were:',expt.parameters
+        
         # Copy the stats file so it's legible on my iPhone, Google, email etc.
         stats_dotdat= '%(od)s/%(os)sstats.dat' % {'od':outdir,'os':outstem}
         stats_dottxt= '%(od)s/%(os)sstats.txt' % {'od':outdir,'os':outstem}
         shutil.copy(stats_dotdat,stats_dottxt)
+
+        # Now make all the files world readable
+        globlist=glob.glob(os.path.join(outdir,'*'))
+        print 'Globlist:'
+        print globlist
+        [os.chmod(f,644) for f in globlist]
+        print 'End Globlist'
+
+        print 'Run finished.'
         
     return 0
 

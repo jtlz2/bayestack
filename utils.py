@@ -5,7 +5,7 @@ Also includes some useful constants
 
 import os
 import numpy
-#import scipy
+import scipy
 from scipy import stats
 from scipy.interpolate import interp1d
 from profile_support import profile
@@ -26,9 +26,18 @@ beamFac=pi/(4.0*log(2.0))
 #-------------------------------------------------------------------------------
 
 @profile
-def touch(fname, times=None):
+def touch(fname):
+    cmd='touch %s' %fname
+    os.system(cmd)
+    return
+
+#-------------------------------------------------------------------------------
+
+@profile
+def touch2(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
+    return
 
 #-------------------------------------------------------------------------------
 
@@ -49,6 +58,40 @@ def poissonLhood(data,realisation,silent=True):
     return loglike
 
 #-------------------------------------------------------------------------------
+
+def interpola(v, x, y,kind='linear'):
+    if v <= x[0]:
+        return y[0]+(y[1]-y[0])/(x[1]-x[0])*(v-x[0])
+    elif v >= x[-1]:
+        return y[-2]+(y[-1]-y[-2])/(x[-1]-x[-2])*(v-x[-2])
+    else:
+        f = interp1d(x, y, kind=kind) 
+        return f(v)
+
+#-------------------------------------------------------------------------------
+
+def extrap1d(interpolator):
+    """
+    http://stackoverflow.com/questions/2745329/how-to-make-scipy-interpolate-give-an-extrapolated-result-beyond-the-input-range
+    """
+    xs = interpolator.x
+    ys = interpolator.y
+
+    def pointwise(x):
+        if x < xs[0]:
+            return ys[0]+(x-xs[0])*(ys[1]-ys[0])/(xs[1]-xs[0])
+        elif x > xs[-1]:
+            return ys[-1]+(x-xs[-1])*(ys[-1]-ys[-2])/(xs[-1]-xs[-2])
+        else:
+            return interpolator(x)
+
+    def ufunclike(xs):
+        return scipy.array(map(pointwise, scipy.array(xs)))
+
+    return ufunclike
+
+#-------------------------------------------------------------------------------
+
 
 def interpol(func,x):
     """

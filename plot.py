@@ -33,6 +33,15 @@ setf='%s.bayestack_settings' % param_file
 #    print 'IOError :('
 #    #from settings import *
 
+#print __name__
+#__name_cached=__name__
+#if __name__=='__main__':
+#    param_file=sys.argv[-1]
+#    settingsf=param_file.split('.')[-2]
+#    set_module=importlib.import_module(settingsf)
+#    globals().update(set_module.__dict__)
+#    __name__=__name_cached
+
 #-------------------------------------------------------------------------------
 
 
@@ -42,7 +51,7 @@ def main():
     """
     """
 
-    print 'Settings file is %s' % param_file
+    print 'Settings file is %s' % setf
 
     # Import the settings variables
     set_module=importlib.import_module(setf)
