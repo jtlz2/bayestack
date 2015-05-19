@@ -2,6 +2,8 @@
 Parameter file and inits for lumfunc.py and simulate.py
 """
 
+#This is the old settings file
+
 import os,sys,numpy
 from utils import sqDeg2sr,beamFac
 
