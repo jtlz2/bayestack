@@ -1,8 +1,6 @@
 """
-Parameter file and inits for lumfunc.py and simulate.py
+Parameter file and inits for bayestack.py and simulate.py
 """
-
-#This is the old settings file
 
 import os,sys,numpy
 from utils import sqDeg2sr,beamFac
@@ -14,6 +12,7 @@ context='cmdline'
 if    'reconstruct' in exe: context='r'
 elif  'simulate'    in exe: context='s'
 elif  'lumfunc'     in exe: context='l'
+elif  'bayestack'   in exe: context='y'
 elif  'plot'        in exe: context='p'
 elif  'binner'      in exe: context='b'
 elif  'extractor'   in exe: context='e'
@@ -26,26 +25,26 @@ print 'Context is %s' % context
 
 #dataset='video'
 binStyle=1
-nlaws=3
+nlaws=4
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150504b' # based on 140123a
+outdir='chains_150519a' # based on 140123a
 
-simFamily='skads' # 'ppl' 'poly' 'bins' 'test'
+simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
 SMAX_SIM=85.0 # uJy
 simParams=[SMIN_SIM,SMAX_SIM]
 simParamsList=['S0','S1']
-simBins=numpy.linspace(-60.0,100.0,26)
+simBins=numpy.linspace(-65.0,85.0,26)
 SEED_SIM=1234
 NSIM=72000
 NOISE_SIM=16.2 # uJy
 dump='R.txt'
 output='dummy.txt'
 verbose=True
-skadsf='skads/1sqdeg_0p02uJy.txt'
-
-
+skadsFile='skads/1sqdeg_0p02uJy_18GHz.txt'
+simArrayFile='sims/150519a/sim_noiseless.txt'
+simPolePosns=None
 
 #-------------------------------------------------------------------------------
 
@@ -55,7 +54,7 @@ RESUME=False # Turn checkpointing on
 nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
-#outdir='chains_150504b' # based on 140123a
+#outdir='chains_150508a' # based on 140123a
 run_num=outdir.split('_')[-1]
 #if context=='l': outdir=os.path.join('/home/jtlz2/bartolomeu/output',outdir)
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
@@ -69,11 +68,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150504b'
+dataset='sims/150519a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150504b'
+run_num_run='150519a'
 #dataset='first'
 #dataset='mca'
 
@@ -182,7 +181,7 @@ batch_sim=False
 nbatch=1000
 
 NLAWS_SIM=0
-ALPHA_SIM=-2.0
+SLOPE_SIM=-2.0
 ##N_SIM=621114
 N_SIM=None
 ##N_SIM=100000
@@ -195,7 +194,7 @@ DUMP='fluxes.txt'
 #DUMP=None
 
 # FIRST large-area basis
-#ALPHA_SIM=-1.5
+#SLOPE_SIM=-1.5
 #C_SIM=20.0
 #SMIN_SIM=104.5
 #SMAX_SIM=715.0
@@ -203,14 +202,14 @@ DUMP='fluxes.txt'
 #AREA_SIM=100.0
 
 # VIDEO basis
-ALPHA_SIM=-1.94
+SLOPE_SIM=-1.94
 C_SIM=10.0
 SMIN_SIM=0.491
 SMAX_SIM=853.0
 NOISE_SIM=16.2
 AREA_SIM=1.0
 
-ALPHA_SIM=-1.95
+SLOPE_SIM=-1.95
 C_SIM=10.0
 SMIN_SIM=0.49
 SMAX_SIM=850
@@ -218,7 +217,7 @@ NOISE_SIM=16.2
 AREA_SIM=1.0
 
 # VIDEO-style simulation (pre-flight run)
-ALPHA_SIM=-1.95
+SLOPE_SIM=-1.95
 #C_SIM=10.0
 C_SIM=10.0
 SMIN_SIM=0.49
@@ -235,7 +234,8 @@ SMIN_SKADS=0.01 # uJy
 SMAX_SKADS=85.0 # uJy
 #SMAX_SKADS=600000.0 # uJy
 
-SIM_DO_CAT_NOISE=True
+
+SIM_DO_CAT_NOISE=False
 SKADS_GO_VIA_MAP=True
 NSKADS=None#72000 # or None to use all available sources for simulation
 #NSKADS_RESCALING=373936.0/71962.0
@@ -243,7 +243,7 @@ NSKADS=None#72000 # or None to use all available sources for simulation
 NSKADS_RESCALING=1.0
 
 # VIDEO > 5-sigma style sim (pre-flight run)
-#ALPHA_SIM=-1.95
+#SLOPE_SIM=-1.95
 #C_SIM=10.0
 #SMIN_SIM=50.0
 #SMAX_SIM=850.0
@@ -255,7 +255,7 @@ NSKADS_RESCALING=1.0
 
 
 # VVDF style sim
-#ALPHA_SIM=-2.0
+#SLOPE_SIM=-2.0
 #C_SIM=35.0
 #SMIN_SIM=80.0
 #SMAX_SIM=800.0
@@ -265,15 +265,15 @@ NSKADS_RESCALING=1.0
 
 # Ketron's Table 1
 #C_SIM=40.0
-#ALPHA_SIM=-1.50
+#SLOPE_SIM=-1.50
 #SMIN_SIM=1.00
 #SMAX_SIM=20.00
 #NOISE_SIM=10.0
 
 D_SIM=-99.0
 BETA_SIM=S0_SIM=GAMMA_SIM=S1_SIM=DELTA_SIM=S2_SIM=-99.0
-if NLAWS_SIM==0:
-    print 'Running SKADS sim'
+#if NLAWS_SIM==0:
+#    print 'Running SKADS sim'
 if NLAWS_SIM==1:
     BETA_SIM=-99.0
     S0_SIM=-99.0
@@ -334,6 +334,10 @@ elif dataset == 'mca':
     datafile='bondi2003_mca.txt'
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
+elif dataset == '10C_LH':
+    datafile='test.txt' #I think this should be binned sc file, not flux list
+    SURVEY_AREA=1.78 # sq. deg. This is the full LH field, may need to do just deep area later.
+    SURVEY_NOISE=21.0 # uJy
 
 #-------------------------------------------------------------------------------
 
@@ -418,18 +422,18 @@ if context=='u' or context == 'i':
     upsamplingFactor=perGalUpsampleRate
     if upsamplingFactor is not None:
         upsamplingFactor=abs(perGalUpsampleRate)
-        outputMap='/Users/jtlz2/video/vla/VLA-VVDS_x%i.fits' % upsamplingFactor
-        outputNoiseMap='/Users/jtlz2/video/vla/backrms_x%i.fits' % upsamplingFactor
-    injectInputMap='/Users/jtlz2/video/vla/VLA-VVDS-1.4GHZ.FITS'
-    injectInputNoiseMap='/Users/jtlz2/video/vla/backrms.fits'
+        outputMap='/Users/imogen/stacking/inject%i.fits' % upsamplingFactor
+        outputNoiseMap='/Users/imogen/stacking/inject_noise%i.fits' % upsamplingFactor
+    injectInputMap='/Users/imogen/Dropbox/LOCKMAN_DEEP/DATA_140714/AMI012_aips__a.fits'
+    injectInputNoiseMap='Users/imogen/Dropbox/LOCKMAN_DEEP/DATA_140714/AMI012_aips_noise_a.fits'
     if useInjectedMap and context != 'i':
         inputMap=os.path.join(dataset,injectedMap)
         outputMap=os.path.join(dataset,'sim_map_x2.fits')
 
 if context=='i' or True:
-    radioObservingFreqHz=1.4e9
-    radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
-    radioPixels2Arcsec=1.5
+    radioObservingFreqHz=15.7e9
+    radioSynthBeamFWHM=6.0 # pixels/upsamplingFactor
+    radioPixels2Arcsec=5.0
     radioSynthOmegaSr=sqDeg2sr*beamFac*(radioPixels2Arcsec*radioSynthBeamFWHM/3600.0)**2
     injectMaskRadius=0.5 # pixels/upsamplingFactor # is 0.5
     injectGaussianShiftX=0.0 # pixels
@@ -438,15 +442,15 @@ if context=='i' or True:
     injectPositionNoise=0.1 # pixels/upsamplingFactor
     injectPhotometryDumpFile='injection_phot.txt'
     injectFakeNoise=True#False
-    injectionNoise=NOISE_SIM*48.0240 # 48.0240 is for NOISE_SIM=16.2 uJy
+    injectionNoise=NOISE_SIM*10.0 # 48.0240 is for NOISE_SIM=16.2 uJy - need to figure this out!
     injectRecyclePositions=False
-    injectPostageStampRadius=10.0 # pixels/upsamplingFactor
-    injectUseSKADSPosns=True
+    injectPostageStampRadius=8.0 # pixels/upsamplingFactor
+    injectUseSKADSPosns=False
     injectNumberOfSources=None # or None to inject all sources
-    injectNumberOfSourcesExtracted=72000 # or None to extract all sources
-    injectRandomizeExtractedPosns=True
+    injectNumberOfSourcesExtracted=None # or None to extract all sources
+    injectRandomizeExtractedPosns=False
     injectRandomizeExtractedPosnsSeed=4321
-    injectDoBackSub=None#1.12 # None or flux to subtract in uJy
+    injectDoBackSub=None # None or flux to subtract in uJy
     injectSortFluxesDescending=True
 
 #-------------------------------------------------------------------------------
@@ -479,7 +483,7 @@ if os.path.exists(datafile):
         datafile='%s/sim_extracted.txt' % dataset
     data=numpy.genfromtxt(datafile)
 
-    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca']:
+    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca','sdss']:
         bin_medians = data[:,2] # uJy [not that they are ever used -?]
         # In the table file, counts are for that SURVEY_AREA (so process THOSE)
         ksRaw       = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
@@ -508,7 +512,8 @@ if os.path.exists(datafile):
     else:
         ks=ksRaw
 else:
-    print '***Cannot find an existing data file!! (%s)' % datafile
+    if context=='y':
+        print '***Cannot find an existing data file!! (%s)' % datafile
     if context=='l':
         x=os.path.join(dataset,'crash.txt')
         open(x, 'a').close()
@@ -518,28 +523,28 @@ else:
 
 # These are the truths
 C_FIRST=7.2
-ALPHA_FIRST=-2.11
+SLOPE_FIRST=-2.11
 SMIN_FIRST=104.5
 SMAX_FIRST=715.0
 
 C_RANDOM=4.5
-ALPHA_RANDOM=-1.66
+SLOPE_RANDOM=-1.66
 SMIN_RANDOM=1.03
 SMAX_RANDOM=872.5
 
 C_TARGET=19.7
-ALPHA_TARGET=-2.32
+SLOPE_TARGET=-2.32
 SMIN_TARGET=110.3
 SMAX_TARGET=839.3
 
-ALPHA_VVDF=-2.28
-CONVERT_VVDF=10**(-3*ALPHA_VVDF)*sqDeg2sr/1.0e3
+SLOPE_VVDF=-2.28
+CONVERT_VVDF=10**(-3*SLOPE_VVDF)*sqDeg2sr/1.0e3
 C_VVDF=57.54/CONVERT_VVDF
 SMIN_VVDF=80.0
 SMAX_VVDF=600.0
 
-ALPHA_VVDF2=-1.79
-CONVERT_VVDF2=10**(-3*ALPHA_VVDF2)*sqDeg2sr/1.0e3
+SLOPE_VVDF2=-1.79
+CONVERT_VVDF2=10**(-3*SLOPE_VVDF2)*sqDeg2sr/1.0e3
 C_VVDF2=75.86/CONVERT_VVDF2
 SMIN_VVDF2=600.0
 SMAX_VVDF2=119230.0
@@ -559,33 +564,33 @@ binstyle='video2014'
 #-------------------------------------------------------------------------------
 
 # Set up the truths
-C_TRUE=ALPHA_TRUE=SMIN_TRUE=SMAX_TRUE=BETA_TRUE=\
+C_TRUE=SLOPE_TRUE=SMIN_TRUE=SMAX_TRUE=BETA_TRUE=\
   S0_TRUE=GAMMA_TRUE=S1_TRUE=DELTA_TRUE=S2_TRUE=-99.0
 if dataset == 'cosmos':
     C_TRUE=C_TARGET
-    ALPHA_TRUE=ALPHA_TARGET
+    SLOPE_TRUE=SLOPE_TARGET
     SMIN_TRUE=SMIN_TARGET
     SMAX_TRUE=SMAX_TARGET
 elif dataset == 'first':
     C_TRUE=C_FIRST
-    ALPHA_TRUE=ALPHA_FIRST
+    SLOPE_TRUE=SLOPE_FIRST
     SMIN_TRUE=SMIN_FIRST
     SMAX_TRUE=SMAX_FIRST
 elif dataset == 'vvdf':
     C_TRUE=C_VVDF
-    ALPHA_TRUE=ALPHA_VVDF
+    SLOPE_TRUE=SLOPE_VVDF
     SMIN_TRUE=SMIN_VVDF
     SMAX_TRUE=SMAX_VVDF
 elif 'sim' in dataset or 'kmw' in dataset:
     C_TRUE=C_SIM
-    ALPHA_TRUE=ALPHA_SIM
+    SLOPE_TRUE=SLOPE_SIM
     SMIN_TRUE=SMIN_SIM
     SMAX_TRUE=SMAX_SIM
     BETA_TRUE=BETA_SIM
     S0_TRUE=S0_SIM
-    CONVERT_C_TRUE=10.0**(6.0*(ALPHA_SIM+2.5))
+    CONVERT_C_TRUE=10.0**(6.0*(SLOPE_SIM+2.5))
     C_TRUE=CONVERT_C_TRUE/C_SIM
-    print '-> Adjusted C_TRUE for ALPHA factor'
+    print '-> Adjusted C_TRUE for SLOPE factor'
 
 #-------------------------------------------------------------------------------
 
@@ -740,6 +745,10 @@ elif binstyle=='video2014' or binstyle=='mca2014':
         if nb==38:
             bins=numpy.array([-69.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,80.0,85.0])
 
+elif binstyle=='10C_LH':
+    bins=numpy.array([-80.0,-65.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,85.0])
+    bins[0]=-85.0
+
     #bins=bins[:38]
     assert(len(bins)-1==nb)
 
@@ -797,8 +806,8 @@ dbins=numpy.gradient(bins)
 
 #C_MIN=1.0
 #C_MAX=300.0
-#ALPHA_MIN=-2.5
-#ALPHA_MAX=-0.1
+#SLOPE_MIN=-2.5
+#SLOPE_MAX=-0.1
 #SMIN_MIN=1.0
 #SMIN_MAX=500.0
 #SMAX_MIN=500.0
@@ -821,11 +830,11 @@ else:
     C_MAX=5000.0
 C_MAX=100000.0
 
-ALPHA_MIN=-2.5
-ALPHA_MAX=-0.1
+SLOPE_MIN=-2.5
+SLOPE_MAX=-0.1
 
 #C_MIN=C_MAX=C_TRUE
-#ALPHA_MIN=ALPHA_MAX=ALPHA_TRUE
+#SLOPE_MIN=SLOPE_MAX=SLOPE_TRUE
 
 #SMIN_MIN=1.0        # uJy
 #SMIN_MAX=300.0
@@ -856,7 +865,7 @@ SMAX_MAX=1000.0
 #C_MAX=1.0e6
 #SMIN_MIN=SMIN_MAX=SMIN_TRUE       # delta fn on Smin
 #SMAX_MIN=SMAX_MAX=SMAX_TRUE      # delta fn on Smax
-#ALPHA_MIN=ALPHA_MAX=ALPHA_TRUE
+#SLOPE_MIN=SLOPE_MAX=SLOPE_TRUE
 #C_MIN=C_MAX=C_TRUE
 
 # Ketron Table 1 priors
@@ -943,20 +952,30 @@ C_MAX=1.0e7
 #SMIN_MIN=SMIN_MAX=1.0       # delta fn on Smin
 #SMAX_MIN=SMAX_MAX=20.0      # delta fn on Smax
 #C_MIN=C_MAX=40.0            # delta fn on C
-#ALPHA_MIN=ALPHA_MAX=-1.5    # delta fn on alpha
+#SLOPE_MIN=SLOPE_MAX=-1.5    # delta fn on slope
 
 #SMIN_MIN=SMIN_MAX=110.0       # delta fn on Smin
 #SMAX_MIN=SMAX_MAX=839.0      # delta fn on Smax
 #C_MIN=C_MAX=19.7            # delta fn on C
-#ALPHA_MIN=ALPHA_MAX=-2.32    # delta fn on alpha
+#SLOPE_MIN=SLOPE_MAX=-2.32    # delta fn on slope
 
 #======================================================
 # delta-fn settings:
 #SMIN_MIN=SMIN_MAX=SMIN_TRUE       # delta fn on Smin
 #SMAX_MIN=SMAX_MAX=SMAX_TRUE      # delta fn on Smax
 #C_MIN=C_MAX=C_TRUE            # delta fn on C
-#ALPHA_MIN=ALPHA_MAX=ALPHA_TRUE    # delta fn on alpha
+#SLOPE_MIN=SLOPE_MAX=SLOPE_TRUE    # delta fn on slope
 #======================================================
+
+# Priors for polynomial coefficients
+POLYCOEFF_MIN=-3.0
+POLYCOEFF_MAX=3.0
+
+# Priors for bin/pole/node amplitudes
+POLEAMPS_PRIOR='LOG'
+POLEAMPS_MIN=1.0e3
+POLEAMPS_MAX=1.0e10
+
 
 #D_MIN=1.0
 #D_MAX=100.0
@@ -1017,33 +1036,33 @@ assert(SMAX_MIN >= SMIN_MAX), 'Smin/Smax priors must not overlap!'
 # Set up the parameters for triangle plots and reconstruction
 
 if nlaws == 1:
-    parameters=['C','alpha','Smin','Smax']
+    parameters=['C','slope','Smin','Smax']
     plotRanges={'C':[C_MIN,C_MAX],
-                'alpha':[ALPHA_MIN,ALPHA_MAX],
+                'slope':[SLOPE_MIN,SLOPE_MAX],
                 'Smin':[SMIN_MIN,SMIN_MAX],
                 'Smax':[SMAX_MIN,SMAX_MAX]}
     plotTruth={'C':C_TRUE,
-               'alpha':ALPHA_TRUE,
+               'slope':SLOPE_TRUE,
                'Smin':SMIN_TRUE,
                'Smax':SMAX_TRUE}
 elif nlaws == 2:
-    parameters=['C','alpha','Smin','Smax','beta','S0']
+    parameters=['C','slope','Smin','Smax','beta','S0']
     plotRanges={'C':[C_MIN,C_MAX],
-                'alpha':[ALPHA_MIN,ALPHA_MAX],
+                'slope':[SLOPE_MIN,SLOPE_MAX],
                 'Smin':[SMIN_MIN,SMIN_MAX],
                 'Smax':[SMAX_MIN,SMAX_MAX],
                 'beta':[BETA_MIN,BETA_MAX],
                 'S0':[S0_MIN,S0_MAX]}
     plotTruth={'C':C_TRUE,
-               'alpha':ALPHA_TRUE,
+               'slope':SLOPE_TRUE,
                'Smin':SMIN_TRUE,
                'Smax':SMAX_TRUE,
                'beta':BETA_TRUE,
                'S0':S0_TRUE}
 elif nlaws == 3:
-    parameters=['C','alpha','Smin','Smax','beta','S0','gamma','S1']
+    parameters=['C','slope','Smin','Smax','beta','S0','gamma','S1']
     plotRanges={'C':[C_MIN,C_MAX],
-                'alpha':[ALPHA_MIN,ALPHA_MAX],
+                'slope':[SLOPE_MIN,SLOPE_MAX],
                 'Smin':[SMIN_MIN,SMIN_MAX],
                 'Smax':[SMAX_MIN,SMAX_MAX],
                 'beta':[BETA_MIN,BETA_MAX],
@@ -1051,7 +1070,7 @@ elif nlaws == 3:
                 'gamma':[GAMMA_MIN,GAMMA_MAX],
                 'S1':[S1_MIN,S1_MAX]}
     plotTruth={'C':C_TRUE,
-               'alpha':ALPHA_TRUE,
+               'slope':SLOPE_TRUE,
                'Smin':SMIN_TRUE,
                'Smax':SMAX_TRUE,
                'beta':BETA_TRUE,
@@ -1059,9 +1078,9 @@ elif nlaws == 3:
                'gamma':GAMMA_TRUE,
                'S1':S1_TRUE}
 elif nlaws == 4:
-    parameters=['C','alpha','Smin','Smax','beta','S0','gamma','S1','delta','S2']
+    parameters=['C','slope','Smin','Smax','beta','S0','gamma','S1','delta','S2']
     plotRanges={'C':[C_MIN,C_MAX],
-                'alpha':[ALPHA_MIN,ALPHA_MAX],
+                'slope':[SLOPE_MIN,SLOPE_MAX],
                 'Smin':[SMIN_MIN,SMIN_MAX],
                 'Smax':[SMAX_MIN,SMAX_MAX],
                 'beta':[BETA_MIN,BETA_MAX],
@@ -1071,7 +1090,7 @@ elif nlaws == 4:
                 'delta':[DELTA_MIN,DELTA_MAX],
                 'S2':[S2_MIN,S2_MAX]}
     plotTruth={'C':C_TRUE,
-               'alpha':ALPHA_TRUE,
+               'slope':SLOPE_TRUE,
                'Smin':SMIN_TRUE,
                'Smax':SMAX_TRUE,
                'beta':BETA_TRUE,
@@ -1096,7 +1115,7 @@ POINTS_OFFSET=0.0
 #PLOT_XMAX=10000.0  # uJy
 PLOT_LABEL=''
 labelDict={'C':r'$C/$Jy$^{-1}$sr$^{-1}$',\
-           'alpha':r'$\alpha$','Smin':r'$S_{\mathrm{min}}$/$\mu$Jy',\
+           'slope':r'$\alpha$','Smin':r'$S_{\mathrm{min}}$/$\mu$Jy',\
            'Smax':r'$S_{\mathrm{max}}$/$\mu$Jy','beta':r'$\beta$',\
            'S0':r'$S_0/\mu$Jy','gamma':r'$\gamma$','S1':r'$S_1/\mu$Jy',\
            'delta':r'$\delta$','S2':r'$S_2/\mu$Jy','sigma':r'$\sigma/\mu$Jy'}
@@ -1128,3 +1147,4 @@ print 'MOTD: %s' % MOTD
 
 #-------------------------------------------------------------------------------
 
+#NOISE_SIM=None
