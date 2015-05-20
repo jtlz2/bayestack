@@ -25,26 +25,32 @@ print 'Context is %s' % context
 
 #dataset='video'
 binStyle=1
-nlaws=4
+nlaws=2
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150519a' # based on 140123a
+outdir='chains_150520a' # based on 140123a
 
 simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
-SMAX_SIM=85.0 # uJy
+SMAX_SIM=105.0 # uJy
 simParams=[SMIN_SIM,SMAX_SIM]
 simParamsList=['S0','S1']
-simBins=numpy.linspace(-65.0,85.0,26)
+#simBins=numpy.linspace(-65.0,85.0,26)
+simBins=numpy.array([-85.0,-65.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,85.0])
 SEED_SIM=1234
-NSIM=72000
-NOISE_SIM=16.2 # uJy
+NSIM=2000
+NOISE_SIM=21.0 # uJy
 dump='R.txt'
 output='dummy.txt'
 verbose=True
 skadsFile='skads/1sqdeg_0p02uJy_18GHz.txt'
-simArrayFile='sims/150519a/sim_noiseless.txt'
+simArrayFile='sims/150520a/sim_noiseless.txt'
 simPolePosns=None
+NLAWS_SIM=0
+SIM_DO_CAT_NOISE=False
+SKADS_GO_VIA_MAP=False
+AREA_SIM=0.1
+C_SIM=SLOPE_SIM=-99
 
 #-------------------------------------------------------------------------------
 
@@ -68,11 +74,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150519a'
+dataset='sims/150520a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150519a'
+run_num_run='150520a'
 #dataset='first'
 #dataset='mca'
 
@@ -174,22 +180,22 @@ if True or context=='e':
 #-------------------------------------------------------------------------------
 
 # Simulation parameters
-SEED_SIM=1234
+#SEED_SIM=1234
 
 # Run simulate.py in batch mode
-batch_sim=False
-nbatch=1000
+#batch_sim=False
+#nbatch=1000
 
-NLAWS_SIM=0
-SLOPE_SIM=-2.0
+#NLAWS_SIM=0
+#SLOPE_SIM=-2.0
 ##N_SIM=621114
-N_SIM=None
+#N_SIM=None
 ##N_SIM=100000
-C_SIM=26.0
-SMIN_SIM=110.0
-SMAX_SIM=839.3
-NOISE_SIM=20.0
-AREA_SIM=1.0
+#C_SIM=26.0
+#SMIN_SIM=110.0
+#SMAX_SIM=839.3
+#NOISE_SIM=20.0
+#AREA_SIM=1.0
 DUMP='fluxes.txt'
 #DUMP=None
 
@@ -202,45 +208,45 @@ DUMP='fluxes.txt'
 #AREA_SIM=100.0
 
 # VIDEO basis
-SLOPE_SIM=-1.94
-C_SIM=10.0
-SMIN_SIM=0.491
-SMAX_SIM=853.0
-NOISE_SIM=16.2
-AREA_SIM=1.0
+#SLOPE_SIM=-1.94
+#C_SIM=10.0
+#SMIN_SIM=0.491
+#SMAX_SIM=853.0
+#NOISE_SIM=16.2
+#AREA_SIM=1.0
 
-SLOPE_SIM=-1.95
-C_SIM=10.0
-SMIN_SIM=0.49
-SMAX_SIM=850
-NOISE_SIM=16.2
-AREA_SIM=1.0
+#SLOPE_SIM=-1.95
+#C_SIM=10.0
+#SMIN_SIM=0.49
+#SMAX_SIM=850
+#NOISE_SIM=16.2
+#AREA_SIM=1.0
 
 # VIDEO-style simulation (pre-flight run)
-SLOPE_SIM=-1.95
+#SLOPE_SIM=-1.95
 #C_SIM=10.0
-C_SIM=10.0
-SMIN_SIM=0.49
-SMAX_SIM=85.0
-NOISE_SIM=16.2
-AREA_SIM=1.0
+#C_SIM=10.0
+#SMIN_SIM=0.49
+#SMAX_SIM=85.0
+#NOISE_SIM=16.2
+#AREA_SIM=1.0
 
 
 # SKADS noise tests
 #NOISE_SIM=0.5
-SMIN_SKADS=0.01 # uJy
+#SMIN_SKADS=0.01 # uJy
 #SMIN_SKADS=0.5 # uJy
 #SMASK_SKADS
-SMAX_SKADS=85.0 # uJy
+#SMAX_SKADS=85.0 # uJy
 #SMAX_SKADS=600000.0 # uJy
 
 
-SIM_DO_CAT_NOISE=False
-SKADS_GO_VIA_MAP=True
-NSKADS=None#72000 # or None to use all available sources for simulation
+#SIM_DO_CAT_NOISE=True
+#SKADS_GO_VIA_MAP=True
+#NSKADS=None#72000 # or None to use all available sources for simulation
 #NSKADS_RESCALING=373936.0/71962.0
 #NSKADS_RESCALING=373924.0/71962.0
-NSKADS_RESCALING=1.0
+#NSKADS_RESCALING=1.0
 
 # VIDEO > 5-sigma style sim (pre-flight run)
 #SLOPE_SIM=-1.95
@@ -336,7 +342,7 @@ elif dataset == 'mca':
     SURVEY_NOISE=17.0
 elif dataset == '10C_LH':
     datafile='test.txt' #I think this should be binned sc file, not flux list
-    SURVEY_AREA=1.78 # sq. deg. This is the full LH field, may need to do just deep area later.
+    SURVEY_AREA=0.1 # sq. deg. This is the full LH field, may need to do just deep area later.
     SURVEY_NOISE=21.0 # uJy
 
 #-------------------------------------------------------------------------------
@@ -907,6 +913,12 @@ SMAX_MAX=100.0
 C_PRIOR='LOG'
 C_MIN=1.0e-5
 C_MAX=1.0e7
+
+#10C priors
+SMIN_MIN=0.01
+SMIN_MAX=25.0
+SMAX_MIN=25.0
+SMAX_MAX=110.0
 
 # VIDEO > 5 sigma priors
 #SMIN_MIN=0.01        # uJy
