@@ -103,9 +103,9 @@ def main():
         tt=peak_confidence(x,bins=10)
         #ss*=numpy.power(s[ibin,0]/1.0e6,2.5)
         #print ss[0],tt
-        s[ibin,1]=ss[0]  # median
+#        s[ibin,1]=ss[0]  # median
         #s[ibin,1]=tt     # peak
-        #s[ibin,1]=ymap[ibin] # MAP
+        s[ibin,1]=ymap[ibin] # MAP
         #print ymap
         s[ibin,2]=ss[1]  # lower
         s[ibin,3]=ss[2]  # upper
