@@ -51,11 +51,11 @@ class surveySetup(object):
         self.datafile=datafile
         if whichSurvey in ['video'] or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
-            self.SURVEY_AREA=1.0 *(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
-            self.SURVEY_NOISE=16.2 # uJy [median; mean=16.3]
+            self.SURVEY_AREA=area *(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
+            self.SURVEY_NOISE=noise # uJy [median; mean=16.3]
             self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
-        elif whichSurvey in ['sdss']:
+        elif whichSurvey in ['sdss','10C_LH']:
             self.SURVEY_AREA=area # sq.deg.
             self.SURVEY_NOISE=noise # uJy [median=??; mean=??]
 
