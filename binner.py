@@ -71,7 +71,11 @@ def main():
         cat[:,BIN_COL] *= 1000.0
         if len(CORR_BINS) != len(bins)-1:
             print '**Binning corrections mismatch %s' % BIN_CAT,bins,CORR_BINS
-            sys.exit(1)    
+            sys.exit(1)   
+
+     # 10C_LH catalogue
+    elif BIN_CAT_FORM==5:
+        cat=numpy.genfromtxt(BIN_CAT)
 
     # Eliab's SDSS catalogue
     elif BIN_CAT_FORM==6:

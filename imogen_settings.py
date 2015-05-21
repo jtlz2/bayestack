@@ -24,11 +24,11 @@ print 'Context is %s' % context
 # New-style settings <-- bayestack.py
 
 #dataset='video'
-binStyle=1
-nlaws=2
+binStyle=5
+nlaws=1
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150520a' # based on 140123a
+outdir='chains_150521f' # based on 140123a
 
 simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
@@ -47,7 +47,7 @@ skadsFile='skads/1sqdeg_0p02uJy_18GHz.txt'
 simArrayFile='sims/150520a/sim_noiseless.txt'
 simPolePosns=None
 NLAWS_SIM=0
-SIM_DO_CAT_NOISE=False
+SIM_DO_CAT_NOISE=True
 SKADS_GO_VIA_MAP=False
 AREA_SIM=0.1
 C_SIM=SLOPE_SIM=-99
@@ -74,13 +74,14 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150520a'
+#dataset='sims/150521a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150520a'
+run_num_run='150521f'
 #dataset='first'
 #dataset='mca'
+dataset='10C_LH'
 
 #-------------------------------------------------------------------------------
 # Extraction settings
@@ -341,8 +342,8 @@ elif dataset == 'mca':
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
 elif dataset == '10C_LH':
-    datafile='test.txt' #I think this should be binned sc file, not flux list
-    SURVEY_AREA=0.1 # sq. deg. This is the full LH field, may need to do just deep area later.
+    datafile='10C_LH_binned.txt' #I think this should be binned sc file, not flux list
+    SURVEY_AREA=0.16 # sq. deg. This is the full LH field, may need to do just deep area later.
     SURVEY_NOISE=21.0 # uJy
 
 #-------------------------------------------------------------------------------
@@ -417,10 +418,10 @@ if context=='b' or True:
 
     elif dataset == '10C_LH':
         BIN_CAT_FORM=5
-        BIN_CAT='10C_LH/SERVS_pix_vals_deep_small.txt' #Lockman hole deep source catalogue
+        BIN_CAT='10C_LH/WSRT_pix_vals.txt' #Lockman hole deep source catalogue
         BIN_CAT_CLIP=None
-        BIN_COL=1 #best flux = col 15 for 10C cat in uJy
-        BOUT_CAT='10C_LH/LH_BOUT_SERVS.txt'
+        BIN_COL=0 #best flux = col 15 for 10C cat in uJy
+        BOUT_CAT='10C_LH/10C_LH_binned.txt'
 
 #-------------------------------------------------------------------------------
 
@@ -489,7 +490,7 @@ if os.path.exists(datafile):
         datafile='%s/sim_extracted.txt' % dataset
     data=numpy.genfromtxt(datafile)
 
-    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca','sdss']:
+    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca','sdss','10C_LH']:
         bin_medians = data[:,2] # uJy [not that they are ever used -?]
         # In the table file, counts are for that SURVEY_AREA (so process THOSE)
         ksRaw       = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
@@ -564,8 +565,9 @@ SMAX_VVDF2=119230.0
 #binstyle='bondi2008'
 #binstyle='bondi2003'
 #binstyle='first'
-binstyle='video2014'
+#binstyle='video2014'
 #binstyle='mca2014'
+binstyle='10C_LH'
 
 #-------------------------------------------------------------------------------
 
@@ -752,8 +754,9 @@ elif binstyle=='video2014' or binstyle=='mca2014':
             bins=numpy.array([-69.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,80.0,85.0])
 
 elif binstyle=='10C_LH':
-    bins=numpy.array([-80.0,-65.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,85.0])
-    bins[0]=-85.0
+    bins=numpy.array([-67.0,-60.0,-40.0,-30.0,-20.0,-10.0,-5.0,0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,50.0,60.0,70.0,80.0,110.0])
+    #bins=numpy.array([-80.0,-65.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,85.0])
+    bins[0]=-67.0
 
     #bins=bins[:38]
     assert(len(bins)-1==nb)
