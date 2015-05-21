@@ -1,5 +1,5 @@
 """
-Parameter file and inits for lumfunc.py and simulate.py
+Parameter file and inits for bayestack.py, lumfunc.py and simulate.py
 """
 
 import os,sys,numpy
@@ -28,13 +28,15 @@ binStyle=1
 nlaws=4
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150511a' # based on 140123a
+outdir='chains_150511d' # based on 140123a
 
-simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
+simFamily= 'skads' # 'array' 'skads' 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
 SMAX_SIM=85.0 # uJy
 simParams=[SMIN_SIM,SMAX_SIM]
+simParams=[1000.0,SMIN_SIM,SMAX_SIM,0.0]
 simParamsList=['S0','S1']
+simParamsList=['C','S0','S1','a0']
 simBins=numpy.linspace(-65.0,85.0,26)
 SEED_SIM=1234
 NSIM=72000
@@ -43,7 +45,7 @@ dump='R.txt'
 output='dummy.txt'
 verbose=True
 skadsFile='skads/1sqdeg_0p02uJy.txt'
-simArrayFile='sims/150511a/sim_noiseless.txt'
+simArrayFile='sims/150511c/sim_noiseless.txt'
 simPolePosns=None
 
 #-------------------------------------------------------------------------------
@@ -68,11 +70,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150511a'
+dataset='sims/150511d'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150511a'
+run_num_run='150511d'
 #dataset='first'
 #dataset='mca'
 
@@ -468,8 +470,8 @@ if os.path.exists(datafile):
     # These are two hacks to change the recon binning scheme
     if context=='r' and dataset=='first':
         datafile='%s/ketron2013_110_839_jz.txt' % dataset
-    if context=='r' and 'sim' in dataset:
-        datafile='%s/sim_extracted.txt' % dataset
+    #if context=='r' and 'sim' in dataset:
+    #    datafile='%s/sim_extracted.txt' % dataset
     data=numpy.genfromtxt(datafile)
 
     if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca','sdss']:
