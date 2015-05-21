@@ -532,14 +532,76 @@ def remarks(fHandle,notes,verbose=True):
 
 #-------------------------------------------------------------------------------
 
-def reportRelativeEvidence(H0=None,H1=None):
+def reportRelativeEvidences(globList):
+    """
+    A more useful version of reportRelativeEvidences
+    """
+
+    print '\n-> Comparing runs %s' % (', '.join(globList))
+    Hdict={}; Zdict={};dZdict={}
+    for run in globList:
+        statsf='%s/1-'%run
+        nparams=numpy.genfromtxt('%spost_equal_weights.dat'%statsf).shape[-1]-1
+        ana=pymultinest.analyse.Analyzer(nparams,outputfiles_basename=statsf).get_stats()
+        Z=ana['global evidence']; dZ=ana['global evidence error']
+        Hdict[Z]=run; Zdict[run]=Z; dZdict[run]=dZ
+
+    #Identify H0
+    Zmin=min(Hdict.keys())
+    Zmax=max(Hdict.keys())
+    H0=Hdict[Zmin]; Hmax=Hdict[Zmax]
+    print
+    print 'H0   = %s (Z=%f)' % (H0,Zmin)
+    print 'Hmax = %s (Z=%f)' % (Hmax,Zmax)
+    print
+
+    print '# H_i Z dZ DeltaZ dDeltaZ verdict'    
+    for run in globList:
+        DeltaZ=Zdict[run]-Zdict[H0]
+        if run==H0:
+            dDeltaZ=0.0
+        else:
+            dDeltaZ=numpy.sqrt(dZdict[run]**2+dZdict[H0]**2)
+        if run==H0:
+            result='<-*- H0'
+        elif run==Hmax:
+            result='<-*- winner'
+        else:
+            result=' '
+        print '%s: Z = %f +/- %6.4f | %6.4f +/- %6.4f %s' \
+          % (run,Zdict[run],dZdict[run],DeltaZ,dDeltaZ,result)
+    print
+
+    print "% ...and here's the LaTeX:"
+    print '$H_i$ & $\Delta\log_{\mathrm{e}}Z$ \\\\ % run'    
+    for irun,run in enumerate(globList):
+        DeltaZ=Zdict[run]-Zdict[H0]
+        if run==H0:
+            dDeltaZ=0.0
+        else:
+            dDeltaZ=numpy.sqrt(dZdict[run]**2+dZdict[H0]**2)
+        print '%i & $%6.4f \pm %6.4f$ \\\\ %% %s' \
+          % (irun+1,DeltaZ,dDeltaZ,run)
+    print
+    print '#% Happy now..?\n'
+
+    #for run in globList:
+    #    if run==H0:continue
+    #    reportRelativeEvidence(H0=H0,H1=run,verbose=True)
+
+    return
+        
+#-------------------------------------------------------------------------------
+
+def reportRelativeEvidence(H0=None,H1=None,verbose=True):
     """
     Print Delta Z report for H0: Z0
                              H1: Z1
     Watch out for signs
     """
 
-    print '-> Comparing runs %s and %s' % (H0,H1)
+    if verbose:
+        print '-> Comparing runs %s and %s' % (H0,H1)
 
     statsf0='%s/1-'%H0; statsf1='%s/1-'%H1
     nparams0=numpy.genfromtxt('%spost_equal_weights.dat'%statsf0).shape[-1]-1
@@ -555,21 +617,24 @@ def reportRelativeEvidence(H0=None,H1=None):
 
     assert(Z1>Z0), 'hypotheses inverted, Z1 (%f) < Z0 (%f) - try again' % (Z1,Z0)
 
-    print
-    print 'Model 0 - %s     : Z0 = %f +/- %f' %(H0,Z0,dZ0)
-    print 'Model 1 - %s     : Z1 = %f +/- %f' %(H1,Z1,dZ1)
-    print 'Log-Evidence in favour of Model 1 = %f +/- %f' % (DeltaZ10,dDeltaZ10)
-    print '                                 at %f sigma' % abs(DeltaZ10/dDeltaZ10)
-    print 'The odds ratio is %f:1' % numpy.exp(abs(DeltaZ10))
-    print '        i.e. 10^{%f}:1' % numpy.log10(numpy.exp(abs(DeltaZ10)))
-    print
-    print 'LaTeX:'
-    if numpy.log10(numpy.exp(abs(DeltaZ10))) > 1:
-        print 'A & $%f \pm %f$ & $10^{%f}$:1 \\\\' \
-          % (DeltaZ10,dDeltaZ10,numpy.log10(numpy.exp(abs(DeltaZ10))))
+    if verbose:
+        print
+        print 'Model 0 - %s     : Z0 = %f +/- %f' %(H0,Z0,dZ0)
+        print 'Model 1 - %s     : Z1 = %f +/- %f' %(H1,Z1,dZ1)
+        print 'Log-Evidence in favour of Model 1 = %f +/- %f' % (DeltaZ10,dDeltaZ10)
+        print '                                 at %f sigma' % abs(DeltaZ10/dDeltaZ10)
+        print 'The odds ratio is %f:1' % numpy.exp(abs(DeltaZ10))
+        print '        i.e. 10^{%f}:1' % numpy.log10(numpy.exp(abs(DeltaZ10)))
+        print
+        print 'LaTeX:'
+        if numpy.log10(numpy.exp(abs(DeltaZ10))) > 1:
+             print 'A & $%f \pm %f$ & $10^{%f}$:1 \\\\' \
+               % (DeltaZ10,dDeltaZ10,numpy.log10(numpy.exp(abs(DeltaZ10))))
+        else:
+            print 'A & $%f \pm %f$ & %f:1 \\\\' \
+               % (DeltaZ10,dDeltaZ10,numpy.exp(abs(DeltaZ10)))
     else:
-        print 'A & $%f \pm %f$ & %f:1 \\\\' \
-          % (DeltaZ10,dDeltaZ10,numpy.exp(abs(DeltaZ10)))
+        print H1
 
     return
 

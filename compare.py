@@ -7,16 +7,18 @@ May 2015
 
 Usage:
 
-./compare.py CHAINS_DIR0 CHAINS_DIR1
+./compare.py chains_150520?
+./compare.py chains_15*
+./compare.py chains_150520a chains_150520b ... chains_150520c
+etc.
 
 """
 
 import sys
 from profile_support import profile
-from utils import reportRelativeEvidence
+from utils import reportRelativeEvidences
 
-H0=sys.argv[-2]
-H1=sys.argv[-1]
+globList=sys.argv[1:]
 
 #-------------------------------------------------------------------------------
 
@@ -27,7 +29,9 @@ def main():
     """
     """
 
-    reportRelativeEvidence(H0=H0,H1=H1)
+    #reportRelativeEvidence(H0=H0,H1=H1)
+    assert(len(globList)>1), '***Require >1 hypothesis for model comparison!!'
+    reportRelativeEvidences(globList)
 
 
 #-------------------------------------------------------------------------------
