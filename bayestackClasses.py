@@ -197,8 +197,32 @@ class countModel(object):
         binsDogleg=numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
         return corrected_data,binsDogleg
 
-    def evaluate(self,Ss,params):
-        return self.model.eval(Ss,self.currentParams)
+    def evaluate(self,params):
+        if self.kind=='ppl':
+            C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
+            paramsList=self.parameters
+            nlaws=int(0.5*len(paramsList)-1)
+            C=params[paramsList.index('C')]
+            Smin=params[paramsList.index('S0')]
+            alpha=params[paramsList.index('a0')]
+            if nlaws > 1:
+                beta=params[paramsList.index('a1')]
+                S0=params[paramsList.index('S1')]
+            if nlaws > 2:
+                gamma=params[paramsList.index('a2')]
+                S1=params[paramsList.index('S2')]
+            if nlaws > 3:
+                delta=params[paramsList.index('a3')]
+                S2=params[paramsList.index('S3')]
+            iSmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
+            Smax=params[paramsList.index('S%i'%iSmax)]
+            evaluations=[countUtils.powerLawFuncWrap(nlaws,S,C,alpha,-99.0,beta,\
+                        Smin/1.0e6,Smax/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,\
+                        self.survey.SURVEY_AREA) for S in self.binsMedian/1.0e6]
+            return evaluations
+        else:
+            print '***%s unsupported right now!' % self.family
+            return
 
     def secondMoment(self,Slower,Supper):
         return self.momentN(Slower,Supper,2)
