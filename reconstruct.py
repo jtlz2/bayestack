@@ -68,10 +68,9 @@ def main():
 
     # Convert drawmap into correct units etc.
     power=2.5
-    #?*sqDeg2sr*expt.survey.SURVEY_AREA
-    ymap=expt.realise(expt.convertPosterior(drawmap,power))
+    ymap=expt.evaluate(expt.convertPosterior(drawmap,power))
     for isamp in xrange(nsamp):
-        z[isamp,ncols-1:]=expt.realise(expt.convertPosterior(z[isamp,:],power))
+        z[isamp,ncols-1:]=expt.evaluate(expt.convertPosterior(z[isamp,:],power))
 
     # Blanking, 0.0 -> NaN
     z[numpy.where(z==0.0)]='NaN'
