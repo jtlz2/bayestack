@@ -57,7 +57,7 @@ C_SIM=SLOPE_SIM=-99
 # Master parameters
 MOTD=''
 RESUME=False # Turn checkpointing on
-nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
+nb= 20#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
 #outdir='chains_150508a' # based on 140123a
@@ -556,6 +556,11 @@ C_VVDF2=75.86/CONVERT_VVDF2
 SMIN_VVDF2=600.0
 SMAX_VVDF2=119230.0
 
+#C_10C=
+#SLOPE_10C
+#SMIN_10C
+#SMAX_10C
+
 
 #-------------------------------------------------------------------------------
 
@@ -589,6 +594,11 @@ elif dataset == 'vvdf':
     SLOPE_TRUE=SLOPE_VVDF
     SMIN_TRUE=SMIN_VVDF
     SMAX_TRUE=SMAX_VVDF
+#elif dataset == '10C_LH':
+#    C_TRUE=C_10C
+#    SLOPE_TRUE=SLOPE_10C
+#    SMIN_TRUE=SMIN_10C
+#    SMAX_TRUE=SMAX_10C
 elif 'sim' in dataset or 'kmw' in dataset:
     C_TRUE=C_SIM
     SLOPE_TRUE=SLOPE_SIM
