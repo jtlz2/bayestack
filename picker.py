@@ -53,7 +53,7 @@ def main():
     cat=numpy.genfromtxt(catf)
     ngals=cat.shape[0]
 
-    randomPosns=True
+    randomPosns=False
     if randomPosns:
         ngals=15226
         numpy.random.seed(seed=1234)
