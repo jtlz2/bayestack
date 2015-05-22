@@ -1,0 +1,20 @@
+#!/bin/bash
+#PBS -N TEST
+#PBS -o $HOME/output-$PBS_JOBID.log
+#PBS -e $HOME/output-$PBS_JOBID.err
+#PBS -S /bin/bash
+#PBS -l walltime=72:00:00
+#PBS -l nodes=2:ppn=16
+#PBS -l mem=4GB
+#PBS -m bea
+#PBS -M jtlz2@astro.columbia.edu
+
+RUNPATH=$HOME
+cd $RUNPATH
+
+date
+pwd
+
+env | grep PBS
+date
+
