@@ -11,12 +11,20 @@ Usage:
 
 ./binner.py SETTINGS_FILE.py
 
+BIN_CAT_FORMs:
+0 COSMOS-VLA data [Ketron]
+1 VIDEO catalogue from stacker.py [JZ]
+2 VVDF Bondi 2003 catalogue from web [web]
+3 LR-matched Bondi 2003 catalogue [Kim]
+4 VIDEO catalogue from stacker.py [JZ]
+5 10C_LH catalogue [Imogen]
+6 SDSS catalogue [Eliab]
+
 """
 
 import os,sys
 import importlib
 import numpy
-from math import exp,log,log10,sqrt,isinf,isnan
 from profile_support import profile
 from utils import *
 import countUtils
@@ -43,46 +51,21 @@ def main():
         CORR_BINS=numpy.ones(len(bins)-1)
 
     print 'Reading from %s' % BIN_CAT
+    cat=numpy.genfromtxt(BIN_CAT)
 
-    # COSMOS-VLA data [from Ketron]:
-    if BIN_CAT_FORM==0:
-        cat=numpy.genfromtxt(BIN_CAT) # mJy in SURVEY_AREA sq. deg.
+    # Convert unit if required
+    if BIN_CAT_FORM in [0,2,3]:
         cat[:,BIN_COL] *= 1000.0 # mJy -> uJy in SURVEY_AREA sq. deg.
-        #smap=cat[:,0] *1000.0 # uJy
-        #scat=cat[:,1] *1000.0 # uJy
-
-    # VIDEO catalogue form from stacker.py
-    elif BIN_CAT_FORM==1 or BIN_CAT_FORM==4:
-        cat=numpy.genfromtxt(BIN_CAT) # uJy in SURVEY_AREA sq. deg.
-        if len(CORR_BINS) != len(bins)-1:
-            print '**Binning corrections mismatch %s' % BIN_CAT,bins,CORR_BINS
-            sys.exit(1)
-
-    # VVDF Bondi 2003 catalogue from web
-    elif BIN_CAT_FORM==2:
-        cat=numpy.genfromtxt(BIN_CAT)
-        cat[:,BIN_COL] *= 1000.0
         # 5 sigma:
         #cat=cat[numpy.where((cat[:,BIN_COL]/cat[:,BIN_COL+1])>0.0)]
+    elif BIN_CAT_FORM in [6]:
+        cat[:,BIN_COL] *= Jy2muJy
+    elif BIN_CAT_FORM in [1,4,5]:
+        pass
 
-    # LR-matched Bondi 2003 catalogue from Kim
-    elif BIN_CAT_FORM==3:
-        cat=numpy.genfromtxt(BIN_CAT)
-        cat[:,BIN_COL] *= 1000.0
-        if len(CORR_BINS) != len(bins)-1:
-            print '**Binning corrections mismatch %s' % BIN_CAT,bins,CORR_BINS
-            sys.exit(1)   
-
-     # 10C_LH catalogue
-    elif BIN_CAT_FORM==5:
-        cat=numpy.genfromtxt(BIN_CAT)
-
-    # Eliab's SDSS catalogue
-    elif BIN_CAT_FORM==6:
-        cat=numpy.genfromtxt(BIN_CAT)
-        cat[:,BIN_COL] *= 1.0e6
-        # 5 sigma:
-        #cat=cat[numpy.where((cat[:,BIN_COL]/cat[:,BIN_COL+1])>0.0)]
+    # Check the corrections
+    assert(len(CORR_BINS) == len(bins)-1),\
+      '**Binning corrections mismatch %s' % (BIN_CAT,bins,CORR_BINS)
 
     # Correct the fluxes for the resolution bias
     if CORR_RESOLUTION is not None:
@@ -120,7 +103,6 @@ def main():
         #plt.title('')
         plt.savefig(BOUT_HISTO)
         print '-> Look in %s' % BOUT_HISTO
-
 
     return 0
 
