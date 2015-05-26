@@ -28,7 +28,7 @@ binStyle=5
 nlaws=1
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150521f' # based on 140123a
+outdir='chains_150526a' # based on 140123a
 
 simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
@@ -49,7 +49,7 @@ simPolePosns=None
 NLAWS_SIM=0
 SIM_DO_CAT_NOISE=True
 SKADS_GO_VIA_MAP=False
-AREA_SIM=0.1
+AREA_SIM=0.156
 C_SIM=SLOPE_SIM=-99
 
 #-------------------------------------------------------------------------------
@@ -57,7 +57,7 @@ C_SIM=SLOPE_SIM=-99
 # Master parameters
 MOTD=''
 RESUME=False # Turn checkpointing on
-nb= 20#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
+nb= 8 #20#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
 #outdir='chains_150508a' # based on 140123a
@@ -78,7 +78,7 @@ SEED_SAMP=1234 # [-1 for clock]
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150521f'
+run_num_run='150526a'
 #dataset='first'
 #dataset='mca'
 dataset='10C_LH'
@@ -342,8 +342,8 @@ elif dataset == 'mca':
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
 elif dataset == '10C_LH':
-    datafile='10C_LH_binned.txt' #I think this should be binned sc file, not flux list
-    SURVEY_AREA=0.16 # sq. deg. This is the full LH field, may need to do just deep area later.
+    datafile='10C_LH_binned_wider.txt' #I think this should be binned sc file, not flux list
+    SURVEY_AREA=0.156 # sq. deg. 
     SURVEY_NOISE=21.0 # uJy
 
 #-------------------------------------------------------------------------------
@@ -764,8 +764,10 @@ elif binstyle=='video2014' or binstyle=='mca2014':
             bins=numpy.array([-69.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,80.0,85.0])
 
 elif binstyle=='10C_LH':
-    bins=numpy.array([-67.0,-60.0,-40.0,-30.0,-20.0,-10.0,-5.0,0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,50.0,60.0,70.0,80.0,110.0])
-    #bins=numpy.array([-80.0,-65.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,85.0])
+    #original bins
+    #bins=numpy.array([-67.0,-60.0,-40.0,-30.0,-20.0,-10.0,-5.0,0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,50.0,60.0,70.0,80.0,110.0])
+    #wider bins
+    bins=numpy.array([-67.0,-60.0,-20.0,0.0,20.0,40.0,80.0,120.0,200.0])
     bins[0]=-67.0
 
     #bins=bins[:38]

@@ -23,7 +23,7 @@ print 'Context is %s' % context
 MOTD=''
 RESUME=False # Turn checkpointing on
 nb= 40#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
-outdir='chains_150521f' # based on 140123a
+outdir='chains_150526a' # based on 140123a
 run_num=outdir.split('_')[-1]
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
 logfile='README.txt'
@@ -34,7 +34,7 @@ comment='Run portability tests'
 nlaws=4
 
 dataset='10C_LH'
-run_num_run='150521f'
+run_num_run='150526a'
 
 # Specify the data file (within outdir) and set up some survey parameters
 if dataset=='sdss':
@@ -43,7 +43,7 @@ if dataset=='sdss':
     SURVEY_NOISE=140.0 # uJy
 elif dataset == '10C_LH':
     datafile='10C_LH_binned.txt' #I think this should be binned sc file, not flux list
-    SURVEY_AREA=0.16 # sq. deg. This is the full LH field, may need to do just deep area later.
+    SURVEY_AREA=0.156 # sq. deg. 
     SURVEY_NOISE=21.0 # uJy
 
 #-------------------------------------------------------------------------------
@@ -67,7 +67,7 @@ if context=='b':
         BIN_CAT='10C_LH/WSRT_pix_vals.txt' #Lockman hole deep source catalogue
         BIN_CAT_CLIP=None
         BIN_COL=0 #best flux = col 15 for 10C cat in uJy
-        BOUT_CAT='10C_LH/10C_LH_binned.txt'
+        BOUT_CAT='10C_LH/10C_LH_binned_wider.txt'
         
 #-------------------------------------------------------------------------------
 
@@ -84,8 +84,10 @@ if binstyle=='sdss':
     assert(len(bins)-1==nb)
 
 elif binstyle=='10C_LH':
-    bins=numpy.array([-67.0,-60.0,-40.0,-30.0,-20.0,-10.0,-5.0,0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,50.0,60.0,70.0,80.0,110.0])
-    #bins=numpy.array([-80.0,-65.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,85.0])
+    #original bins
+    #bins=numpy.array([-67.0,-60.0,-40.0,-30.0,-20.0,-10.0,-5.0,0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,50.0,60.0,70.0,80.0,110.0])
+    #wider bins
+    bins=numpy.array([-67.0,-60.0,-20.0,0.0,20.0,40.0,80.0,120.0,200.0])
     bins[0]=-67.0
 
 nbins=len(bins)
