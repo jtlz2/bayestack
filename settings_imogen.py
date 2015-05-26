@@ -503,7 +503,7 @@ if os.path.exists(datafile):
         datafile='%s/sim_extracted.txt' % dataset
     data=numpy.genfromtxt(datafile)
 
-    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca','sdss','10C_LH']:
+    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca','sdss','10C_LH','10C_LH_t2']:
         bin_medians = data[:,2] # uJy [not that they are ever used -?]
         # In the table file, counts are for that SURVEY_AREA (so process THOSE)
         ksRaw       = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
@@ -952,6 +952,12 @@ SMIN_MIN=0.01
 SMIN_MAX=25.0
 SMAX_MIN=25.0
 SMAX_MAX=110.0
+
+#10C tier 2 priors
+SMIN_MIN=0.01
+SMIN_MAX=50.0
+SMAX_MIN=50.0
+SMAX_MAX=250.0
 
 # VIDEO > 5 sigma priors
 #SMIN_MIN=0.01        # uJy

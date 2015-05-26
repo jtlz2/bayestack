@@ -55,7 +55,7 @@ class surveySetup(object):
             self.SURVEY_NOISE=noise # uJy [median; mean=16.3]
             self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
-        elif whichSurvey in ['sdss','10C_LH']:
+        elif whichSurvey in ['sdss','10C_LH','10C_LH_t2']:
             self.SURVEY_AREA=area # sq.deg.
             self.SURVEY_NOISE=noise # uJy [median=??; mean=??]
 
