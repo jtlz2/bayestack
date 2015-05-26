@@ -19,6 +19,7 @@ BIN_CAT_FORMs:
 4 VIDEO catalogue from stacker.py [JZ]
 5 10C_LH catalogue [Imogen]
 6 SDSS catalogue [Eliab]
+7 10C_LH tier 2 [Imogen]
 
 """
 
@@ -52,6 +53,8 @@ def main():
 
     print 'Reading from %s' % BIN_CAT
     cat=numpy.genfromtxt(BIN_CAT)
+    print 'BIN_COL = %f' % BIN_COL
+    print cat[:,0]
 
     # Convert unit if required
     if BIN_CAT_FORM in [0,2,3]:
@@ -60,7 +63,7 @@ def main():
         #cat=cat[numpy.where((cat[:,BIN_COL]/cat[:,BIN_COL+1])>0.0)]
     elif BIN_CAT_FORM in [6]:
         cat[:,BIN_COL] *= Jy2muJy
-    elif BIN_CAT_FORM in [1,4,5]:
+    elif BIN_CAT_FORM in [1,4,5,7]:
         pass
 
     # Check the corrections
@@ -77,7 +80,7 @@ def main():
         cat=cat[numpy.where(cat[:,BIN_COL_CLIP]>BIN_CAT_CLIP)]
         #cat=cat[numpy.where(numpy.abs(cat[:,BIN_COL_CLIP])>BIN_CAT_CLIP)]
 
-    print 'S/uJy: %f -> %f' % (numpy.min(cat[:,BIN_COL]),numpy.max(cat[:,BIN_COL]))
+    #print 'S/uJy: %f -> %f' % (numpy.min(cat[:,BIN_COL]),numpy.max(cat[:,BIN_COL]))
 
     idl_s=False
     countUtils.writeCountsFile(BOUT_CAT,bins,cat[:,BIN_COL],SURVEY_AREA,\

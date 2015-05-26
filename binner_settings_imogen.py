@@ -75,10 +75,10 @@ if context=='b':
         BOUT_CAT='10C_LH/10C_LH_binned_wider.txt'
     elif dataset == '10C_LH_t2':
         BIN_CAT_FORM=7
-        BIN_CAT='10C_LH/WSRT_pix_vals_t2.txt' #Lockman hole deep source catalogue
+        BIN_CAT='10C_LH_t2/WSRT_pix_vals_t2.txt' #Lockman hole deep source catalogue
         BIN_CAT_CLIP=None
         BIN_COL=0 #best flux = col 15 for 10C cat in uJy
-        BOUT_CAT='10C_LH/10C_LH_binned_t2.txt'
+        BOUT_CAT='10C_LH_t2/10C_LH_binned_t2.txt'
         
 #-------------------------------------------------------------------------------
 
