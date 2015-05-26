@@ -22,8 +22,8 @@ print 'Context is %s' % context
 # Master parameters
 MOTD=''
 RESUME=False # Turn checkpointing on
-nb= 40#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
-outdir='chains_150526a' # based on 140123a
+nb= 13#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
+outdir='chains_150526b' # based on 140123a
 run_num=outdir.split('_')[-1]
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
 logfile='README.txt'
@@ -33,8 +33,9 @@ comment='Run portability tests'
 # What to fit - SPL, TPL, XPL or QPL
 nlaws=4
 
-dataset='10C_LH'
-run_num_run='150526a'
+#dataset='10C_LH'
+dataset='10C_LH_t2'
+run_num_run='150526b'
 
 # Specify the data file (within outdir) and set up some survey parameters
 if dataset=='sdss':
@@ -45,6 +46,10 @@ elif dataset == '10C_LH':
     datafile='10C_LH_binned.txt' #I think this should be binned sc file, not flux list
     SURVEY_AREA=0.156 # sq. deg. 
     SURVEY_NOISE=21.0 # uJy
+elif dataset == '10C_LH_t2':
+    datafile='10C_LH_binned_t2.txt' 
+    SURVEY_AREA=0.310 # sq. deg. 
+    SURVEY_NOISE=45.0 # uJy
 
 #-------------------------------------------------------------------------------
 
@@ -68,11 +73,18 @@ if context=='b':
         BIN_CAT_CLIP=None
         BIN_COL=0 #best flux = col 15 for 10C cat in uJy
         BOUT_CAT='10C_LH/10C_LH_binned_wider.txt'
+    elif dataset == '10C_LH_t2':
+        BIN_CAT_FORM=7
+        BIN_CAT='10C_LH/WSRT_pix_vals_t2.txt' #Lockman hole deep source catalogue
+        BIN_CAT_CLIP=None
+        BIN_COL=0 #best flux = col 15 for 10C cat in uJy
+        BOUT_CAT='10C_LH/10C_LH_binned_t2.txt'
         
 #-------------------------------------------------------------------------------
 
 # Set up the binning
-binstyle='10C_LH'
+#binstyle='10C_LH'
+binstyle='10C_LH_t2'
 
 if binstyle=='sdss':
     #bins=numpy.linspace(-270.0,1000.0,8)
@@ -89,6 +101,10 @@ elif binstyle=='10C_LH':
     #wider bins
     bins=numpy.array([-67.0,-60.0,-20.0,0.0,20.0,40.0,80.0,120.0,200.0])
     bins[0]=-67.0
+
+elif binstyle=='10C_LH_t2':
+    bins=numpy.array([-355.0,-140.0,-80.0,-40.0,-20.0,-10.0,0.0,10.0,20.0,40.0,60.0,80.0,120.0,225.0])
+    bins[0]=-355.0
 
 nbins=len(bins)
 dbins=numpy.gradient(bins)

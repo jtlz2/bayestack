@@ -24,11 +24,11 @@ print 'Context is %s' % context
 # New-style settings <-- bayestack.py
 
 #dataset='video'
-binStyle=5
+binStyle=7
 nlaws=1
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150526a' # based on 140123a
+outdir='chains_150526b' # based on 140123a
 
 simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
@@ -57,7 +57,7 @@ C_SIM=SLOPE_SIM=-99
 # Master parameters
 MOTD=''
 RESUME=False # Turn checkpointing on
-nb= 8 #20#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
+nb= 13#8#20#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
 #outdir='chains_150508a' # based on 140123a
@@ -78,10 +78,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150526a'
+run_num_run='150526b'
 #dataset='first'
 #dataset='mca'
-dataset='10C_LH'
+#dataset='10C_LH'
+dataset='10C_LH_t2'
 
 #-------------------------------------------------------------------------------
 # Extraction settings
@@ -341,10 +342,14 @@ elif dataset == 'mca':
     datafile='bondi2003_mca.txt'
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
-elif dataset == '10C_LH':
+elif dataset == '10C_LH': #This is the deep hexagon
     datafile='10C_LH_binned_wider.txt' #I think this should be binned sc file, not flux list
     SURVEY_AREA=0.156 # sq. deg. 
     SURVEY_NOISE=21.0 # uJy
+elif dataset == '10C_LH_t2': #This is tier2
+    datafile='10C_LH_binned_t2.txt' 
+    SURVEY_AREA=0.310 # sq. deg. 
+    SURVEY_NOISE=45.0 # uJy
 
 #-------------------------------------------------------------------------------
 
@@ -422,6 +427,14 @@ if context=='b' or True:
         BIN_CAT_CLIP=None
         BIN_COL=0 #best flux = col 15 for 10C cat in uJy
         BOUT_CAT='10C_LH/10C_LH_binned.txt'
+
+    elif dataset == '10C_LH_t2':
+        BIN_CAT_FORM=7
+        BIN_CAT='10C_LH/WSRT_pix_vals_t2.txt' #Lockman hole deep source catalogue
+        BIN_CAT_CLIP=None
+        BIN_COL=0 #best flux = col 15 for 10C cat in uJy
+        BOUT_CAT='10C_LH/10C_LH_binned_t2.txt'
+
 
 #-------------------------------------------------------------------------------
 
@@ -572,7 +585,8 @@ SMAX_VVDF2=119230.0
 #binstyle='first'
 #binstyle='video2014'
 #binstyle='mca2014'
-binstyle='10C_LH'
+#binstyle='10C_LH'
+binstyle='10C_LH_t2'
 
 #-------------------------------------------------------------------------------
 
@@ -769,6 +783,10 @@ elif binstyle=='10C_LH':
     #wider bins
     bins=numpy.array([-67.0,-60.0,-20.0,0.0,20.0,40.0,80.0,120.0,200.0])
     bins[0]=-67.0
+
+elif binstyle=='10C_LH_t2':
+    bins=numpy.array([-355.0,-140.0,-80.0,-40.0,-20.0,-10.0,0.0,10.0,20.0,40.0,60.0,80.0,120.0,225.0])
+    bins[0]=-355.0
 
     #bins=bins[:38]
     assert(len(bins)-1==nb)
