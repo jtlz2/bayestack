@@ -25,10 +25,10 @@ print 'Context is %s' % context
 
 #dataset='video'
 binStyle=7
-nlaws=1
-floatNoise=False
-modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150526b' # based on 140123a
+nlaws=1 #no. of coeffs for poly, no. power-laws for ppl
+floatNoise=True
+modelFamily='ppl'#'ppl' 'poly' 'bins'
+outdir='chains_150527b' # based on 140123a
 
 simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
@@ -57,7 +57,7 @@ C_SIM=SLOPE_SIM=-99
 # Master parameters
 MOTD=''
 RESUME=False # Turn checkpointing on
-nb= 13#8#20#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
+nb= 13#8#20 t2 = 13, deep = 20, deep wider bins = 8
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
 #outdir='chains_150508a' # based on 140123a
@@ -347,7 +347,7 @@ elif dataset == '10C_LH': #This is the deep hexagon
     SURVEY_AREA=0.156 # sq. deg. 
     SURVEY_NOISE=21.0 # uJy
 elif dataset == '10C_LH_t2': #This is tier2
-    datafile='10C_LH_binned_t2.txt' 
+    datafile='10C_LH_binned_t2_test.txt' 
     SURVEY_AREA=0.310 # sq. deg. 
     SURVEY_NOISE=45.0 # uJy
 
@@ -423,17 +423,17 @@ if context=='b' or True:
 
     elif dataset == '10C_LH':
         BIN_CAT_FORM=5
-        BIN_CAT='10C_LH/WSRT_pix_vals.txt' #Lockman hole deep source catalogue
+        BIN_CAT='10C_LH/WSRT_pix_vals.txt'  #This file must have more than one column!
         BIN_CAT_CLIP=None
         BIN_COL=0 #best flux = col 15 for 10C cat in uJy
         BOUT_CAT='10C_LH/10C_LH_binned.txt'
 
     elif dataset == '10C_LH_t2':
         BIN_CAT_FORM=7
-        BIN_CAT='10C_LH/WSRT_pix_vals_t2.txt' #Lockman hole deep source catalogue
+        BIN_CAT='10C_LH_t2/WSRT_pix_vals_t2_test.txt' #This file must have more than one column!
         BIN_CAT_CLIP=None
         BIN_COL=0 #best flux = col 15 for 10C cat in uJy
-        BOUT_CAT='10C_LH/10C_LH_binned_t2.txt'
+        BOUT_CAT='10C_LH_t2/10C_LH_binned_t2_test.txt'
 
 
 #-------------------------------------------------------------------------------
