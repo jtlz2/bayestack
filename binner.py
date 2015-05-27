@@ -53,8 +53,6 @@ def main():
 
     print 'Reading from %s' % BIN_CAT
     cat=numpy.genfromtxt(BIN_CAT)
-    print 'BIN_COL = %f' % BIN_COL
-    print cat[:,0]
 
     # Convert unit if required
     if BIN_CAT_FORM in [0,2,3]:
