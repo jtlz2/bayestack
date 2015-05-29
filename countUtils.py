@@ -316,8 +316,8 @@ def calculateDnByDs(bins,counts,eucl=False,verbose=False,idl_style=True,
                     return_all=False):
     """
 
-    This function expects bins to be in uJy
-    The output units are uJy^-1, or uJy^1.5 if eucl=True
+    This function expects bins to be in Jy
+    The output units are Jy^-1, or Jy^1.5 if eucl=True
 
     The function is area-agnostic: sr^-1 -> sr^-1, deg^-2 -> deg^-2 etc.
 
