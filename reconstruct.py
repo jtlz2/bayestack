@@ -115,7 +115,7 @@ def main():
     # ...and output to file
     rstatsf='recon_stats.txt'
     rstatsf=os.path.join(outdir,rstatsf)
-    hdr='# median_flux_uJy dnds_2p5_Jy1p5srm1 delta_dnds_2p5_lower_Jy1p5srm1 delta_dnds_2p5_upper_Jy1p5srm1 skewness kurtosis'
+    hdr='# median_flux_uJy dnds_2p5_Jy1p5srm1 dnds_2p5_lower_limit_Jy1p5srm1 dnds_2p5_upper_limit_Jy1p5srm1 skewness kurtosis'
     fid = open(rstatsf,'w')
     print hdr
     print s
