@@ -18,9 +18,6 @@ if os.getenv('PBS_O_HOST') not in ['baltasar']:
     from matplotlib import pyplot as plt
 import pylab
 from profile_support import profile
-from utils import *
-import contour_plot
-from bayestackClasses import countModel
 
 param_file=sys.argv[-1]
 setf='%s.bayestack_settings' % param_file
@@ -47,8 +44,6 @@ def main():
     plt.yscale('log')
     #plt.xlim(bins[0],20.0*SURVEY_NOISE)
     #plt.ylim(0.5,1.0e3)
-    plt.xlabel('S/$\mu$Jy')
-    plt.ylabel('Number of objects')
 
     xrecon=s[:,0]; yrecon=s[:,1]
     yrecon_down=s[:,2]; yrecon_up=s[:,3]
