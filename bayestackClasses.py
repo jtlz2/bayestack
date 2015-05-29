@@ -44,24 +44,24 @@ class surveySetup(object):
     """
     Set up the survey parameters (assumed fixed)
     survey=surveySetup(whichSurvey)
+    
     """
 
     def __init__(self,whichSurvey,datafiles,areas,noises):
         self.whichSurvey=whichSurvey
         # Start handling multiple datafiles
+        self.datafile=self.datafiles[0]
+        self.SURVEY_AREA=self.areas[0]
+        self.SURVEY_NOISE=self.noises[0]
         self.datafiles=datafiles
         self.SURVEY_AREAS=areas
         self.SURVEY_NOISES=noises
-        if len(datafiles)==1:
-            self.datafile=datafiles[0]
-            self.SURVEY_AREA=areas[0]
-            self.SURVEY_NOISE=noises[0]
 
-        if whichSurvey in ['video'] or 'sim' in whichSurvey:
+        if whichSurvey in ['video']:# or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
             self.SURVEY_AREA=areas[0]*(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
-            self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
-            self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
+            #self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
+            #self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
 
 #-------------------------------------------------------------------------------
 
