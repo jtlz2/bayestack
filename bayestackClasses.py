@@ -159,6 +159,7 @@ class countModel(object):
         self.data,self.bins=self.loadData(self.survey.datafile)
         self.nbins=len(self.bins)-1
         self.binsMedian=medianArray(self.bins)
+        self.nsrc=int(self.data.sum())
         # And load any multiple data sets
         self.fdata={}; self.fbins={}; self.fnbins={}; self.fbinsMedian={}
         for df in self.survey.datafiles:
