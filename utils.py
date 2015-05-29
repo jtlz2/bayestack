@@ -663,10 +663,11 @@ def fetchStats(outdir,parameters,truth):
     for ip,param in enumerate(parameters):
         s=stats[ip]
         b=bf['parameters'][ip]
-        summary[param]=(b,s['median'],b-s['1sigma'][0],s['1sigma'][-1]-b)
+        print s['1sigma']
+        summary[param]=(b,s['median'],s['1sigma'][0],s['1sigma'][-1])
 
     # ugliest syntax ever!
-    print '\n# truth param bestfit median +/-'
+    print '\n# truth param bestfit median lower upper'
     for param in parameters:
         print '%7s'%param,'%.2f'%truth[param],' '.join(['%.2f'%s for s in summary[param]])
 
