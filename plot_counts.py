@@ -18,7 +18,9 @@ if os.getenv('PBS_O_HOST') not in ['baltasar']:
     from matplotlib import pyplot as plt
 import pylab
 from profile_support import profile
-from utils import sqDeg2sr
+import pymultinest
+from bayestackClasses import countModel
+from utils import sqDeg2sr,fetchStats
 
 param_file=sys.argv[-1]
 setf='%s.bayestack_settings' % param_file
@@ -38,13 +40,23 @@ def main():
     set_module=importlib.import_module(setf)
     globals().update(set_module.__dict__)
 
+    expt=countModel(modelFamily,nlaws,setf,[dataset],floatNoise)
+
+    # Fetch best-fit parameters and calculate best-fit line
+    #SMIN_MAP=drawmap[expt.parameters.index('S0')]
+    plotTruth=dict((name,-99.0) for name in expt.parameters)
+    stats=fetchStats(outdir,expt.parameters,plotTruth)
+    SMIN_MAP=stats['S0'][0]
+    SMIN_MAP_UPPER=stats['S0'][-2]
+    SMIN_MAP_LOWER=stats['S0'][-1]
+
     s=pylab.loadtxt('%s/recon_stats.txt'%outdir)
 
     fig = plt.figure()
     plt.xscale('log')
     plt.yscale('log')
-    #plt.xlim(bins[0],20.0*SURVEY_NOISE)
-    #plt.ylim(0.5,1.0e3)
+    plt.xlim(1.0,2000.0)
+    plt.ylim(0.01,10.0)
 
     xrecon=s[:,0]; yrecon=s[:,1]
     yrecon_down=s[:,2]; yrecon_up=s[:,3]
@@ -53,6 +65,12 @@ def main():
     plt.errorbar(xrecon,yrecon/SURVEY_AREA/sqDeg2sr,fmt='k',label='MAP estimate')
     plt.axvline(1.0*SURVEY_NOISE,color='b',alpha=0.2)
     plt.axvline(5.0*SURVEY_NOISE,color='b',alpha=0.2)
+    plt.axvline(SMIN_MAP,color='r',alpha=1.0)
+    plt.axvline(SMIN_MAP_UPPER,color='r',alpha=0.2)
+    plt.axvline(SMIN_MAP_LOWER,color='r',alpha=0.2)
+    plt.axvline(1.0*SURVEY_NOISE/numpy.sqrt(expt.nsrc),color='g',alpha=0.2)
+    plt.axvline(5.0*SURVEY_NOISE/numpy.sqrt(expt.nsrc),color='g',alpha=0.2)
+
     #plt.text(SURVEY_NOISE,0.16,'1 sigma',rotation=90,color='b',alpha=0.5)
     #plt.text(5.0*SURVEY_NOISE,0.16,'5 sigma',rotation=90,color='b',alpha=0.5)
 
