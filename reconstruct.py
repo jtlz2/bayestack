@@ -106,8 +106,8 @@ def main():
         #s[ibin,1]=tt     # peak
         s[ibin,1]=ymap[ibin] # MAP
         #print ymap
-        s[ibin,2]=ss[1]  # lower
-        s[ibin,3]=ss[2]  # upper
+        s[ibin,2]=ss[0]-ss[1]  # lower
+        s[ibin,3]=ss[2]-ss[0]  # upper
         s[ibin,4]=stats.skew(x) # skewness
         s[ibin,5]=stats.kurtosis(x) # kurtosis
         print ibin,s[ibin,0],s[ibin,1],dlow,dhigh,ss[1],ss[2],s[ibin,4],s[ibin,5]#,stats.skewtest(x)
@@ -115,7 +115,7 @@ def main():
     # ...and output to file
     rstatsf='recon_stats.txt'
     rstatsf=os.path.join(outdir,rstatsf)
-    hdr='# median_flux_uJy dnds_2p5_Jy1p5srm1 dnds_2p5_lower_limit_Jy1p5srm1 dnds_2p5_upper_limit_Jy1p5srm1 skewness kurtosis'
+    hdr='# median_flux_uJy dnds_2p5_Jy1p5srm1 delta_dnds_2p5_lower_Jy1p5srm1 delta_dnds_2p5_upper_Jy1p5srm1 skewness kurtosis'
     fid = open(rstatsf,'w')
     print hdr
     print s
