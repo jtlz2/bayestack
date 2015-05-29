@@ -50,12 +50,12 @@ class surveySetup(object):
     def __init__(self,whichSurvey,datafiles,areas,noises):
         self.whichSurvey=whichSurvey
         # Start handling multiple datafiles
-        self.datafile=self.datafiles[0]
-        self.SURVEY_AREA=self.areas[0]
-        self.SURVEY_NOISE=self.noises[0]
         self.datafiles=datafiles
         self.SURVEY_AREAS=areas
         self.SURVEY_NOISES=noises
+        self.datafile=datafiles[0]
+        self.SURVEY_AREA=areas[0]
+        self.SURVEY_NOISE=noises[0]
 
         if whichSurvey in ['video']:# or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
