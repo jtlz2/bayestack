@@ -18,6 +18,7 @@ if os.getenv('PBS_O_HOST') not in ['baltasar']:
     from matplotlib import pyplot as plt
 import pylab
 from profile_support import profile
+from utils import sqDeg2sr
 
 param_file=sys.argv[-1]
 setf='%s.bayestack_settings' % param_file
@@ -47,8 +48,9 @@ def main():
 
     xrecon=s[:,0]; yrecon=s[:,1]
     yrecon_down=s[:,2]; yrecon_up=s[:,3]
-    plt.fill_between(xrecon,yrecon-yrecon_down,yrecon+yrecon_up,color='k',alpha=0.2)
-    plt.errorbar(xrecon,yrecon,fmt='k',label='MAP estimate')
+    plt.fill_between(xrecon,(yrecon-yrecon_down)/SURVEY_AREA/sqDeg2sr,\
+                     (yrecon+yrecon_up)/SURVEY_AREA/sqDeg2sr,color='k',alpha=0.2)
+    plt.errorbar(xrecon,yrecon/SURVEY_AREA/sqDeg2sr,fmt='k',label='MAP estimate')
     plt.axvline(1.0*SURVEY_NOISE,color='b',alpha=0.2)
     plt.axvline(5.0*SURVEY_NOISE,color='b',alpha=0.2)
     #plt.text(SURVEY_NOISE,0.16,'1 sigma',rotation=90,color='b',alpha=0.5)
