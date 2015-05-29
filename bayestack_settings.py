@@ -25,10 +25,10 @@ print 'Context is %s' % context
 
 #dataset='video'
 binStyle=1
-nlaws=4
+nlaws=2
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150511d' # based on 140123a
+outdir='chains_150522a' # based on 140123a
 
 simFamily= 'skads' # 'array' 'skads' 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
@@ -45,7 +45,7 @@ dump='R.txt'
 output='dummy.txt'
 verbose=True
 skadsFile='skads/1sqdeg_0p02uJy.txt'
-simArrayFile='sims/150511c/sim_noiseless.txt'
+simArrayFile='sims/150522a/sim_noiseless.txt'
 simPolePosns=None
 
 #-------------------------------------------------------------------------------
@@ -70,11 +70,11 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150511d'
+dataset='sims/150522a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150511d'
+run_num_run='150522a'
 #dataset='first'
 #dataset='mca'
 
@@ -237,7 +237,7 @@ SMAX_SKADS=85.0 # uJy
 #SMAX_SKADS=600000.0 # uJy
 
 
-SIM_DO_CAT_NOISE=False
+SIM_DO_CAT_NOISE=True
 SKADS_GO_VIA_MAP=True
 NSKADS=None#72000 # or None to use all available sources for simulation
 #NSKADS_RESCALING=373936.0/71962.0

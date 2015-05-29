@@ -37,7 +37,7 @@ def main():
     globals().update(set_module.__dict__)
 
     # Set up the experiment
-    expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
+    expt=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise)
 
     f='%spost_equal_weights.dat' % outstem
     f=os.path.join(outdir,f)

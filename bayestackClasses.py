@@ -6,7 +6,7 @@ May 2015
 
 Especially countModel, e.g.
 
-expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
+expt=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise)
 
 then exposes
 
@@ -46,20 +46,27 @@ class surveySetup(object):
     survey=surveySetup(whichSurvey)
     """
 
-    def __init__(self,whichSurvey,datafile,area,noise):
+    def __init__(self,whichSurvey,datafiles,areas,noises):
         self.whichSurvey=whichSurvey
-        self.datafile=datafile
+        # Start handling multiple datafiles
+        self.datafiles=datafiles
+        self.SURVEY_AREAS=areas
+        self.SURVEY_NOISES=noises
+        if len(datafiles)==1:
+            self.datafile=datafiles[0]
+            self.SURVEY_AREA=areas[0]
+            self.SURVEY_NOISE=noises[0]
+
         if whichSurvey in ['video'] or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
-            self.SURVEY_AREA=area *(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
-            self.SURVEY_NOISE=noise # uJy [median; mean=16.3]
+            self.SURVEY_AREA=areas[0]*(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
+            self.SURVEY_NOISE=noises[0] # uJy [median; mean=16.3]
             self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
         elif whichSurvey in ['sdss','10C_LH','10C_LH_t2']:
-            self.SURVEY_AREA=area # sq.deg.
-            self.SURVEY_NOISE=noise # uJy [median=??; mean=??]
+            self.SURVEY_AREA=areas[0] # sq.deg.
+            self.SURVEY_NOISE=noises[0] # uJy [median=??; mean=??]
 
-            
 #-------------------------------------------------------------------------------
 
 class model(object):
@@ -110,11 +117,11 @@ class countModel(object):
 
     """
     usage:
-    counts=countModel(kind,order,settingsf,whichSurvey,whichBins)
+    expt=countModel(kind,order,settingsf,whichSurvey,floatNoise)
     
     """
 
-    def __init__(self,kind,order,settingsf,whichSurvey,whichBins,floatNoise):
+    def __init__(self,kind,order,settingsf,whichSurvey,floatNoise):
         # Import settings
         print 'Settings file is %s' % settingsf
         set_module=importlib.import_module(settingsf)
@@ -152,10 +159,12 @@ class countModel(object):
         self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
 
         # Load the data and derive the bins
-        self.survey=surveySetup(whichSurvey,datafile,SURVEY_AREA,SURVEY_NOISE)
-        self.data,self.bins=self.loadData(self.survey.datafile)
-        self.nbins=len(self.bins)-1
-        self.binsMedian=medianArray(self.bins)
+        self.survey=surveySetup(whichSurvey,[datafile],[SURVEY_AREA],[SURVEY_NOISE])
+        self.data={}; self.bins={}; self.nbins={}; self.binsMedian={}
+        for df in self.survey.datafiles:
+            self.data[df],self.bins[df]=self.loadData(df)
+            self.nbins[df]=len(self.bins[df])-1
+            self.binsMedian[df]=medianArray(self.bins[df])
 
         return
 

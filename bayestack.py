@@ -19,6 +19,7 @@ import dill
 MPI._p_pickle.dumps = dill.dumps
 MPI._p_pickle.loads = dill.loads
 
+# Need to change this so it's master only, i.e. incorporate in main()
 __name_cached=__name__
 if __name__=='__main__':
     param_file=sys.argv[-1]
@@ -32,7 +33,7 @@ __name__=__name_cached
 def main():
 
     settingsf=param_file.split('.')[-2]
-    expt=countModel(modelFamily,nlaws,settingsf,dataset,binStyle,floatNoise)
+    expt=countModel(modelFamily,nlaws,settingsf,[dataset],floatNoise)
 
     # Set up MPI
     world=MPI.COMM_WORLD

@@ -58,7 +58,7 @@ def main():
     globals().update(set_module.__dict__)
 
     # Load prior ranges etc.
-    expt=countModel(modelFamily,nlaws,setf,dataset,binStyle,floatNoise)
+    expt=countModel(modelFamily,nlaws,setf,dataset,floatNoise)
     # Insert hacks here
     #plotRanges['C']=[0,200]
     labelDict=dict((name,name) for name in expt.parameters)
