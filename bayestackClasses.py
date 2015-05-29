@@ -60,12 +60,8 @@ class surveySetup(object):
         if whichSurvey in ['video'] or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
             self.SURVEY_AREA=areas[0]*(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
-            self.SURVEY_NOISE=noises[0] # uJy [median; mean=16.3]
             self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
-        elif whichSurvey in ['sdss','10C_LH','10C_LH_t2']:
-            self.SURVEY_AREA=areas[0] # sq.deg.
-            self.SURVEY_NOISE=noises[0] # uJy [median=??; mean=??]
 
 #-------------------------------------------------------------------------------
 
@@ -160,11 +156,15 @@ class countModel(object):
 
         # Load the data and derive the bins
         self.survey=surveySetup(whichSurvey,[datafile],[SURVEY_AREA],[SURVEY_NOISE])
-        self.data={}; self.bins={}; self.nbins={}; self.binsMedian={}
+        self.data,self.bins=self.loadData(self.survey.datafile)
+        self.nbins=len(self.bins)-1
+        self.binsMedian=medianArray(self.bins)
+        # And load any multiple data sets
+        self.fdata={}; self.fbins={}; self.fnbins={}; self.fbinsMedian={}
         for df in self.survey.datafiles:
-            self.data[df],self.bins[df]=self.loadData(df)
-            self.nbins[df]=len(self.bins[df])-1
-            self.binsMedian[df]=medianArray(self.bins[df])
+            self.fdata[df],self.fbins[df]=self.loadData(df)
+            self.fnbins[df]=len(self.fbins[df])-1
+            self.fbinsMedian[df]=medianArray(self.fbins[df])
 
         return
 
