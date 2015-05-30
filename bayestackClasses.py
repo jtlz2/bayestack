@@ -157,6 +157,7 @@ class countModel(object):
         # Load the data and derive the bins
         self.survey=surveySetup(whichSurvey,[datafile],[SURVEY_AREA],[SURVEY_NOISE])
         self.data,self.bins=self.loadData(self.survey.datafile)
+        #print self.data
         self.nbins=len(self.bins)-1
         self.binsMedian=medianArray(self.bins)
         self.nsrc=int(self.data.sum())
@@ -252,8 +253,9 @@ class countModel(object):
     #                                      self.survey.radioSynthOmegaSr,numerical=False)
     #    return self.SminPriorOK
 
-    def dn_by_ds(self,return_all):
-        return countUtils.calculateDnByDs(self.bins,self.dataRealisation,\
+    def dn_by_ds(self,return_all=None,data=None):
+        if data is None: data=self.dataRealisation
+        return countUtils.calculateDnByDs(self.bins/1.0e6,data,\
                                 return_all=return_all)
 
     def erfs(self,S,Sbin,sigma):
