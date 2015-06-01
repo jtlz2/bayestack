@@ -47,7 +47,7 @@ def main():
     nsamp=x.shape[0]
     ncols=x.shape[1] # The fifth [seventh] column is the posterior value
     # There must be a better way, but:
-    z=numpy.zeros((nsamp,ncols+expt.nbins-1))
+    z=numpy.zeros((nsamp,ncols-1+expt.nbins))
     z[:,:-(expt.nbins-1)]=x
     # Shift posterior values to end
     z[:,-1]=z[:,ncols-1] # Copy...

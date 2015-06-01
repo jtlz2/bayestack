@@ -229,7 +229,7 @@ class countModel(object):
             Smax=params[paramsList.index('S%i'%iSmax)]
             evaluations=[countUtils.powerLawFuncWrap(nlaws,S,C,alpha,-99.0,beta,\
                         Smin/1.0e6,Smax/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,\
-                        self.survey.SURVEY_AREA) for S in self.binsMedian/1.0e6]
+                        self.survey.SURVEY_AREA*sqDeg2sr) for S in self.binsMedian/1.0e6]
             return evaluations
         else:
             print '***%s unsupported right now!' % self.family
