@@ -51,8 +51,11 @@ def main():
     SMIN_MAP_LOWER=stats['S0'][-1]
 
     # Calculate dn/ds for the data
-    j,dn_by_ds_eucl,dn_by_ds_errs,j,j=expt.dn_by_ds(return_all=True,data=expt.data)
-
+    j,dn_by_ds_eucl,dn_by_ds_errs,dnbdsb,j=expt.dn_by_ds(return_all=True,data=expt.data)
+    d=numpy.genfromtxt('%s/sdss_dr12s1.txt'%outdir)
+    #for b in range(expt.nbins):
+    #    print b,expt.binsMedian[b],dnbdsb[b]
+    #sys.exit(0)
     # Load the reconstruction
     s=pylab.loadtxt('%s/recon_stats.txt'%outdir)
 
@@ -66,7 +69,7 @@ def main():
     print expt.binsMedian
     plt.errorbar(expt.binsMedian,dn_by_ds_eucl/SURVEY_AREA/sqDeg2sr,\
                  fmt='b+',yerr=dn_by_ds_errs/SURVEY_AREA/sqDeg2sr,label='data')
-    
+
     # Plot the reconstruction
     xrecon=s[:-1,0]; yrecon=s[:-1,1]
     yrecon_down=s[:-1,2]; yrecon_up=s[:-1,3]
