@@ -73,6 +73,7 @@ def main():
     # Plot the reconstruction
     xrecon=s[:-1,0]; yrecon=s[:-1,1]
     yrecon_down=s[:-1,2]; yrecon_up=s[:-1,3]
+
     plt.fill_between(xrecon,(yrecon-yrecon_down),\
                      (yrecon+yrecon_up),color='k',alpha=0.2)
     plt.errorbar(xrecon,yrecon,fmt='k',label='MAP estimate')
@@ -88,7 +89,6 @@ def main():
     plt.axvspan(1.0*SURVEY_NOISE/numpy.sqrt(expt.nsrc),\
                 5.0*SURVEY_NOISE/numpy.sqrt(expt.nsrc),alpha=0.1,color='g',\
                 label=r'$\left(1-5\right)\sigma/\sqrt{N=%s}$'%expt.nsrc)
-
 
     #plt.text(SURVEY_NOISE,0.16,'1 sigma',rotation=90,color='b',alpha=0.5)
     #plt.text(5.0*SURVEY_NOISE,0.16,'5 sigma',rotation=90,color='b',alpha=0.5)
