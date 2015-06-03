@@ -26,27 +26,28 @@ print 'Context is %s' % context
 #dataset='video'
 binStyle=7
 nlaws=1 #no. of coeffs for poly, no. power-laws for ppl
-floatNoise=True
-modelFamily='ppl'#'ppl' 'poly' 'bins'
-outdir='chains_150527b' # based on 140123a
+floatNoise=False
+modelFamily='poly'#'ppl' 'poly' 'bins'
+outdir='chains_150603c' # based on 140123a
 
-simFamily= 'skads' # 'skads' # 'ppl' 'poly' 'bins' 'test'
-SMIN_SIM=0.01 # uJy
-SMAX_SIM=105.0 # uJy
-simParams=[SMIN_SIM,SMAX_SIM]
-simParamsList=['S0','S1']
+simFamily= 'poly' # 'skads' # 'ppl' 'poly' 'bins' 'test'
+SMIN_SIM=0.01#0.001#0.01 # uJy
+SMAX_SIM=105.0#90000#105.0 # uJy
+P0=1.0
+simParams=[SMIN_SIM,SMAX_SIM,P0]
+simParamsList=['S0','S1','p0']
 #simBins=numpy.linspace(-65.0,85.0,26)
 simBins=numpy.array([-85.0,-65.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,85.0])
 SEED_SIM=1234
-NSIM=2000
+NSIM=20000 #374996 sources in 1 sq deg of skads
 NOISE_SIM=21.0 # uJy
 dump='R.txt'
 output='dummy.txt'
 verbose=True
 skadsFile='skads/1sqdeg_0p02uJy_18GHz.txt'
-simArrayFile='sims/150520a/sim_noiseless.txt'
+simArrayFile='sims/150528b/sim_noiseless.txt'
 simPolePosns=None
-NLAWS_SIM=0
+NLAWS_SIM=1
 SIM_DO_CAT_NOISE=True
 SKADS_GO_VIA_MAP=False
 AREA_SIM=0.156
@@ -74,15 +75,15 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-#dataset='sims/150521a'
+dataset='sims/150603c'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150526b'
+run_num_run='150603c'
 #dataset='first'
 #dataset='mca'
 #dataset='10C_LH'
-dataset='10C_LH_t2'
+#dataset='10C_LH_t2'
 
 #-------------------------------------------------------------------------------
 # Extraction settings
@@ -100,22 +101,22 @@ if True or context=='e':
     #perGalCatForm=0
     #perGalCat='cats/smap_scat.txt'
 
-    useInjectedMap=False
+    useInjectedMap=True
     #perGalUpsampleRate=None # if not None, do this on-the-fly; -ve -> read from file
     perGalUpsampleRate=-8 # if not None, do this on-the-fly; -ve -> read from file
     if perGalUpsampleRate is not None:
         injectedMap='sim_map_x%s.fits' % abs(perGalUpsampleRate)
     else:
         injectedMap='sim_map.fits'
-    injectedMapDir=os.path.join('/Users/jtlz2/video/lumfunc-archive/sims-archive',dataset)
+    injectedMapDir=os.path.join('/Users/imogen/src/bayestack/fake_map',dataset)
     positionsf='posns.txt'
     injectAperturePhot=True
     do_sim_posns=None#os.path.join(dataset,positionsf) # or None to not do this
     if useInjectedMap:
         perGalRadioMap=os.path.join(injectedMapDir,injectedMap)
     else:
-        perGalRadioMap='/Users/jtlz2/video/vla/VLA-VVDS-1.4GHZ.FITS'
-    perGalNoiseMap='/Users/jtlz2/video/vla/backrms.fits'
+        perGalRadioMap=='/Users/imogen/Dropbox/LOCKMAN_DEEP/DATA_140714/AMI012_aips__a.fits'
+    perGalNoiseMap='Users/imogen/Dropbox/LOCKMAN_DEEP/DATA_140714/AMI012_aips_noise_a.fits'
 
     if perGalUpsampleRate is None:
         upsampledMap=perGalRadioMap; upsampledNoise=perGalNoiseMap
@@ -446,6 +447,7 @@ if context=='u' or context == 'i':
         outputNoiseMap='/Users/imogen/stacking/inject_noise%i.fits' % upsamplingFactor
     injectInputMap='/Users/imogen/Dropbox/LOCKMAN_DEEP/DATA_140714/AMI012_aips__a.fits'
     injectInputNoiseMap='Users/imogen/Dropbox/LOCKMAN_DEEP/DATA_140714/AMI012_aips_noise_a.fits'
+    injectedMapDir=os.path.join('/Users/imogen/src/bayestack/fake_map',dataset)
     if useInjectedMap and context != 'i':
         inputMap=os.path.join(dataset,injectedMap)
         outputMap=os.path.join(dataset,'sim_map_x2.fits')
@@ -465,7 +467,7 @@ if context=='i' or True:
     injectionNoise=NOISE_SIM*10.0 # 48.0240 is for NOISE_SIM=16.2 uJy - need to figure this out!
     injectRecyclePositions=False
     injectPostageStampRadius=8.0 # pixels/upsamplingFactor
-    injectUseSKADSPosns=False
+    injectUseSKADSPosns=True
     injectNumberOfSources=None # or None to inject all sources
     injectNumberOfSourcesExtracted=None # or None to extract all sources
     injectRandomizeExtractedPosns=False
@@ -585,8 +587,8 @@ SMAX_VVDF2=119230.0
 #binstyle='first'
 #binstyle='video2014'
 #binstyle='mca2014'
-#binstyle='10C_LH'
-binstyle='10C_LH_t2'
+binstyle='10C_LH'
+#binstyle='10C_LH_t2'
 
 #-------------------------------------------------------------------------------
 
@@ -1019,8 +1021,8 @@ SMAX_MAX=250.0
 #======================================================
 
 # Priors for polynomial coefficients
-POLYCOEFF_MIN=-3.0
-POLYCOEFF_MAX=3.0
+POLYCOEFF_MIN=-10.0
+POLYCOEFF_MAX=10.0
 
 # Priors for bin/pole/node amplitudes
 POLEAMPS_PRIOR='LOG'
