@@ -64,7 +64,7 @@ def main():
         cat[:,BIN_COL] *= 1000.0 # mJy -> uJy in SURVEY_AREA sq. deg.
         # 5 sigma:
         #cat=cat[numpy.where((cat[:,BIN_COL]/cat[:,BIN_COL+1])>0.0)]
-    elif BIN_CAT_FORM in [6]:
+    elif BIN_CAT_FORM in [6,8]:
         cat[:,BIN_COL] *= Jy2muJy
     else:
         pass
