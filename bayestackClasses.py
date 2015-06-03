@@ -231,11 +231,18 @@ class countModel(object):
                         Smin/1.0e6,Smax/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,\
                         1.0) for S in self.binsMedian/1.0e6]
                         #self.survey.SURVEY_AREA*sqDeg2sr) for S in self.binsMedian/1.0e6]
-
-            return evaluations
+        elif self.kind=='poly':
+            paramsList=self.parameters
+            Smin=params[paramsList.index('S0')]
+            Smax=params[paramsList.index('S1')]
+            coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('p')]
+            S_1=1.0 # ref flux
+            evaluations=[countUtils.polyFunc(S,S_1,Smin,Smax,\
+                                             coeffs) for S in self.binsMedian/1.0e6]
         else:
             print '***%s unsupported right now!' % self.family
             return
+        return evaluations
 
     def secondMoment(self,Slower,Supper):
         return self.momentN(Slower,Supper,2)
