@@ -240,7 +240,7 @@ class countModel(object):
             evaluations=[countUtils.polyFunc(S,S_1,Smin,Smax,\
                                              coeffs) for S in self.binsMedian/1.0e6]
         else:
-            print '***%s unsupported right now!' % self.family
+            print '***%s unsupported right now!' % self.kind
             return
         return evaluations
 
