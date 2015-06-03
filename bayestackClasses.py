@@ -237,7 +237,7 @@ class countModel(object):
             Smax=params[paramsList.index('S1')]
             coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('p')]
             S_1=1.0 # ref flux
-            evaluations=[countUtils.polyFunc(S,S_1,Smin,Smax,\
+            evaluations=[1.0 * countUtils.polyFunc(S,S_1,Smin,Smax,\
                                              coeffs) for S in self.binsMedian/1.0e6]
         else:
             print '***%s unsupported right now!' % self.kind
