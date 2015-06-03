@@ -93,7 +93,7 @@ def main():
         # Now plot a histogram of fluxes to file, with fine binning
         print 'Flux range/uJy = %f -> %f' % (cat[:,BIN_COL].min(),cat[:,BIN_COL].max())
         fig = plt.figure()
-        binwidth=50.0
+        binwidth=0.1*SURVEY_NOISE
         n,b,p=plt.hist(cat[:,BIN_COL], bins=numpy.arange(bins[0],(20.0*SURVEY_NOISE)+binwidth,binwidth),histtype='step',color='black')
         plt.yscale('log')
         plt.xlim(bins[0],20.0*SURVEY_NOISE)
