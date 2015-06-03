@@ -3,7 +3,7 @@
 """
 This is binner.py
 Jonathan Zwart
-May 2015
+June 2015
 
 Bin data set for bayestack.py
 
@@ -20,6 +20,11 @@ BIN_CAT_FORMs:
 5 10C_LH catalogue [Imogen]
 6 SDSS catalogue [Eliab]
 7 10C_LH tier 2 [Imogen]
+8 ELAIS-N1 JVLA [JZ]
+9 ELAIS-N1 GMRT [JZ]
+
+*** IF YOUR CATALOGUE IS IN MUJY YOU NEED
+    TAKE NO FURTHER ACTION IN THIS FILE ***
 
 """
 
@@ -61,7 +66,7 @@ def main():
         #cat=cat[numpy.where((cat[:,BIN_COL]/cat[:,BIN_COL+1])>0.0)]
     elif BIN_CAT_FORM in [6]:
         cat[:,BIN_COL] *= Jy2muJy
-    elif BIN_CAT_FORM in [1,4,5,7]:
+    else:
         pass
 
     # Check the corrections
