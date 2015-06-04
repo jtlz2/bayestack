@@ -106,7 +106,9 @@ def main():
     #plt.text(5.0*SURVEY_NOISE,0.16,'5 sigma',rotation=90,color='b',alpha=0.5)
 
     f=10
-    plt.legend(loc='upper left',prop={'size':12},frameon=False,numpoints=1)
+    legend=plt.legend(loc='upper left',prop={'size':12},frameon=True,numpoints=1)
+    frame = legend.get_frame()
+    frame.set_facecolor('white')
     plt.xlabel('$S/\mu\mathrm{Jy}$',fontsize=f)
     plt.ylabel('$nS^{2.5}/\mathrm{sr}^{-1}\mathrm{Jy}^{1.5}$',fontsize=f)
 
