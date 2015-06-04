@@ -69,13 +69,15 @@ def main():
     # Convert drawmap into correct units etc.
     power=2.5
     ymap=expt.evaluate(expt.convertPosterior(drawmap,power))
-    if expt.kind=='poly':ymap*=numpy.power(expt.binsMedian/1.0e6,2.5)
+    if expt.kind!='ppl':
+        ymap*=numpy.power(expt.binsMedian/1.0e6,2.5)
     #print drawmap
     #print ymap
     #sys.exit(0)
     for isamp in xrange(nsamp):
         z[isamp,ncols-1:]=expt.evaluate(expt.convertPosterior(z[isamp,:],power))
-        if expt.kind=='poly':z[isamp,ncols-1:]*=numpy.power(expt.binsMedian/1.0e6,2.5)
+        if expt.kind!='ppl':
+            z[isamp,ncols-1:]*=numpy.power(expt.binsMedian/1.0e6,2.5)
 
     # Blanking, 0.0 -> NaN
     z[numpy.where(z==0.0)]='NaN'
