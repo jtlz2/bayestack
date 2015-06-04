@@ -52,9 +52,10 @@ def main():
 
     # Calculate dn/ds for the data
     j,dn_by_ds_eucl,dn_by_ds_errs,dnbdsb,j=expt.dn_by_ds(return_all=True,data=expt.data)
-    #d=numpy.genfromtxt('%s/sdss_dr12s1.txt'%outdir)
-    #if 'sim' in dataset:
-    d=numpy.genfromtxt(os.path.join(outdir,'sim.txt'))
+    if dataset=='sdss':
+        d=numpy.genfromtxt('%s/sdss_dr12s1.txt'%outdir)
+    elif 'sim' in dataset:
+        d=numpy.genfromtxt(os.path.join(outdir,'sim.txt'))
 
     #for b in range(expt.nbins):
     #    print b,expt.binsMedian[b],dnbdsb[b]
@@ -70,10 +71,10 @@ def main():
     #plt.ylim(1.0e11,1.0e13)
 
     # Plot the data
-    print expt.binsMedian
-    print dn_by_ds_eucl
-    print SURVEY_AREA
-    print expt.data
+    #print expt.binsMedian
+    #print dn_by_ds_eucl
+    #print SURVEY_AREA
+    #print expt.data
     plt.errorbar(expt.binsMedian[numpy.where(dn_by_ds_eucl>0)],\
                  dn_by_ds_eucl[numpy.where(dn_by_ds_eucl>0)]/SURVEY_AREA/sqDeg2sr,\
                  fmt='b+',yerr=dn_by_ds_errs[numpy.where(dn_by_ds_eucl>0)]\

@@ -71,9 +71,7 @@ def main():
     ymap=expt.evaluate(expt.convertPosterior(drawmap,power))
     if expt.kind!='ppl':
         ymap*=numpy.power(expt.binsMedian/1.0e6,2.5)
-    #print drawmap
-    #print ymap
-    #sys.exit(0)
+
     for isamp in xrange(nsamp):
         z[isamp,ncols-1:]=expt.evaluate(expt.convertPosterior(z[isamp,:],power))
         if expt.kind!='ppl':
