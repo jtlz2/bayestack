@@ -52,7 +52,10 @@ def main():
 
     # Calculate dn/ds for the data
     j,dn_by_ds_eucl,dn_by_ds_errs,dnbdsb,j=expt.dn_by_ds(return_all=True,data=expt.data)
-    d=numpy.genfromtxt('%s/sdss_dr12s1.txt'%outdir)
+    #d=numpy.genfromtxt('%s/sdss_dr12s1.txt'%outdir)
+    #if 'sim' in dataset:
+    d=numpy.genfromtxt(os.path.join(outdir,'sim.txt'))
+
     #for b in range(expt.nbins):
     #    print b,expt.binsMedian[b],dnbdsb[b]
     #sys.exit(0)
@@ -62,21 +65,29 @@ def main():
     fig = plt.figure()
     plt.xscale('log')
     plt.yscale('log')
-    plt.xlim(1.0,2000.0)
-    plt.ylim(1.0e-6,0.01)
+    #plt.xlim(1.0,2000.0)
+    #plt.ylim(1.0e-6,0.01)
+    #plt.ylim(1.0e11,1.0e13)
 
     # Plot the data
     print expt.binsMedian
-    plt.errorbar(expt.binsMedian,dn_by_ds_eucl/SURVEY_AREA/sqDeg2sr,\
-                 fmt='b+',yerr=dn_by_ds_errs/SURVEY_AREA/sqDeg2sr,label='data')
+    print dn_by_ds_eucl
+    print SURVEY_AREA
+    print expt.data
+    plt.errorbar(expt.binsMedian[numpy.where(dn_by_ds_eucl>0)],\
+                 dn_by_ds_eucl[numpy.where(dn_by_ds_eucl>0)]/SURVEY_AREA/sqDeg2sr,\
+                 fmt='b+',yerr=dn_by_ds_errs[numpy.where(dn_by_ds_eucl>0)]\
+                 /SURVEY_AREA/sqDeg2sr,label='data')
 
     # Plot the reconstruction
     xrecon=s[:-1,0]; yrecon=s[:-1,1]
     yrecon_down=s[:-1,2]; yrecon_up=s[:-1,3]
 
-    plt.fill_between(xrecon,(yrecon-yrecon_down),\
-                     (yrecon+yrecon_up),color='k',alpha=0.2)
-    plt.errorbar(xrecon,yrecon,fmt='k',label='MAP estimate')
+    plt.fill_between(xrecon[xrecon>SMIN_MAP],\
+                     (yrecon[xrecon>SMIN_MAP]-yrecon_down[xrecon>SMIN_MAP]),\
+                     (yrecon[xrecon>SMIN_MAP]+yrecon_up[xrecon>SMIN_MAP]),\
+                     color='k',alpha=0.2)
+    plt.errorbar(xrecon[xrecon>SMIN_MAP],yrecon[xrecon>SMIN_MAP],fmt='k',label='MAP estimate')
     plt.axvline(1.0*SURVEY_NOISE,color='b',alpha=0.2)
     plt.axvline(5.0*SURVEY_NOISE,color='b',alpha=0.2)
     plt.axvline(SMIN_MAP,color='r',alpha=1.0)

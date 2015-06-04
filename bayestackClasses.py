@@ -237,11 +237,12 @@ class countModel(object):
             Smax=params[paramsList.index('S1')]
             coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('p')]
             S_1=1.0 # ref flux
-            evaluations=[1.0 * countUtils.polyFunc(S,S_1,Smin/1.0e6,Smax/1.0e6,\
+            evaluations=[1.0 * countUtils.polyFunc(S,S_1/1.0e6,Smin/1.0e6,Smax/1.0e6,\
                                              coeffs) for S in self.binsMedian/1.0e6]
         else:
             print '***%s unsupported right now!' % self.kind
             return
+        #print evaluations
         return evaluations
 
     def secondMoment(self,Slower,Supper):
@@ -280,7 +281,7 @@ class countModel(object):
             #      = draw[self.parameters.index(p)]/1.0e6
             if p.startswith('a'): # x S^{power}
                 self.currentPhysParams[self.parameters.index(p)] \
-                  = draw[self.parameters.index(p)]+power
+                  = draw[self.parameters.index(p)]
             else: # pass
                 self.currentPhysParams[self.parameters.index(p)] \
                   = draw[self.parameters.index(p)]
