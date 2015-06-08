@@ -52,7 +52,7 @@ def poissonLhoodMulti(data,realisation,silent=True,fractions=None):
     loglike=0.0
     for j in range(fractions.size):
         loglike += poissonLhood(data[:,j],realisation[:,j],silent=silent)
-    loglike += nbins * numpy.log(fractions).sum()
+    loglike += data[:,0].size * numpy.log(fractions).sum()
     return loglike
 
 #-------------------------------------------------------------------------------
