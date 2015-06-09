@@ -52,7 +52,7 @@ def secateur(incat,BINCOL,cutsDict,numNoiseZone):
         elif 'noise%i'%numNoiseZone in cut:
             [ccol,clow,chigh]=cval # clow < noise < chigh
             noises=numpy.power(incat[:,ccol],-0.5) # w -> rms
-            expr=numpy.where(noises>clow) and numpy.where(noises<chigh)
+            expr=numpy.logical_and(noises>clow,noises<chigh)
             incat=incat[expr]
 
     return incat
