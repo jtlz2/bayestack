@@ -486,17 +486,18 @@ datafile=os.path.join(dataset,datafile)
 #              normalized to 1 sq. deg.
 if os.path.exists(datafile):
     # These are two hacks to change the recon binning scheme
-    if context=='r' and dataset=='first':
-        datafile='%s/ketron2013_110_839_jz.txt' % dataset
+    #if context=='r' and dataset=='first':
+    #    datafile='%s/ketron2013_110_839_jz.txt' % dataset
     #if context=='r' and 'sim' in dataset:
     #    datafile='%s/sim_extracted.txt' % dataset
     data=numpy.genfromtxt(datafile)
 
-    if 'sim' in dataset or dataset in ['cosmos','vvdf','first','video','mca','sdss']:
-        bin_medians = data[:,2] # uJy [not that they are ever used -?]
-        # In the table file, counts are for that SURVEY_AREA (so process THOSE)
-        ksRaw       = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
-        ksNoisy     = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???        
+    #if 'sim' in dataset or dataset in \
+    #  ['cosmos','vvdf','first','video','mca','sdss','en1jvla']:
+    bin_medians = data[:,2] # uJy [not that they are ever used -?]
+    # In the table file, counts are for that SURVEY_AREA (so process THOSE)
+    ksRaw       = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
+    ksNoisy     = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
 
     # OLD VERSION SIM FORMAT:
     #elif dataset=='sim_old':
