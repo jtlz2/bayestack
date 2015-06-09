@@ -7,9 +7,26 @@ May 2015
 
 """
 
+import os,sys
+import importlib,glob
 import numpy
 import pyfits
 from profile_support import profile
+
+if 'chains' in sys.argv[-1]:
+    potential_settings=glob.glob(os.path.join(sys.argv[-1],'*settings*py'))
+    assert(len(potential_settings)==1), '***More than one potential settings file!'
+    settingsf='.'.join([sys.argv[-1],potential_settings[0].split('/')[-1].split('.')[-2]])
+else:
+    settingsf=sys.argv[-1].split('.')[-2]
+
+print '%s is using %s' % (__name__,settingsf)
+try:
+    set_module=importlib.import_module(settingsf)
+    globals().update(set_module.__dict__)
+except:
+    print '***Warning: Settings not loaded'
+
 
 #-------------------------------------------------------------------------------
 
@@ -51,7 +68,7 @@ def secateur(incat,BINCOL,cutsDict,numNoiseZone):
                 incat=incat[expr]
         elif 'noise%i'%numNoiseZone in cut:
             [ccol,clow,chigh]=cval # clow < noise < chigh
-            noises=numpy.power(incat[:,ccol],-0.5) # w -> rms
+            noises=SURVEY_NOISE*numpy.power(incat[:,ccol],-0.5) # w -> rms
             expr=numpy.logical_and(noises>clow,noises<chigh)
             incat=incat[expr]
 
