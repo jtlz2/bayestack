@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
 """
-This is binner.py
+This is splitter.py
 Jonathan Zwart
 June 2015
 
+Make catalogue cuts and
 Bin data set for bayestack.py
+Based on binner.py
 
 Usage:
 
-./binner.py SETTINGS_FILE.py
+./splitter.py SETTINGS_FILE.py
 
 BIN_CAT_FORMs:
 0 COSMOS-VLA data [Ketron]
@@ -34,6 +36,7 @@ import numpy
 from profile_support import profile
 from utils import *
 import countUtils
+import stackUtils
 import matplotlib.pyplot as plt
 
 param_file=sys.argv[-1]
@@ -85,16 +88,34 @@ def main():
 
     #print 'S/uJy: %f -> %f' % (numpy.min(cat[:,BIN_COL]),numpy.max(cat[:,BIN_COL]))
 
+    cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
+              'noise1':[47,1.0,2.5],'noise2':[47,2.5,5.0],\
+              'noise3':[47,5.0,8.0],'noise4':[47,8.0,12.0]}
+
+    numNoiseZones=len([k for k in cutsDict.keys() if 'noise' in k])
+
+    # Need to calculate survey areas
+
+    # Set up the plot
+    fig = plt.figure()
+    colors=['y','g','b','k']
+
     idl_s=False
-    countUtils.writeCountsFile(BOUT_CAT,bins,cat[:,BIN_COL],SURVEY_AREA,\
-                               idl_style=idl_s,verbose=True,corrs=CORR_BINS)
+    for n in range(numNoiseZones):
+        f='.'.join(['_'.join([BOUT_CAT.split('.')[-2],'a%i'%n]),'txt'])
+        print f,n
+        print cat.shape
+        ccat=stackUtils.secateur(cat,BIN_COL,cutsDict,n)
+        print ccat.shape
+        countUtils.writeCountsFile(f,bins,ccat,SURVEY_AREA,\
+                               idl_style=idl_s,verbose=False,corrs=CORR_BINS)
+        binwidth=0.1*SURVEY_NOISE
+        #sys.exit(0)
+        n,b,p=plt.hist(ccat[:,BIN_COL], bins=numpy.arange(bins[0],(20.0*SURVEY_NOISE)+binwidth,binwidth),histtype='step',color=colors[n])
 
     if True:
         # Now plot a histogram of fluxes to file, with fine binning
-        print 'Flux range/uJy = %f -> %f' % (cat[:,BIN_COL].min(),cat[:,BIN_COL].max())
-        fig = plt.figure()
-        binwidth=0.1*SURVEY_NOISE
-        n,b,p=plt.hist(cat[:,BIN_COL], bins=numpy.arange(bins[0],(20.0*SURVEY_NOISE)+binwidth,binwidth),histtype='step',color='black')
+        print 'Flux range/uJy = %f -> %f' % (ccat[:,BIN_COL].min(),ccat[:,BIN_COL].max())
         plt.yscale('log')
         plt.xlim(bins[0],20.0*SURVEY_NOISE)
         plt.ylim(0.5,1.0e3)
