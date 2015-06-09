@@ -68,7 +68,8 @@ def secateur(incat,BINCOL,cutsDict,numNoiseZone):
                 incat=incat[expr]
         elif 'noise%i'%numNoiseZone in cut:
             [ccol,clow,chigh]=cval # clow < noise < chigh
-            noises=SURVEY_NOISE*numpy.power(incat[:,ccol],-0.5) # w -> rms
+            noises=SURVEY_NOISE*numpy.power(incat[:,ccol],-0.5) # w->rms
+            print noises.min(),noises.max()
             expr=numpy.logical_and(noises>clow,noises<chigh)
             incat=incat[expr]
 

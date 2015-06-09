@@ -89,29 +89,37 @@ def main():
     #print 'S/uJy: %f -> %f' % (numpy.min(cat[:,BIN_COL]),numpy.max(cat[:,BIN_COL]))
 
     cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
-              'noise1':[47,1.0,2.5],'noise2':[47,2.5,5.0],\
-              'noise3':[47,5.0,8.0],'noise4':[47,8.0,12.0]}
+              'noise0':[47,1.1,1.5],'noise1':[47,1.5,2.0],\
+              'noise2':[47,2.0,2.5]}#,'noise3':[47,2.5,3.0]}
 
     numNoiseZones=len([k for k in cutsDict.keys() if 'noise' in k])
 
-    # Need to calculate survey areas
+    # Need to calculate survey areas and record these somewhere
+    pass
 
     # Set up the plot
     fig = plt.figure()
-    colors=['y','g','b','k']
+    colors=['r','g','b','k','c','m','y']
 
     idl_s=False
     for n in range(numNoiseZones):
         f='.'.join(['_'.join([BOUT_CAT.split('.')[-2],'a%i'%n]),'txt'])
-        print f,n
         print cat.shape
         ccat=stackUtils.secateur(cat,BIN_COL,cutsDict,n)
         print ccat.shape
-        countUtils.writeCountsFile(f,bins,ccat,SURVEY_AREA,\
+        countUtils.writeCountsFile(f,bins,ccat[:,BIN_COL],SURVEY_AREA,\
                                idl_style=idl_s,verbose=False,corrs=CORR_BINS)
-        binwidth=0.1*SURVEY_NOISE
-        #sys.exit(0)
-        n,b,p=plt.hist(ccat[:,BIN_COL], bins=numpy.arange(bins[0],(20.0*SURVEY_NOISE)+binwidth,binwidth),histtype='step',color=colors[n])
+        binwidth=0.2*SURVEY_NOISE
+        lab=str(cutsDict['noise%i'%n][1:])
+        m,b,p=plt.hist(ccat[:,BIN_COL],bins=numpy.arange(bins[0],\
+                    (20.0*SURVEY_NOISE)+binwidth,binwidth),\
+                    histtype='step',color=colors[n],label=lab)
+        noise=numpy.mean(cutsDict['noise%i'%n][1:])
+        noise=cutsDict['noise%i'%n][-1]
+        print noise
+        print cutsDict['noise%i'%n][1:]
+        y = numpy.max(m)*gaussian(b,0.0,noise,norm=False)
+        plt.plot(b,y,'%s--'%colors[n],linewidth=1)
 
     if True:
         # Now plot a histogram of fluxes to file, with fine binning
@@ -121,8 +129,7 @@ def main():
         plt.ylim(0.5,1.0e3)
         plt.xlabel('S/$\mu$Jy')
         plt.ylabel('Number of objects')
-        y = numpy.max(n)*gaussian(b,0.0,SURVEY_NOISE,norm=False)
-        plt.plot(b,y,'r--',linewidth=1)
+        plt.legend(loc='upper right',prop={'size':12},frameon=False,numpoints=1)
         plt.axvline(1.0*SURVEY_NOISE,color='b',alpha=0.2)
         plt.axvline(5.0*SURVEY_NOISE,color='b',alpha=0.2)
         #plt.text(SURVEY_NOISE,0.16,'1 sigma',rotation=90,color='b',alpha=0.5)
@@ -130,6 +137,7 @@ def main():
         #plt.title('')
         plt.savefig(BOUT_HISTO)
         print '-> Look in %s' % BOUT_HISTO
+        plt.close()
 
     return 0
 
