@@ -77,6 +77,7 @@ dataset='sims/150522a'
 run_num_run='150522a'
 #dataset='first'
 #dataset='mca'
+dataset='en1jvla'
 
 #-------------------------------------------------------------------------------
 # Extraction settings
@@ -336,6 +337,16 @@ elif dataset == 'mca':
     datafile='bondi2003_mca.txt'
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
+elif dataset == 'en1jvla':
+    datafiles=['en1jvla_a0.txt','en1jvla_a1.txt']
+    datafile=datafiles[0]
+    SURVEY_AREAS={datafiles[0]:0.03,datafiles[1]:0.07}
+    SURVEY_NOISES={datafiles[0]:2.0,datafiles[1]:1.164}
+    #SURVEY_NOISE=SURVEY_NOISES[datafiles[0]]
+    #SURVEY_AREA=SURVEY_AREAS[datafiles[0]]
+    SURVEY_NOISE=1.164
+    SURVEY_AREA=0.1
+
 
 #-------------------------------------------------------------------------------
 
@@ -406,6 +417,13 @@ if context=='b' or True:
         CORR_RESOLUTION=1.0
         BIN_CAT=os.path.join(dataset,'injection_phot.txt')
         BIN_COL=7 #9 # [sic]
+
+    elif dataset == 'en1jvla':
+        BIN_CAT_FORM=8 # See /Users/jtlz2/elaisn1/servs/scripts/*.stil
+        BIN_CAT='/Users/jtlz2/elaisn1/servs/servs-en1-full-data-fusion-sextractor-cutdown-masked-vla-overlap-with-detns-150522.txt'
+        BIN_CAT_CLIP=None
+        BIN_COL=46 # peak flux
+        BOUT_CAT='en1jvla/en1jvla.txt'
 
 #-------------------------------------------------------------------------------
 
@@ -551,6 +569,7 @@ SMAX_VVDF2=119230.0
 #binstyle='first'
 binstyle='video2014'
 #binstyle='mca2014'
+binstyle='en1jvla'
 
 #-------------------------------------------------------------------------------
 
@@ -735,6 +754,10 @@ elif binstyle=='video2014' or binstyle=='mca2014':
     if False and perGalGalaxyType=='sbn':
         if nb==38:
             bins=numpy.array([-69.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,80.0,85.0])
+
+if binstyle=='en1jvla':
+    bins=numpy.linspace(-4.6,5.8,40)
+    bins=numpy.linspace(-15.0,5.8,40)
 
     #bins=bins[:38]
     assert(len(bins)-1==nb)
