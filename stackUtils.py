@@ -47,9 +47,9 @@ def readRadio(fradio=None):
 
 #-------------------------------------------------------------------------------
 
-def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE):
+def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE,noisezonesf):
     """
-    Give an *sensitivity* map
+    Given a *sensitivity* map
     and a list of noise ranges, calculate the number of pixels in each range
     """
 
@@ -64,9 +64,7 @@ def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE):
     pixels=rmsmap.flatten()
     #print pixels.min(),pixels.max()
 
-    outf='noisezones.txt'
-    outf=os.path.join(dataset,outf)
-    nz=open(outf,'w')
+    nz=open(noisezonesf,'w')
     hdr='# noise_min_uJy noise_max_uJy area_sq_deg'
     print hdr
     nz.write('%s\n'%hdr)
@@ -79,7 +77,7 @@ def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE):
         nz.write('%s\n'%line)
         #print noiseMin,noiseMax,noiseAreas
     nz.close()
-    print 'Look in %s' % outf
+    print 'Look in %s' % noisezonesf
 
     del W_VLA,rmsmap
 

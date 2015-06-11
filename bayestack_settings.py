@@ -174,13 +174,6 @@ if True or context=='e':
         perGalWrapRoot='video/%s' % perGalGalaxyType
         perGalCat='pixels_Mz/pixels_%s_z_%3.1f_%3.1f_Ms_%3.1f_%3.1f_Kabs_%3.1f_%3.1f_noiseclip_1234.dat' % (perGalGalaxyType,perGalzBins[0],perGalzBins[-1],perGalMBins[0],perGalMBins[-1],perGalkabsBins[0],perGalkabsBins[-1])
 
-# ELAIS-N1 JVLA cuts
-if True:
-    cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
-              'noise0':[47,1.1,1.5],'noise1':[47,1.5,2.0],\
-              'noise2':[47,2.0,2.5],'noise3':[47,2.5,3.0],\
-              'noise4':[47,2.5,5.0],'noise5':[47,5.0,13.0]}
-
 #-------------------------------------------------------------------------------
 
 # Simulation parameters
@@ -345,15 +338,22 @@ elif dataset == 'mca':
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
 elif dataset == 'en1jvla':
-    datafiles=['en1jvla_a0.txt','en1jvla_a1.txt']
+    noisezonesf='noisezones.txt'
+    noisezonesf=os.path.join(dataset,noisezonesf)
+    cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
+              'noise0':[47,1.1,1.5],'noise1':[47,1.5,2.0],\
+              'noise2':[47,2.0,2.5],'noise3':[47,2.5,3.0],\
+              'noise4':[47,2.5,5.0],'noise5':[47,5.0,13.0]}
+    numNoiseZones=len([k for k in cutsDict.keys() if 'noise' in k])
+    datafiles=['en1jvla_a%i.txt'%n for n in range(numNoiseZones)]
     datafile=datafiles[0]
-    SURVEY_AREAS={datafiles[0]:0.03,datafiles[1]:0.07}
-    SURVEY_NOISES={datafiles[0]:2.0,datafiles[1]:1.164}
-    #SURVEY_NOISE=SURVEY_NOISES[datafiles[0]]
-    #SURVEY_AREA=SURVEY_AREAS[datafiles[0]]
+    SURVEY_AREAS={}; SURVEY_NOISES={}
+    nz=numpy.genfromtxt(noisezonesf)
+    for i,d in enumerate(datafiles):
+        SURVEY_AREAS[d]=nz[i,-1]
+        SURVEY_NOISES[d]=nz[i,:-1]
     SURVEY_NOISE=1.164
     SURVEY_AREA=0.1
-
 
 #-------------------------------------------------------------------------------
 

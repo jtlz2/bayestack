@@ -95,7 +95,8 @@ def main():
     # Calculate survey areas and record these to file
     noiseRanges=sorted([cutsDict[z][1:] for z in cutsDict.keys() if z.startswith('noise')])
     wvlaf='/Users/jtlz2/Dropbox/elaisn1/maps/EN1.I.mosaic.sensitivity_vla.fits'
-    noiseAreas=stackUtils.calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE)
+    noiseAreas=stackUtils.calculateNoiseZones(\
+                    wvlaf,noiseRanges,SURVEY_NOISE,noisezonesf)
 
     # Set up the plot
     fig = plt.figure()
