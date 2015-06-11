@@ -110,7 +110,7 @@ def main():
         countUtils.writeCountsFile(f,bins,ccat[:,BIN_COL],SURVEY_AREA,\
                                idl_style=idl_s,verbose=False,corrs=CORR_BINS)
         binwidth=1.0*SURVEY_NOISE
-        lab='%s$\mu$Jy'%str(cutsDict['noise%i'%n][1:])
+        lab='%s$\mu$Jy (%5.3f deg$^2$)'%(str(cutsDict['noise%i'%n][1:]),noiseAreas[n])
         m,b,p=plt.hist(ccat[:,BIN_COL],bins=numpy.arange(bins[0],\
                     (20.0*SURVEY_NOISE)+binwidth,binwidth),\
                     histtype='step',color=colors[n],label=lab)
@@ -129,7 +129,7 @@ def main():
         plt.ylim(0.5,1.0e3)
         plt.xlabel('S/$\mu$Jy')
         plt.ylabel('Number of objects')
-        plt.legend(loc='upper right',prop={'size':12},frameon=False,numpoints=1)
+        plt.legend(loc='upper right',prop={'size':10},frameon=False,numpoints=1)
         plt.axvline(1.0*SURVEY_NOISE,color='b',alpha=0.2)
         plt.axvline(5.0*SURVEY_NOISE,color='b',alpha=0.2)
         #plt.text(SURVEY_NOISE,0.16,'1 sigma',rotation=90,color='b',alpha=0.5)

@@ -71,10 +71,10 @@ def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE):
     print hdr
     nz.write('%s\n'%hdr)
     noiseAreas=numpy.zeros(len(noiseRanges))
-    for noiseMin,noiseMax in noiseRanges:
+    for i,[noiseMin,noiseMax] in enumerate(noiseRanges):
         expr=numpy.logical_and(pixels>noiseMin,pixels<noiseMax)
-        noiseAreas=SAperPix*pixels[expr].size
-        line='%6.4f %6.4f %e' % (noiseMin,noiseMax,noiseAreas)
+        noiseAreas[i]=SAperPix*pixels[expr].size
+        line='%6.4f %6.4f %e' % (noiseMin,noiseMax,noiseAreas[i])
         print line
         nz.write('%s\n'%line)
         #print noiseMin,noiseMax,noiseAreas
