@@ -47,6 +47,46 @@ def readRadio(fradio=None):
 
 #-------------------------------------------------------------------------------
 
+def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE):
+    """
+    Give an *sensitivity* map
+    and a list of noise ranges, calculate the number of pixels in each range
+    """
+
+    uu=pyfits.open(wvlaf)
+    W_VLA=uu[0].data[0,0,:,:]
+    D1 = uu[0].header['CDELT1']
+    D2 = uu[0].header['CDELT2']
+    uu.close()
+    SAperPix = abs(D1*D2) # Area per pixel in *sq. deg.*
+    rmsmap=SURVEY_NOISE*numpy.power(W_VLA[numpy.where(W_VLA!=0.0)],-0.5)
+
+    pixels=rmsmap.flatten()
+    #print pixels.min(),pixels.max()
+
+    outf='noisezones.txt'
+    outf=os.path.join(dataset,outf)
+    nz=open(outf,'w')
+    hdr='# noise_min_uJy noise_max_uJy area_sq_deg'
+    print hdr
+    nz.write('%s\n'%hdr)
+    noiseAreas=numpy.zeros(len(noiseRanges))
+    for noiseMin,noiseMax in noiseRanges:
+        expr=numpy.logical_and(pixels>noiseMin,pixels<noiseMax)
+        noiseAreas=SAperPix*pixels[expr].size
+        line='%6.4f %6.4f %e' % (noiseMin,noiseMax,noiseAreas)
+        print line
+        nz.write('%s\n'%line)
+        #print noiseMin,noiseMax,noiseAreas
+    nz.close()
+    print 'Look in %s' % outf
+
+    del W_VLA,rmsmap
+
+    return noiseAreas
+
+#-------------------------------------------------------------------------------
+
 def secateur(incat,BINCOL,cutsDict,numNoiseZone):
     """
     Make cuts on the catalogue here
