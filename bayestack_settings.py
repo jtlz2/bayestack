@@ -338,6 +338,7 @@ elif dataset == 'mca':
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
 elif dataset == 'en1jvla':
+    weightvlaf='/Users/jtlz2/Dropbox/elaisn1/maps/EN1.I.mosaic.sensitivity_vla.fits'
     noisezonesf='noisezones.txt'
     noisezonesf=os.path.join(dataset,noisezonesf)
     cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
@@ -353,7 +354,8 @@ elif dataset == 'en1jvla':
         SURVEY_AREAS[d]=nz[i,-1]
         SURVEY_NOISES[d]=nz[i,:-1]
     SURVEY_NOISE=1.164
-    SURVEY_AREA=0.1
+    SURVEY_AREA=sum([a for (f,a) in SURVEY_AREAS.iteritems()])
+    #SURVEY_AREA=0.1
 
 #-------------------------------------------------------------------------------
 
