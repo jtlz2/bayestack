@@ -33,6 +33,7 @@ BIN_CAT_FORMs:
 import os,sys
 import importlib
 import numpy
+import pyfits
 from profile_support import profile
 from utils import *
 import countUtils
@@ -90,12 +91,15 @@ def main():
 
     cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
               'noise0':[47,1.1,1.5],'noise1':[47,1.5,2.0],\
-              'noise2':[47,2.0,2.5]}#,'noise3':[47,2.5,3.0]}
+              'noise2':[47,2.0,2.5],'noise3':[47,2.5,3.0],\
+              'noise4':[47,2.5,5.0],'noise5':[47,5.0,13.0]}
 
     numNoiseZones=len([k for k in cutsDict.keys() if 'noise' in k])
 
-    # Need to calculate survey areas and record these somewhere
-    pass
+    # Calculate survey areas and record these to file
+    noiseRanges=sorted([cutsDict[z][1:] for z in cutsDict.keys() if z.startswith('noise')])
+    wvlaf='/Users/jtlz2/Dropbox/elaisn1/maps/EN1.I.mosaic.sensitivity_vla.fits'
+    noiseAreas=stackUtils.calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE)
 
     # Set up the plot
     fig = plt.figure()
@@ -104,13 +108,13 @@ def main():
     idl_s=False
     for n in range(numNoiseZones):
         f='.'.join(['_'.join([BOUT_CAT.split('.')[-2],'a%i'%n]),'txt'])
-        print cat.shape
         ccat=stackUtils.secateur(cat,BIN_COL,cutsDict,n)
-        print ccat.shape
+        print cat.shape,ccat.shape
+        #ccat[:,BIN_COL]=ccat[:,45]/numpy.power(ccat[:,47],0.5)
         countUtils.writeCountsFile(f,bins,ccat[:,BIN_COL],SURVEY_AREA,\
                                idl_style=idl_s,verbose=False,corrs=CORR_BINS)
-        binwidth=0.2*SURVEY_NOISE
-        lab=str(cutsDict['noise%i'%n][1:])
+        binwidth=1.0*SURVEY_NOISE
+        lab='%s$\mu$Jy'%str(cutsDict['noise%i'%n][1:])
         m,b,p=plt.hist(ccat[:,BIN_COL],bins=numpy.arange(bins[0],\
                     (20.0*SURVEY_NOISE)+binwidth,binwidth),\
                     histtype='step',color=colors[n],label=lab)
