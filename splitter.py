@@ -89,11 +89,7 @@ def main():
 
     #print 'S/uJy: %f -> %f' % (numpy.min(cat[:,BIN_COL]),numpy.max(cat[:,BIN_COL]))
 
-    cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
-              'noise0':[47,1.1,1.5],'noise1':[47,1.5,2.0],\
-              'noise2':[47,2.0,2.5],'noise3':[47,2.5,3.0],\
-              'noise4':[47,2.5,5.0],'noise5':[47,5.0,13.0]}
-
+    # Begin the noise-zoning
     numNoiseZones=len([k for k in cutsDict.keys() if 'noise' in k])
 
     # Calculate survey areas and record these to file

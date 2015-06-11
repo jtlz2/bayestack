@@ -174,6 +174,13 @@ if True or context=='e':
         perGalWrapRoot='video/%s' % perGalGalaxyType
         perGalCat='pixels_Mz/pixels_%s_z_%3.1f_%3.1f_Ms_%3.1f_%3.1f_Kabs_%3.1f_%3.1f_noiseclip_1234.dat' % (perGalGalaxyType,perGalzBins[0],perGalzBins[-1],perGalMBins[0],perGalMBins[-1],perGalkabsBins[0],perGalkabsBins[-1])
 
+# ELAIS-N1 JVLA cuts
+if True:
+    cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
+              'noise0':[47,1.1,1.5],'noise1':[47,1.5,2.0],\
+              'noise2':[47,2.0,2.5],'noise3':[47,2.5,3.0],\
+              'noise4':[47,2.5,5.0],'noise5':[47,5.0,13.0]}
+
 #-------------------------------------------------------------------------------
 
 # Simulation parameters
