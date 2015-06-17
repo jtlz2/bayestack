@@ -223,6 +223,9 @@ def simulate(family,params,paramsList,bins,\
         #plt.hist(F,bins=bins)
         #plt.plot(Ss_fine,values*G/A,'r')
 
+    C_calc=N*N2C(function,F,Smin,Smax)
+    print 'For %i sources, C should be %e' % (N,C_calc)
+
     # Dump noiseless fluxes to file
     if dump is not None:
         puredumpf=dump
@@ -246,6 +249,24 @@ def simulate(family,params,paramsList,bins,\
     writeCountsFile(output,bins,F,area,idl_style=idl_style,verbose=verbose)
 
     return F
+
+#-------------------------------------------------------------------------------
+
+@profile
+def N2C(function,deviates,Smin,Smax):
+    """
+    Since C is a function of the number of deviates N drawn from the
+    function, calculate what the ratio is and return it
+    """
+    A=integrate.quad(function,Smin,Smax)[0]
+#   print A,N
+    # Bin the random samples
+    bbins=numpy.linspace(Smin,Smax,100)
+    E=numpy.histogram(deviates,bins=bbins)[0]
+    # And calculate their area
+    G=integrate.trapz(E,x=medianArray(bbins))
+
+    return G/A
 
 #-------------------------------------------------------------------------------
 
