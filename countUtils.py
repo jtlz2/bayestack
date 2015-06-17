@@ -227,12 +227,17 @@ def simulate(family,params,paramsList,bins,\
             plt.savefig('N2C.pdf')
             plt.close()
 
-        # Want: C given N, to compare to original C
-        if family=='ppl':
-            numbins=1000
-            C_calc=N/(numbins*N2C(function,F,Smin,Smax,numbins))
-            #print N2C(function,F,Smin,Smax,numbins),C
-            print 'For %i sources, C is %e (should be %e)' % (N,C_calc,C)
+    # Want: C given N, to compare to original C
+    numbins=1000
+    if family=='ppl':
+        C_calc=N/(numbins*N2C(function,F,Smin,Smax,numbins))
+        #print N2C(function,F,Smin,Smax,numbins),C
+        print 'For %i sources, C is %e (should be %e)' % (N,C_calc,C)
+    elif family=='poly':
+        print coeffs
+        C_calc=log10(N/(numbins*N2C(function,F,Smin,Smax,numbins)))
+        #print N2C(function,F,Smin,Smax,numbins),C
+        print 'For %i sources, C is %e (should be %e)' % (N,C_calc,coeffs[0])
 
     # Dump noiseless fluxes to file
     if dump is not None:
