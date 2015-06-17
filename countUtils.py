@@ -14,6 +14,7 @@ from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
 from scipy.interpolate import interp1d
 from scipy.special import erf
+import matplotlib.pyplot as plt
 from profile_support import profile
 from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,\
                            interpol,buildCDF,Jy2muJy,interpola
@@ -218,13 +219,19 @@ def simulate(family,params,paramsList,bins,\
 #        print G
 #        print G/A
         # Gunpowder, treason and....
-        #plt.xlim(0.0,100.0)
-        #plt.xlabel('S / $\mu$Jy')
-        #plt.hist(F,bins=bins)
-        #plt.plot(Ss_fine,values*G/A,'r')
+        plt.xlim(0.0,100.0)
+        plt.xlabel('S / $\mu$Jy')
+        plt.hist(F,bins=bbins)
+        plt.plot(Ss,values*G/A,'r')
+        plt.savefig('N2C.pdf')
+        plt.close()
 
-    C_calc=N*N2C(function,F,Smin,Smax)
-    print 'For %i sources, C should be %e' % (N,C_calc)
+    # Want: C given N, to compare to original C
+    numbins=1000
+    C_calc=N/(numbins*N2C(function,F,Smin,Smax,numbins))
+    print N2C(function,F,Smin,Smax,numbins),C
+    print 'For %i sources, C is %e (should be %e)' % (N,C_calc,C)
+    sys.exit(0)
 
     # Dump noiseless fluxes to file
     if dump is not None:
@@ -253,7 +260,7 @@ def simulate(family,params,paramsList,bins,\
 #-------------------------------------------------------------------------------
 
 @profile
-def N2C(function,deviates,Smin,Smax):
+def N2C(function,deviates,Smin,Smax,numbins):
     """
     Since C is a function of the number of deviates N drawn from the
     function, calculate what the ratio is and return it
@@ -261,7 +268,7 @@ def N2C(function,deviates,Smin,Smax):
     A=integrate.quad(function,Smin,Smax)[0]
 #   print A,N
     # Bin the random samples
-    bbins=numpy.linspace(Smin,Smax,100)
+    bbins=numpy.linspace(Smin,Smax,numbins)
     E=numpy.histogram(deviates,bins=bbins)[0]
     # And calculate their area
     G=integrate.trapz(E,x=medianArray(bbins))
