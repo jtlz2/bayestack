@@ -219,12 +219,13 @@ def simulate(family,params,paramsList,bins,\
 #        print G
 #        print G/A
         # Gunpowder, treason and....
-        plt.xlim(0.0,100.0)
-        plt.xlabel('S / $\mu$Jy')
-        plt.hist(F,bins=bbins)
-        plt.plot(Ss,values*G/A,'r')
-        plt.savefig('N2C.pdf')
-        plt.close()
+        if False:
+            plt.xlim(0.0,100.0)
+            plt.xlabel('S / $\mu$Jy')
+            plt.hist(F,bins=bbins)
+            plt.plot(Ss,values*G/A,'r')
+            plt.savefig('N2C.pdf')
+            plt.close()
 
     # Want: C given N, to compare to original C
     numbins=1000
