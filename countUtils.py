@@ -234,9 +234,7 @@ def simulate(family,params,paramsList,bins,\
         #print N2C(function,F,Smin,Smax,numbins),C
         print 'For %i sources, C is %e (should be %e)' % (N,C_calc,C)
     elif family=='poly':
-        print coeffs
         C_calc=log10(N/(numbins*N2C(function,F,Smin,Smax,numbins)))
-        #print N2C(function,F,Smin,Smax,numbins),C
         print 'For %i sources, C is %e (should be %e)' % (N,C_calc,coeffs[0])
 
     # Dump noiseless fluxes to file
