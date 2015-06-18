@@ -38,6 +38,10 @@ def main():
     print 'Settings file: %s' % param_file
 
     for SIM_DO_CAT_NOISE in [True,False]:
+        if SIM_DO_CAT_NOISE:
+            OUTPUT='sim.txt'
+        else:
+            OUTPUT='sim_noiseless.txt'
         r=simulate(simFamily,simParams,simParamsList,\
                           simBins,seed=SEED_SIM,N=NSIM,area=AREA_SIM,\
                           noise=NOISE_SIM,dump=os.path.join(outdir,DUMP),\
