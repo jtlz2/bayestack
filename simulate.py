@@ -37,7 +37,7 @@ def main():
     shutil.copy(param_file,outdir)
     print 'Settings file: %s' % param_file
 
-    for SIM_DO_CAT_NOISE in [True,False]:
+    for SIM_DO_CAT_NOISE in [False,True]:
         if SIM_DO_CAT_NOISE:
             OUTPUT='sim.txt'
         else:
