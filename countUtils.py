@@ -40,7 +40,8 @@ except:
 def simulate(family,params,paramsList,bins,\
              seed=None,N=None,noise=None,output=None,\
              dump=None,version=2,verbose=False,area=None,\
-             skadsf=None,pole_posns=None,simarrayf=None):
+             skadsf=None,pole_posns=None,simarrayf=None,\
+             simdocatnoise=True):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -158,7 +159,7 @@ def simulate(family,params,paramsList,bins,\
         binsMedian=dataMatrix[:,2]
         assert((medianArray(binsDogleg)==binsMedian).all()), '***bin mismatch!'
         Smin=binsDogleg[0]; Smax=binsDogleg[-1]
-        if not SIM_DO_CAT_NOISE:
+        if not simdocatnoise:
             Smin=-5.01#-2.01 # binsMedian[0]
         print dndsInArr
         function=lambda S:arrayFunc(S,binsMedian,dndsInArr,Smin,Smax)
@@ -244,7 +245,7 @@ def simulate(family,params,paramsList,bins,\
         print 'Draws (noiseless) are in %s' % puredumpf
 
     # Now add noise if requested
-    if SIM_DO_CAT_NOISE:
+    if simdocatnoise:
         numpy.random.seed(seed=SEED_SIM)
         F+=numpy.random.normal(0.0,noise,N)
 

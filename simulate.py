@@ -37,13 +37,15 @@ def main():
     shutil.copy(param_file,outdir)
     print 'Settings file: %s' % param_file
 
-    r=simulate(simFamily,simParams,simParamsList,\
+    for SIM_DO_CAT_NOISE in [True,False]:
+        r=simulate(simFamily,simParams,simParamsList,\
                           simBins,seed=SEED_SIM,N=NSIM,area=AREA_SIM,\
                           noise=NOISE_SIM,dump=os.path.join(outdir,DUMP),\
                           output=os.path.join(outdir,OUTPUT),\
                           verbose=True,skadsf=skadsFile,\
-                          simarrayf=simArrayFile,pole_posns=simPolePosns)
-        
+                          simarrayf=simArrayFile,pole_posns=simPolePosns,\
+                          simdocatnoise=SIM_DO_CAT_NOISE)
+
     return 0
 
 #-------------------------------------------------------------------------------
