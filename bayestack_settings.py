@@ -293,10 +293,10 @@ if NLAWS_SIM>3:
     S2_SIM=40.0
     #print 'NLAWS > 2 not implemented for sims yet'
 
-if SIM_DO_CAT_NOISE:
-    OUTPUT='sim.txt'
-else:
-    OUTPUT='sim_noiseless.txt'
+#if SIM_DO_CAT_NOISE:
+#    OUTPUT='sim.txt'
+#else:
+#    OUTPUT='sim_noiseless.txt'
 
 #-------------------------------------------------------------------------------
 
