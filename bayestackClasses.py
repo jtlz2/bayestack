@@ -182,7 +182,7 @@ class countModel(object):
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
                 elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
-                if p.startswith('p'): priorsDict[p]=['U',POLYCOEFF_MIN,POLYCOEFF_MAX] # #coeffs
+                if p.startswith('p'): priorsDict[p]=[POLYCOEFF_PRIOR,POLYCOEFF_MIN,POLYCOEFF_MAX] # #coeffs
                 #if p=='p0': priorsDict[p]=['DELTA',1.0,1.0]
             elif self.kind=='bins':
                 if p.startswith('b'): priorsDict[p]=[POLEAMPS_PRIOR,POLEAMPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
@@ -238,7 +238,7 @@ class countModel(object):
             Smax=params[paramsList.index('S1')]
             coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('p')]
             S_1=1.0 # ref flux
-            evaluations=[1.0 * countUtils.polyFunc(S,S_1/1.0e6,Smin/1.0e6,Smax/1.0e6,\
+            evaluations=[1.0 * countUtils.polyFunc(S,S_1,Smin/1.0e6,Smax/1.0e6,\
                                              coeffs) for S in self.binsMedian/1.0e6]
         else:
             print '***%s unsupported right now!' % self.kind

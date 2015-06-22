@@ -562,12 +562,14 @@ def polyFunc(S,S_1,Smin,Smax,c):
 
     if S <= Smin or S >= Smax:
         return 0.0
-
+    #assert(len(c)==3)
     exponent=0.0
     for n in range(len(c)):
-        exponent += c[n] * (numpy.log10(S/S_1)**n)
-
-    return 10**exponent
+        #exponent += c[n] * (numpy.log10(S/S_1)**n)
+        exponent += c[n]*(S**n)
+    #print c
+    return exponent
+    #return 10**exponent
 
 #-------------------------------------------------------------------------------
 

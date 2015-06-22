@@ -25,7 +25,7 @@ print 'Context is %s' % context
 
 #dataset='video'
 binStyle=1
-nlaws=2
+nlaws=3 # Number of ppl laws (or poly coefficients) to fit
 floatNoise=False
 modelFamily='ppl'#'ppl' 'poly'
 outdir='chains_150522a' # based on 140123a
@@ -33,25 +33,30 @@ outdir='chains_150522a' # based on 140123a
 simFamily= 'skads' # 'array' 'skads' 'ppl' 'poly' 'bins' 'test'
 SMIN_SIM=0.01 # uJy
 SMAX_SIM=85.0 # uJy
-simParams=[SMIN_SIM,SMAX_SIM]
-simParams=[1000.0,SMIN_SIM,SMAX_SIM,0.0]
-simParamsList=['S0','S1']
-simParamsList=['C','S0','S1','a0']
-simBins=numpy.linspace(-65.0,85.0,26)
+#simParams=[SMIN_SIM,SMAX_SIM]
+#simParams=[1000.0,SMIN_SIM,SMAX_SIM,0.0]
+#simParams=[SMIN_SIM,SMAX_SIM,1.0]
+simParams=[SMIN_SIM,SMAX_SIM,5.0,1.0,0.5]
+#simParamsList=['S0','S1']
+#simParamsList=['C','S0','S1','a0']
+#simParamsList=['S0','S1','p0']
+simParamsList=['S0','S1','p0','p1','p2']
+simBins=numpy.linspace(-40.0,85.0,21)
 SEED_SIM=1234
 NSIM=72000
-NOISE_SIM=16.2 # uJy
+NOISE_SIM=16.2 # uJy; NB This is actually reset below...
 dump='R.txt'
 output='dummy.txt'
 verbose=True
 skadsFile='skads/1sqdeg_0p02uJy.txt'
 simArrayFile='sims/150522a/sim_noiseless.txt'
 simPolePosns=None
+#SIM_DO_CAT_NOISE=True
 
 #-------------------------------------------------------------------------------
 
 # Master parameters
-MOTD=''
+#MOTD=''
 RESUME=False # Turn checkpointing on
 nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
@@ -237,8 +242,6 @@ SMIN_SKADS=0.01 # uJy
 SMAX_SKADS=85.0 # uJy
 #SMAX_SKADS=600000.0 # uJy
 
-
-SIM_DO_CAT_NOISE=True
 SKADS_GO_VIA_MAP=True
 NSKADS=None#72000 # or None to use all available sources for simulation
 #NSKADS_RESCALING=373936.0/71962.0
@@ -361,7 +364,6 @@ elif dataset == 'en1jvla':
 
 # Parameters for binning a catalogue
 if context=='b' or True:
-
     BIN_CAT_CLIP=None
     CORR_RESOLUTION=None
     CORR_BINS=None
@@ -494,46 +496,48 @@ datafile=os.path.join(dataset,datafile)
 # The data are corrected by the completeness/ang. size factor and
 #              normalized to 1 sq. deg.
 if os.path.exists(datafile):
-    # These are two hacks to change the recon binning scheme
-    #if context=='r' and dataset=='first':
-    #    datafile='%s/ketron2013_110_839_jz.txt' % dataset
-    #if context=='r' and 'sim' in dataset:
-    #    datafile='%s/sim_extracted.txt' % dataset
-    data=numpy.genfromtxt(datafile)
+    if numNoiseZones==1:
+        # These are two hacks to change the recon binning scheme
+        #if context=='r' and dataset=='first':
+        #    datafile='%s/ketron2013_110_839_jz.txt' % dataset
+        #if context=='r' and 'sim' in dataset:
+        #    datafile='%s/sim_extracted.txt' % dataset
+        data=numpy.genfromtxt(datafile)
 
-    #if 'sim' in dataset or dataset in \
-    #  ['cosmos','vvdf','first','video','mca','sdss','en1jvla']:
-    bin_medians = data[:,2] # uJy [not that they are ever used -?]
-    # In the table file, counts are for that SURVEY_AREA (so process THOSE)
-    ksRaw       = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
-    ksNoisy     = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
+        #if 'sim' in dataset or dataset in \
+        #  ['cosmos','vvdf','first','video','mca','sdss','en1jvla']:
+        bin_medians = data[:,2] # uJy [not that they are ever used -?]
+        # In the table file, counts are for that SURVEY_AREA (so process THOSE)
+        ksRaw       = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
+        ksNoisy     = data[:,3] * data[:,8] #/ (sqDeg2sr*SURVEY_AREA) #/ SURVEY_AREA # ???
 
-    # OLD VERSION SIM FORMAT:
-    #elif dataset=='sim_old':
-    #    bin_medians=data[:,0]; ksRaw=data[:,1]; ksNoisy=data[:,2]
-        #print '***NB ksRaw -> junk'
-        # Counts are now per sr
+        # OLD VERSION SIM FORMAT:
+        #elif dataset=='sim_old':
+        #    bin_medians=data[:,0]; ksRaw=data[:,1]; ksNoisy=data[:,2]
+            #print '***NB ksRaw -> junk'
+            # Counts are now per sr
 
-    # I retired these because a double import was applying them
-    # twice (bug to be fixed...)
-    print '-> Corrected counts for completeness and/or ang. size (C factor)'
-    #print '-> units are sr^-1'
-    #ksRaw *= data[:,8]
-    #ksNoisy *= data[:,8]
-    #print '-> Corrected counts for survey area (SURVEY_AREA)'
-    #ksRaw *= 1.0/SURVEY_AREA
-    #ksNoisy *= 1.0/SURVEY_AREA
+        # I retired these because a double import was applying them
+        # twice (bug to be fixed...)
+    #    print '-> Corrected counts for completeness and/or ang. size (C factor)'
+        #print '-> units are sr^-1'
+        #ksRaw *= data[:,8]
+        #ksNoisy *= data[:,8]
+        #print '-> Corrected counts for survey area (SURVEY_AREA)'
+        #ksRaw *= 1.0/SURVEY_AREA
+        #ksNoisy *= 1.0/SURVEY_AREA
 
-    nRaw=numpy.sum(ksRaw)
-    nNoisy=numpy.sum(ksNoisy)
-    if noisy:
-        ks=ksNoisy
-    else:
-        ks=ksRaw
+        nRaw=numpy.sum(ksRaw)
+        nNoisy=numpy.sum(ksNoisy)
+        if noisy:
+            ks=ksNoisy
+        else:
+            ks=ksRaw
+
 else:
     if context=='y':
         print '***Cannot find an existing data file!! (%s)' % datafile
-    if context=='l':
+    if context in ['b','l']:
         x=os.path.join(dataset,'crash.txt')
         open(x, 'a').close()
         sys.exit(0)
@@ -557,13 +561,13 @@ SMIN_TARGET=110.3
 SMAX_TARGET=839.3
 
 SLOPE_VVDF=-2.28
-CONVERT_VVDF=10**(-3*SLOPE_VVDF)*sqDeg2sr/1.0e3
+CONVERT_VVDF=10**(-3.0*SLOPE_VVDF)*sqDeg2sr/1.0e3
 C_VVDF=57.54/CONVERT_VVDF
 SMIN_VVDF=80.0
 SMAX_VVDF=600.0
 
 SLOPE_VVDF2=-1.79
-CONVERT_VVDF2=10**(-3*SLOPE_VVDF2)*sqDeg2sr/1.0e3
+CONVERT_VVDF2=10**(-3.0*SLOPE_VVDF2)*sqDeg2sr/1.0e3
 C_VVDF2=75.86/CONVERT_VVDF2
 SMIN_VVDF2=600.0
 SMAX_VVDF2=119230.0
@@ -610,7 +614,7 @@ elif 'sim' in dataset or 'kmw' in dataset:
     S0_TRUE=S0_SIM
     CONVERT_C_TRUE=10.0**(6.0*(SLOPE_SIM+2.5))
     C_TRUE=CONVERT_C_TRUE/C_SIM
-    print '-> Adjusted C_TRUE for SLOPE factor'
+    #print '-> Adjusted C_TRUE for SLOPE factor'
 
 #-------------------------------------------------------------------------------
 
@@ -988,8 +992,11 @@ C_MAX=1.0e7
 #======================================================
 
 # Priors for polynomial coefficients
-POLYCOEFF_MIN=-3.0
-POLYCOEFF_MAX=3.0
+POLYCOEFF_PRIOR='LOG'
+#POLYCOEFF_MIN=1.0e9
+#POLYCOEFF_MAX=1.0e23
+POLYCOEFF_MIN=1.0e8
+POLYCOEFF_MAX=1.0e24
 
 # Priors for bin/pole/node amplitudes
 POLEAMPS_PRIOR='LOG'
@@ -1159,8 +1166,7 @@ max_iter=0
 evidence_tolerance=0.5 # was 0.5
 
 # Warning messages etc.
-
-print 'MOTD: %s' % MOTD
+#print 'MOTD: %s' % MOTD
 
 #laws={1:'SPL',2:'TPL',3:'XPL',4:'QPL',0:'SKADS'}
 #print '****Considering %s model applied to %s law' % (laws[nlaws],laws[NLAWS_SIM])
