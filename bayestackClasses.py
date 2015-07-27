@@ -189,7 +189,7 @@ class countModel(object):
 
             if p.startswith('n'): # noise
                 if floatNoise:
-                    priorsDict[p]=['U',0.5*SURVEY_NOISE,2.0*SURVEY_NOISE]
+                    priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
                 else:
                     priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
             elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
