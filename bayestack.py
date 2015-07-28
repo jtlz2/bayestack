@@ -102,7 +102,7 @@ def main():
         notes=['Bins taken from %s' % datafile,\
                '# Bin occupancies [i uJy uJy field^-1]:']
         remarks(log,notes)
-        for ibin in xrange(expt.nbins-1):
+        for ibin in xrange(expt.nbins):
             try:
                 line='%i %f %f %f'%(ibin+1,expt.bins[ibin],expt.bins[ibin+1],expt.data[ibin])
             except IndexError:
