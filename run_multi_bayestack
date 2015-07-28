@@ -1,0 +1,42 @@
+#!/bin/bash
+#arguments are the bayestack_settings and name(eliab,emogen,jz)
+#e.g ./run_multi_bayestack bayestack_settings_eliab.py eliab
+
+sed -i "s/floatNoise=.*/floatNoise=False/" $1
+letters=({a..z})
+ind=0
+
+dat=$(date +%Y%m%d)
+chain=chains_${dat:2}${letters[$ind]}
+
+#avoid overides
+while : ; do	
+	if [ ! -d "$chain/" ]; then
+		echo $chain
+		break
+	else
+		((ind++))
+		chain=chain_${dat:2}${letters[$ind]}
+	fi
+done	
+
+for ((float=0;float<=1;float++))
+do
+	
+	if [ $float -eq 1 ]; then
+		sed -i "s/floatNoise=.*/floatNoise=True/" $1
+	fi
+	for ((nlaw =1;nlaw <=4;nlaw++))
+		do
+		date_leter=${dat:2}${letters[$ind]} 	#the date and letter e.g 150727a
+		settings=${1:0:18}${letters[ind]}${1:18}  #give unique settings
+		pbs=pbs/$2${letters[$ind]}.pbs
+		
+		sed "s/nlaws=.*/nlaws=$nlaw/" $1 > $settings
+		sed -i "s/outdir=.*/outdir='chain_$date_leter'/" $settings
+		sed  "s/#PBS -N.*/#PBS -N $date_leter/" pbs/$2.pbs > $pbs
+		sed -i "s/bayestack.py.*/bayestack.py $settings/" $pbs
+		#qsub $pbs
+		((ind++))
+	done
+done
