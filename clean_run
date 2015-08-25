@@ -1,0 +1,14 @@
+#!/bin/bash
+#This script cleans after the run_multi_bayestack script and must
+#be used preferably when all the jobs created by run_multi_bayestack are 
+#complete! but it should ingore the queued files (workes for me)
+
+#find . -name 'bayestack_settings?_*' -exec rm -f {} \; #this deletes all file weather they ran or not :(
+
+find . -name 'bayestack_settings?_*.pyc' -exec rm -f {}\;
+
+for file in $(find . -name 'bayestack_settings?_*')
+ do
+  awk '/^outdir=/{print substr($0,9,14)}' $file | (read f; if [ -d $f ]; then rm   $file; fi)
+ done
+
