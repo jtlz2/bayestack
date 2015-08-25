@@ -1,12 +1,21 @@
 #!/bin/bash
-#arguments are the bayestack_settings and name(eliab,imogen,jz)
+#arguments are the bayestack_settings name(eliab,imogen,jz this is the pbs) 
+# and an optional date in the right format eg 150825.
 #e.g ./run_multi_bayestack bayestack_settings_eliab.py eliab
+#or ./run_multi_bayestack bayestack_settings.py jz 150221
 
 sed -i "s/floatNoise=.*/floatNoise=False/" $1
 letters=({a..z})
 ind=0
+day=1
 
-dat=$(date +%Y%m%d)
+if [ $# -eq 3 ]
+	then
+	 dat=20$3
+else
+	dat=$(date +%Y%m%d)
+fi
+
 chain=chains_${dat:2}${letters[$ind]}
 pbs=pbs/$2.pbs
 
@@ -16,9 +25,16 @@ while : ; do
 		break
 	else
 		((ind++))
-		chain=chain_${dat:2}${letters[$ind]}
+		chain=chains_${dat:2}${letters[$ind]}
 	fi
-done	
+done
+
+if [ $ind -gt 17 ]; then #if the day is full 
+	ind=0
+	dat=$(date --date=$day' day' +%Y%m%d) #move to the next day
+	chain=chains_${dat:2}${letters[$ind]} #start from 'a'
+	((day++))
+fi
 
 for ((float=0;float<=1;float++))
 do
@@ -32,10 +48,10 @@ do
 		settings=${1:0:18}${letters[ind]}${1:18}  #give unique settings
 		
 		sed "s/^nlaws=.*/nlaws=$nlaw/" $1 > $settings
-		sed -i "s/outdir=.*/outdir='chain_$date_leter'/" $settings
+		sed -i "s/outdir=.*/outdir='chains_$date_leter'/" $settings
 		sed -i "s/#PBS -N.*/#PBS -N $date_leter/" $pbs
 		sed -i "s/bayestack.py.*/bayestack.py $settings/" $pbs
-		qsub $pbs
+		#qsub $pbs
 		((ind++))
 	done
 done
