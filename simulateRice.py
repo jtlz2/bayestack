@@ -138,16 +138,12 @@ inta=P0Dist(b0,n0)
 Pmin=1.0e-4 # uJy
 Pmax=40.0 # or e.g. numpy.sqrt(Q0**2+U0**2)
 
-nbins=Pbins.size-1
-#II=numpy.zeros(nbins)
-II2=numpy.zeros(nbins)
 paramsList=['S0','S1','noise','C','a0']
 params=[Pmin,Pmax,sigma_QU,1.0,-1.0]
+
 #inta=None # Toggle this to enter powerLaw mode
-for n,b in enumerate(medianArray(Pbins)):
-    II2[n]=IP(dNdP0,params,paramsList,Pbins[n],Pbins[n+1],inta=inta)
-    #II[n]=I(dNdP0,P0Dist,F,sigma_QU,inta,Pmin,Pmax,Pbins[n],Pbins[n+1])
-    print Pbins[n],Pbins[n+1],II2[n]#,II[n]
+II2=calculateP3(params,paramsList,bins=Pbins,area=1.0/sqDeg2sr,\
+                family=None,dump=None,verbose=False,inta=inta)
 
 plt.xlim(binslo,binshi+5.0)
 #plt.yscale('log')

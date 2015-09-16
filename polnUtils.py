@@ -168,6 +168,8 @@ def calculateP3(params,paramsList,bins=None,area=None,\
                 family=None,dump=None,verbose=False,inta=None):
 
     """
+    For polarization,
+    function to calculate mock data for a given power law or interpolation object
     """
 
     C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
@@ -197,9 +199,9 @@ def calculateP3(params,paramsList,bins=None,area=None,\
     for ibin in xrange(nbins-1):
         sqDeg2srr=sqDeg2sr
         #sqDeg2srr=1.0
-        #WORKING HERE
-        II[ibin]=sqDeg2srr*area*IP(dNdP0(params=params,paramsList=paramsList),\
-            noise,Smin,Smax,bins[ibin],bins[ibin+1],inta=inta)
+        II[ibin]=sqDeg2srr*area*IP(dNdP0,params,paramsList,\
+            bins[ibin],bins[ibin+1],inta=inta)
+        print bins[ibin],bins[ibin+1],II[ibin]
         #II[ibin]=integrate.quad(lambda S:powerLawFuncErfsS(S,nlaws,C,alpha,-99.0,beta,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,noise/1.0e6,sqDeg2srr*area),Smin/1.0e6,Smax/1.0e6)[0]
 
     return II
