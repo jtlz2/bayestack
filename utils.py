@@ -25,6 +25,39 @@ beamFac=pi/(4.0*log(2.0))
 
 #-------------------------------------------------------------------------------
 
+def calculateBeamsPerSource(surveyArea_sqDeg,radioSynthBeamFWHM_arcsec,numSources):
+    """
+    surveyArea_sqDeg             Survey area in sq. deg.
+    radioSynthBeamFWHM_arcsec    FWHM of synthesized beam in arcsec
+    numSources                   Number of sources in surveyArea_sqDeg
+    
+    e.g. calculateBeamsPerSource(1.979178e-02,2.5,2974)
+    """
+    surveyArea_sr=surveyArea_sqDeg*sqDeg2sr
+    radioSynthOmega_sr=sqDeg2sr*beamFac*(radioSynthBeamFWHM_arcsec/3600.0)**2
+    numBeamAreas=surveyArea_sr/radioSynthOmega_sr
+    numBeamAreasPerSource=numBeamAreas/float(numSources)
+    sqrtNumBeamAreasPerSource=sqrt(numBeamAreasPerSource)
+    
+    print '#-------------------------------------------'
+    print 'Survey area      / sq. deg. %4.2f' % surveyArea_sqDeg
+    print '                 / sr       %e' % surveyArea_sr
+    print 'Synth. beam FWHM / arcsec   %4.2f' % radioSynthBeamFWHM_arcsec
+    print '            area / sr       %e' % radioSynthOmega_sr
+    print 'Number of beam areas        %6.2f' % numBeamAreas
+    print 'Number of sources           %i' % numSources
+    print 'Number of beam areas/source %4.2f' % numBeamAreasPerSource
+    print 'Number of sources/beam area %4.2f' % (1.0/numBeamAreasPerSource)
+    print '       i.e. -->  %4.2f x %4.2f beams/source' % \
+      (sqrtNumBeamAreasPerSource,sqrtNumBeamAreasPerSource)
+    print '                (%4.2f x %4.2f sources/beam)' % \
+      (1.0/sqrtNumBeamAreasPerSource,1.0/sqrtNumBeamAreasPerSource)
+    print '#-------------------------------------------'
+
+    return
+
+#-------------------------------------------------------------------------------
+
 @profile
 def touch(fname):
     cmd='touch %s' %fname
