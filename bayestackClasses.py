@@ -179,6 +179,13 @@ class countModel(object):
         for p in parameters:
             if self.kind=='ppl':
                 if p.startswith('C'): priorsDict[p]=[C_PRIOR,C_MIN,C_MAX] # amplitude
+		elif p.startswith('S') and setBreaks: #fixed breaks
+                    if nlaws > 1: priorsDict[p]=['U',S1_MIN,S1_MAX] # This only catchs S1 
+                		
+               	    if nlaws > 2 and p =='S2': priorsDict[p]=['U',S2_MIN,S2_MAX]
+                
+                    if nlaws > 3 and p =='S3': priorsDict[p]=['U',S3_MIN,S3_MAX]
+  		
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
                 elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
