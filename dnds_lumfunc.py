@@ -21,11 +21,11 @@ import importlib
 from pylab import*
 from matplotlib.ticker import AutoMinorLocator
 from cosmocalc import cosmocalc
-import pymultinest
-from bayestackClasses import countModel
-from utils import sqDeg2sr,fetchStats
-from plat import*
-from countUtils import calculateDnByDs,medianArray
+#import pymultinest
+#from bayestackClasses import countModel
+#from utils import sqDeg2sr,fetchStats
+#from plat import*
+#from countUtils import calculateDnByDs,medianArray
 
 '''
 param_file=sys.argv[-1]
@@ -63,6 +63,7 @@ wm=0.27
 fmin = 1e-29
 specindx = -0.7
 SURVEY_AREA = 2.62265546062 #BOSS area. avoid importing settings file
+sqDeg2sr=4.0*pi*pi/129600.0
 
 def get_Vmax(zlo,zup):
 	z  = zup
@@ -78,7 +79,7 @@ def get_dnds(dnds_ecl,sbins):
 	for i in range(len(sbins)):
 		s2_5 = 1e-26*(sbins[i]*1e-6)**2.5
 		print s2_5,dnds_ecl[i],sqDeg2sr*SURVEY_AREA
-		dndsi=(dnds_ecl[i]*sqDeg2sr*SURVEY_AREA)/(s2_5)
+		dndsi=(dnds_ecl[i]SURVEY_AREA)/(s2_5)
 		dnds.append(dndsi)
 	return numpy.array(dnds)
 
@@ -97,8 +98,9 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
 	bin_norm = numpy.zeros(len(sbins)-1)
 	err_bin  = numpy.zeros(len(sbins)-1)
 	rho_m 	 = numpy.zeros(len(sbins)-1)
-	lin_rho	 = numpy.zeros(len(sbins)-1)
 	
+	dnds_ecl = dnds_ecl[numpy.where(sbins>0)]
+	sbins    = sbins[numpy.where(sbins>0)]
 	print 'recon'
 	print dnds_ecl
 	
@@ -120,18 +122,16 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
 	print dndl
 	print 'rho'
 	print rho_m
-	err_bin = dndl*(o_Vmax**2)
-	#dm = (bins[i] - bins[i])/0.4 #binwidth, this should be 0.4
+	#err_bin = dndl*(o_Vmax**2)
 	L = get_Lbins(sbins,z,dl) 
 	Lbins =log10(L)
 	for i in range(len(sbins)-1):
 		dm         = (Lbins[i+1] - Lbins[i])/0.4
 		rho		   = rho_m[i]/(dm)*L[i]
 		rho_m[i]   = log10(rho)
-		lin_rho[i] = rho
-	#print rho_m
-	err_bin = err_bin**0.5
-	#lin_rhom = 10**rho_m #back to linear space
+		#lin_rho[i] = rho
+
+	#err_bin = err_bin**0.5
 	#error = [abs(log10(rho + err)) - abs(log10(rho)) for(err,rho) in zip(err_bin,lin_rho)]
 	
 	print rho_m,Lbins
