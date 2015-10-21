@@ -2,7 +2,7 @@
 Support functions for bayestack, bayestackClasses and lumfunc
 
 Jonathan Zwart
-August 2015
+September 2015
 
 """
 
@@ -71,10 +71,11 @@ f=numpy.vectorize(F)
 
 # Polarization utility functions
 
-def dNdP0(P,params=None,paramsList=None,inta=None):
+def dNdP0(P,params=None,paramsList=None,inta=None,area=None):
     """
     Source count model
     Eventually this can incorporate powerLawFuncS, P0Dist etc.
+    P is in Jy
     """
 
     C=alpha=Pmin=Pmax=beta=P0=gamma=P1=delta=P2=-99.0
@@ -97,14 +98,15 @@ def dNdP0(P,params=None,paramsList=None,inta=None):
     iPmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
     Pmax=params[paramsList.index('S%i'%iPmax)]
 
-    noise=params[paramsList.index('noise')]
+    #noise=params[paramsList.index('noise')]
 
-    if Pmin < P < Pmax:
+    if Pmin/1.0e6 < P < Pmax/1.0e6:
         if inta is not None:
             return float(inta(P))
         else:
             return powerLawFuncWrap(nlaws,P,C,alpha,-99.0,beta,\
-                                       Pmin,Pmax,P0,gamma,P1,delta,P2,1.0)
+                                       Pmin/1.0e6,Pmax/1.0e6,P0/1.0e6,gamma,\
+                                       P1/1.0e6,delta,P2/1.0e6,area)
     else:
         return 0.0
 
@@ -127,23 +129,28 @@ def P0Dist(b0Array,n0Array):
 
 #-------------------------------------------------------------------------------
 
-def rices(p0,sigma_QU,Pbinlow,Pbinhigh):
+def rices(p0,sigma_QU,Pbinlow,Pbinhigh,doRayleigh=False):
     """
-    This is the Rice equivalent of the "erfs" variable of old
+    This is the Rice/Rayleigh equivalent of the "erfs" variable of old
     """
-    return rice(p0/sigma_QU,scale=sigma_QU).cdf(Pbinhigh) \
-      - rice(p0/sigma_QU,scale=sigma_QU).cdf(Pbinlow)
+    if doRayleigh:
+        return rayleigh(scale=sigma_QU).cdf(Pbinhigh)-rayleigh(scale=sigma_QU).cdf(Pbinlow)
+    else:
+        return rice(p0/sigma_QU,scale=sigma_QU).cdf(Pbinhigh)\
+               - rice(p0/sigma_QU,scale=sigma_QU).cdf(Pbinlow)
 
 #-------------------------------------------------------------------------------
 
-def IP(dNdP0,params,paramsList,Pbinlow,Pbinhigh,inta=None):
+def IP(dNdP0,params,paramsList,Pbinlow,Pbinhigh,inta=None,area=None,doRayleigh=False):
     """
     Single integral version of I
 
     Double, inseparable integral:
-    P (measured, cf S_m) runs from Pbinlow -> Pbinhigh
-    P0 (underlying, cf S) runs from Pmin -> Pmax
-    
+    P (measured, cf S_m) runs from Pbinlow -> Pbinhigh [uJy]
+    P0 (underlying, cf S) runs from Pmin -> Pmax [uJy]
+
+    p0 is in Jy
+
     The integrand is the product of dN/dP0 (count model) and F (the Rician)
 
     The Rice functions are calculated analytically
@@ -156,55 +163,57 @@ def IP(dNdP0,params,paramsList,Pbinlow,Pbinhigh,inta=None):
     iPmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
     Pmax=params[paramsList.index('S%i'%iPmax)]
     sigma_QU=params[paramsList.index('noise')]
-    
     return integrate.quad(lambda p0:dNdP0(p0,params=params,paramsList=paramsList,\
-             inta=inta)*rices(p0,sigma_QU,Pbinlow,Pbinhigh),Pmin,Pmax)[0]
+             inta=inta,area=area)*rices(p0,sigma_QU/1.0e6,Pbinlow/1.0e6,Pbinhigh/1.0e6,\
+                                        doRayleigh=doRayleigh),Pmin/1.0e6,Pmax/1.0e6)[0]
 
 #-------------------------------------------------------------------------------
 
 
 @profile
 def calculateP3(params,paramsList,bins=None,area=None,\
-                family=None,dump=None,verbose=False,inta=None):
+                family=None,dump=None,verbose=False,inta=None,doRayleigh=False):
 
     """
     For polarization,
     function to calculate mock data for a given power law or interpolation object
     """
 
-    C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
+    #C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
 
-    nlaws=int(0.5*len(paramsList)-1)
+    #nlaws=int(0.5*len(paramsList)-1)
 
-    C=params[paramsList.index('C')]
-    Smin=params[paramsList.index('S0')]
-    alpha=params[paramsList.index('a0')]
-    if nlaws > 1:
-        beta=params[paramsList.index('a1')]
-        S0=params[paramsList.index('S1')]
-    if nlaws > 2:
-        gamma=params[paramsList.index('a2')]
-        S1=params[paramsList.index('S2')]
-    if nlaws > 3:
-        delta=params[paramsList.index('a3')]
-        S2=params[paramsList.index('S3')]
+    #C=params[paramsList.index('C')]
+    #Smin=params[paramsList.index('S0')]
+    #alpha=params[paramsList.index('a0')]
+    #if nlaws > 1:
+    #    beta=params[paramsList.index('a1')]
+    #    S0=params[paramsList.index('S1')]
+    #if nlaws > 2:
+    #    gamma=params[paramsList.index('a2')]
+    #    S1=params[paramsList.index('S2')]
+    #if nlaws > 3:
+    #    delta=params[paramsList.index('a3')]
+    #    S2=params[paramsList.index('S3')]
 
-    iSmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
-    Smax=params[paramsList.index('S%i'%iSmax)]
+    #iSmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
+    #Smax=params[paramsList.index('S%i'%iSmax)]
 
-    noise=params[paramsList.index('noise')]
+    #noise=params[paramsList.index('noise')]
 
     nbins=len(bins)
     II = numpy.zeros(nbins-1)
     for ibin in xrange(nbins-1):
         sqDeg2srr=sqDeg2sr
         #sqDeg2srr=1.0
-        II[ibin]=sqDeg2srr*area*IP(dNdP0,params,paramsList,\
-            bins[ibin],bins[ibin+1],inta=inta)
-        print bins[ibin],bins[ibin+1],II[ibin]
+        #print area,sqDeg2sr
+        II[ibin]=IP(dNdP0,params,paramsList,\
+            bins[ibin],bins[ibin+1],inta=inta,area=sqDeg2srr*area,doRayleigh=doRayleigh)
+        #print bins[ibin],bins[ibin+1],II[ibin]
         #II[ibin]=integrate.quad(lambda S:powerLawFuncErfsS(S,nlaws,C,alpha,-99.0,beta,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,noise/1.0e6,sqDeg2srr*area),Smin/1.0e6,Smax/1.0e6)[0]
 
     return II
 
 #-------------------------------------------------------------------------------
+
 
