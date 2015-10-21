@@ -5,15 +5,26 @@ October 2015
  
 This function converts dnds into LF
 Usage:
-Its not a stand-alone function(no main())
 
-It takes in 
-dnds, sbins(uJy), z_min,z_max 
-call get_lumfunc(dnds,sbins,z_min,z_max)
-suggested sbins=numpy.logspace(1,2.88,20)
+Arguments
+dnds  : The reconstructed source counts (from reconstruct)
+sbins : The flux(uJy) bins that coresponds to dnds
+z_min : minimum redshift of slice
+z_max : max redshift of slice
 
-returns
-LF,Lbins
+returns 
+rho_m : the normalized luminosity function (Log[Mpc^-3 mag^-1])
+Lbins : Log Luminosity bins corresponding to rho_m (Log[L])
+
+dnds = [4.78118760e-05,   6.33563041e-05,   8.00873144e-05,   8.50948383e-05]
+sb = [ 45.,     55. ,    65.,     75.]
+dnds_lumfunc.get_lumfunc(dnds,sb,1.8,2.5)
+
+output
+(array([ -7.60008913e+00,  -7.52893349e+00,  -7.46877069e+00,
+         1.21271141e-33]),
+ array([ 24.35010723,  24.43725741,  24.50980808,  24.57195598]))
+
 '''
 import numpy
 import os,sys,math,shutil
@@ -21,13 +32,13 @@ import importlib
 from pylab import*
 from matplotlib.ticker import AutoMinorLocator
 from cosmocalc import cosmocalc
-#import pymultinest
-#from bayestackClasses import countModel
-#from utils import sqDeg2sr,fetchStats
-#from plat import*
-#from countUtils import calculateDnByDs,medianArray
+import pymultinest
+from bayestackClasses import countModel
+from utils import sqDeg2sr,fetchStats
+from plat import*
+from countUtils import calculateDnByDs,medianArray
 
-'''
+
 param_file=sys.argv[-1]
 setf='%s.bayestack_settings' % param_file
 
@@ -55,31 +66,23 @@ if 'sdss' in datafile:
 	z_min= z[ind -1]
 	z_max= z[ind]
 	print z_min,z_max
-
-'''
     
-Ho=71
-wm=0.27
-fmin = 1e-29
-specindx = -0.7
-SURVEY_AREA = 2.62265546062 #BOSS area. avoid importing settings file
-sqDeg2sr=4.0*pi*pi/129600.0
 
 def get_Vmax(zlo,zup):
 	z  = zup
 	V1 = cosmocalc(z,H0=Ho,WM = wm)['VCM_Gpc3']*1e9
 	V2 = cosmocalc(zlo,H0=Ho,WM = wm)['VCM_Gpc3']*1e9
-	area = SURVEY_AREA
+	area = SURVEY_AREA*sqDeg2sr
 	vmax = area*(V1-V2)/(4*pi)
-	#print 'vmax',vmax,V1,V2,zup,zlo,SURVEY_AREA,sqDeg2sr
+	#print 'vmax',vmax,V1,V2,zup,zlo,SURVEY_AREA*sqDeg2sr,sqDeg2sr
 	return vmax
 	
 def get_dnds(dnds_ecl,sbins):
 	dnds=[]
 	for i in range(len(sbins)):
 		s2_5 = 1e-26*(sbins[i]*1e-6)**2.5
-		print s2_5,dnds_ecl[i],SURVEY_AREA
-		dndsi=(dnds_ecl[i]*SURVEY_AREA)/(s2_5)
+		print s2_5,dnds_ecl[i],SURVEY_AREA*sqDeg2sr
+		dndsi=(dnds_ecl[i]*SURVEY_AREA*sqDeg2sr)/(s2_5)
 		dnds.append(dndsi)
 	return numpy.array(dnds)
 
@@ -113,7 +116,7 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
 	Vmax=get_Vmax(z_min,z_max)
 	o_Vmax    =  1./(Vmax)
 	print '1/vmax'
-	print o_Vmax,SURVEY_AREA
+	print o_Vmax,SURVEY_AREA*sqDeg2sr
 	dnds = get_dnds(dnds_ecl,sbins)
 	print 'dsdn'
 	print dnds
