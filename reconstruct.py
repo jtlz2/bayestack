@@ -37,7 +37,8 @@ def main():
     globals().update(set_module.__dict__)
 
     # Set up the experiment
-    expt=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise)
+    expt=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise,\
+                    doPoln=doPoln,doRayleigh=doRayleigh)
 
     f='%spost_equal_weights.dat' % outstem
     f=os.path.join(outdir,f)
@@ -51,6 +52,19 @@ def main():
     z[:,:-(expt.nbins-1)]=x
     # Shift posterior values to end
     z[:,-1]=z[:,ncols-1] # Copy...
+    #print z[:,-1]
+    #z[z[:,-1].argsort()] # Sort in-place by posterior value
+    #z68=
+    #print z[:,-1]
+    #p68=numpy.percentile(z[:,-1],100-68)
+    #p95=numpy.percentile(z[:,-1],100-95)
+    #print p68
+    #print p95
+    #zz=1.0*z
+    #print zz.shape
+    #print zz[:,-1]
+
+#    sys.exit(0)
     z[:,ncols-1]=0.0     # ...and blank
 
     # Fetch best-fit parameters and calculate best-fit line
@@ -68,14 +82,20 @@ def main():
 
     # Convert drawmap into correct units etc.
     power=2.5
-    ymap=expt.evaluate(expt.convertPosterior(drawmap,power))
-    if expt.kind!='ppl':
-        ymap*=numpy.power(expt.binsMedian/1.0e6,2.5)
+    #ymap=expt.evaluate(expt.convertPosterior(drawmap,power))
+    ymap=expt.evaluate(drawmap)
+    print 'yy',['%e'%y for y in ymap]
+    #sys.exit(0)
+    if expt.kind!='ppl' or True:
+        ymap*=numpy.power(expt.binsMedian/1.0e6,power)
+    print 'yy',ymap
+    #sys.exit(0)
 
     for isamp in xrange(nsamp):
-        z[isamp,ncols-1:]=expt.evaluate(expt.convertPosterior(z[isamp,:],power))
-        if expt.kind!='ppl':
-            z[isamp,ncols-1:]*=numpy.power(expt.binsMedian/1.0e6,2.5)
+        #z[isamp,ncols-1:]=expt.evaluate(expt.convertPosterior(z[isamp,:],power))
+        z[isamp,ncols-1:]=expt.evaluate(z[isamp,:])
+        if expt.kind!='ppl' or True:
+            z[isamp,ncols-1:]*=numpy.power(expt.binsMedian/1.0e6,power)
 
     # Blanking, 0.0 -> NaN
     z[numpy.where(z==0.0)]='NaN'
@@ -85,6 +105,20 @@ def main():
     reconf=os.path.join(outdir,reconf)
     recons=z[:,ncols-1:]
     numpy.savetxt(reconf,recons)
+
+    # Record the 68 and 95 per cent samples
+    #print zz[:,-1]
+    #zz68=zz[numpy.where(zz[:,-1]>p68)]
+    #print zz68.shape
+    #zz95=zz[numpy.where(zz[:,-1]>p95)]
+    #numpy.savetxt('zz68.txt',zz68)
+    #numpy.savetxt('zz95.txt',zz95)
+    #from contour_plot import findconfidence
+    #zzz=numpy.cumsum(numpy.exp(zz[:,-1]))/2.15430044
+    #print zzz
+    #a,b,c=findconfidence(zzz)
+    #print a,b,c
+    #sys.exit(0)
 
     # Generate stats here...
     s=numpy.zeros((expt.nbins,6))
@@ -108,7 +142,7 @@ def main():
         #ss*=numpy.power(s[ibin,0]/1.0e6,2.5)
         #print ss[0],tt
 #        s[ibin,1]=ss[0]  # median
-        #s[ibin,1]=tt     # peak
+#        s[ibin,1]=tt     # peak
         s[ibin,1]=ymap[ibin] # MAP
         #print ymap
         s[ibin,2]=ss[0]-ss[1]  # lower
