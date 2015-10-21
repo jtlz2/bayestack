@@ -170,9 +170,11 @@ def contourTri(chain,**kwargs):
 
 
     TRUNCATE_C=False
+    TRUNCATE_C_LIMIT=2.0#1.0e4
+    C_COL=4#0
     FONTSIZE=4; ROTATION=60.0
     FIGSIZE=(8.27,11.69); DPI=400
-    AXIS_LABEL_OFFSET=-0.7
+    AXIS_LABEL_OFFSET=-0.4
 
     # !!!! BEWARE THE BINSIZE --- PLOT IS A STRONG FUNCTION OF THIS
     if 'binsize' in kwargs:
@@ -301,10 +303,10 @@ def contourTri(chain,**kwargs):
         # Set plot limits
         if autoscale:
             # HACK FOR C ONLY:
-            if TRUNCATE_C and panel[0]==0:
+            if TRUNCATE_C and panel[0]==C_COL:
                 xxlo,xxhi=ax[ipanel].xaxis.get_data_interval()
-                if xxhi>1.0e4:
-                    pylab.xlim(xxlo,1.0e4)
+                if xxhi>TRUNCATE_C_LIMIT:
+                    pylab.xlim(xxlo,TRUNCATE_C_LIMIT)
                 #ax[ipanel].set_xscale('log')
                 autoscale=True
                 #locs,labels = plt.xticks()
@@ -344,10 +346,10 @@ def contourTri(chain,**kwargs):
         #parameters=['x', 'y', 'S', 'sig', 'Q', 'el', 'em', 'R']
         if autoscale:
             # HACK FOR C ONLY:
-            if TRUNCATE_C and iparam==0:
+            if TRUNCATE_C and iparam==C_COL:
                 xxlo,xxhi=ax1d.xaxis.get_data_interval()
-                if xxhi>1.0e4:
-                    pylab.xlim(xxlo,1.0e4)
+                if xxhi>TRUNCATE_C_LIMIT:
+                    pylab.xlim(xxlo,TRUNCATE_C_LIMIT)
                 #ax1d.set_xscale('log')
                 autoscale=True
         if not autoscale:
