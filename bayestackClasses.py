@@ -34,6 +34,7 @@ from scipy import integrate
 from scipy.special import erf
 from priors import Priors
 import countUtils
+import polnUtils
 from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood,medianArray
 #import cosmolopy
 
@@ -53,9 +54,15 @@ class surveySetup(object):
         self.datafiles=datafiles
         self.SURVEY_AREAS=areas
         self.SURVEY_NOISES=noises
-        self.datafile=datafiles[0]
+        if len(self.datafiles)>1:
+            self.multi=True
+            self.fractions=[a/sum(self.SURVEY_AREAS) for a in self.SURVEY_AREAS]
+        else:
+            self.multi=False
+            self.datafile=datafiles[0]
         self.SURVEY_AREA=areas[0]
         self.SURVEY_NOISE=noises[0]
+        self.fractions=[1.0]
 
         if whichSurvey in ['video']:# or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
@@ -117,7 +124,7 @@ class countModel(object):
     
     """
 
-    def __init__(self,kind,order,settingsf,whichSurvey,floatNoise):
+    def __init__(self,kind,order,settingsf,whichSurvey,floatNoise,doPoln=False,doRayleigh=False):
         # Import settings
         print 'Settings file is %s' % settingsf
         set_module=importlib.import_module(settingsf)
@@ -130,6 +137,8 @@ class countModel(object):
         self.nlaws=order
         self.model=model(self.kind)
         self.floatNoise=floatNoise
+        self.doPoln=doPoln
+        self.doRayleigh=doRayleigh
 
         # Set up parameters for this model
         self.paramsAvail=\
@@ -157,7 +166,7 @@ class countModel(object):
         # Load the data and derive the bins
         self.survey=surveySetup(whichSurvey,[datafile],[SURVEY_AREA],[SURVEY_NOISE])
         self.data,self.bins=self.loadData(self.survey.datafile)
-        #print self.data
+        #print self.data,self.survey.datafile
         self.nbins=len(self.bins)-1
         self.binsMedian=medianArray(self.bins)
         self.nsrc=int(self.data.sum())
@@ -213,25 +222,65 @@ class countModel(object):
         if self.kind=='ppl':
             C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
             paramsList=self.parameters
-            nlaws=int(0.5*len(paramsList)-1)
+            nlaws=int(0.5*len(paramsList)-1) # infer nlaws from length of param vector
             C=params[paramsList.index('C')]
             Smin=params[paramsList.index('S0')]
             alpha=params[paramsList.index('a0')]
-            if nlaws > 1:
+            if nlaws > 1: # nlaws=2,3,4
                 beta=params[paramsList.index('a1')]
                 S0=params[paramsList.index('S1')]
-            if nlaws > 2:
+            if nlaws > 2: # nlaws=3,4
                 gamma=params[paramsList.index('a2')]
                 S1=params[paramsList.index('S2')]
-            if nlaws > 3:
+            if nlaws > 3: # nlaws=4
                 delta=params[paramsList.index('a3')]
                 S2=params[paramsList.index('S3')]
             iSmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
+            #print 'iS',iSmax
             Smax=params[paramsList.index('S%i'%iSmax)]
-            evaluations=[countUtils.powerLawFuncWrap(nlaws,S,C,alpha,-99.0,beta,\
-                        Smin/1.0e6,Smax/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,\
+            #print paramsList,iSmax,nlaws#nlaws,S0,S1,S2,Smax,C
+            print nlaws,C,alpha,beta,Smin,Smax,S0,gamma,S1,delta,S2
+            #print 'C',C
+#            evaluations=[countUtils.powerLawFuncWrap(nlaws,S,C,alpha,-99.0,beta,\
+#                        Smin/1.0e6,Smax/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,\
+#                        1.0) for S in self.binsMedian/1.0e6]
+            power=0.0
+            evaluations=[countUtils.powerLawFuncWrap(nlaws,S,C,alpha+power,-99.0,beta+power,\
+                        -1.0e10,1.0e10,S0/1.0e6,gamma+power,S1/1.0e6,delta+power,S2/1.0e6,\
                         1.0) for S in self.binsMedian/1.0e6]
-                        #self.survey.SURVEY_AREA*sqDeg2sr) for S in self.binsMedian/1.0e6]
+
+            #power=0.0
+            #if nlaws==2:
+            #    evaluations=[countUtils.powerLawFuncWrap(2,S,C,\
+            #        alpha+power,-99.0,beta+power,\
+            #        -1.0e10,1.0e10,S0/1.0e6,-99.0,-99.0,\
+            #        -99.0,-99.0,1.0) for S in self.binsMedian/1.0e6]
+            #elif nlaws==3:
+            #    evaluations=[countUtils.powerLawFuncWrap(3,S,C,\
+            #        alpha+power,-99.0,beta+power,\
+            #        -1.0e10,1.0e10,S0/1.0e6,gamma+power,\
+            #        S1/1.0e6,-99.0,-99.0,1.0) for S in self.binsMedian/1.0e6]
+            #            #self.survey.SURVEY_AREA*sqDeg2sr) for S in self.binsMedian/1.0e6]
+            #S=0.1e-6
+            #print 'CC',C,alpha,beta,S0,S1,C*S**alpha
+            #sys.exit(0)
+            #alpha=-2.5
+            #evaluations=[C*S**(alpha) for S in self.binsMedian/1.0e6]
+
+            #print alpha,beta,gamma
+            #if nlaws>2:
+            #    temp=beta; beta=gamma; gamma=temp
+            #print alpha
+            #if nlaws==1:
+            #    evaluations=[countUtils.powerLawFuncS(S,\
+            #                    C,alpha,-1.0e10,1.0e10,1.0) for S in self.binsMedian/1.0e6]
+            #evaluations=[100.0*countUtils.powerLawFuncS(S,C,alpha,Smin/1.0e6,Smax/1.0e6,1.0)\
+            #             for S in self.binsMedian/1.0e6]
+            if doPoln:
+                s=1.0#*sqDeg2sr*self.survey.SURVEY_AREA#sqDeg2sr
+                # ??
+                evaluations=[e*s for e in evaluations]
+            print evaluations
         elif self.kind=='poly':
             paramsList=self.parameters
             Smin=params[paramsList.index('S0')]
@@ -276,6 +325,9 @@ class countModel(object):
         return e
 
     def convertPosterior(self,draw,power):
+        """
+        As it stands, this is just a pass-through
+        """
         for p in self.parameters:
             #if p.startswith('S') or p.startswith('n'): # uJy -> Jy
             #    self.currentPhysParams[self.parameters.index(p)] \
@@ -289,7 +341,13 @@ class countModel(object):
         return self.currentPhysParams
 
     def realise(self,cube):
-        self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
+        if self.doPoln:
+            #print self.survey.SURVEY_AREA
+            self.dataRealisation=polnUtils.calculateP3(cube,self.parameters,\
+                    family=self.kind,bins=self.bins,\
+                    area=self.survey.SURVEY_AREA,doRayleigh=self.doRayleigh)
+        else:
+            self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
                 family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA,\
                 model=self.model)
         return self.dataRealisation
@@ -325,7 +383,11 @@ class countModel(object):
         else:
             #self.transform(cube,ndim,nparams)
             #print self.currentPhysParams
-            return poissonLhood(self.data,self.realise(cube),silent=True)
+            if self.survey.multi:
+                return poissonLhoodMulti(self.data,self.realise(cube),\
+                                         silent=True,fractions=self.fractions)
+            else:
+               return poissonLhood(self.data,self.realise(cube),silent=True)
 
     def __str__(self):
         return self.name
