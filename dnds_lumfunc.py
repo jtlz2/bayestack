@@ -69,7 +69,7 @@ def get_Vmax(zlo,zup):
 	z  = zup
 	V1 = cosmocalc(z,H0=Ho,WM = wm)['VCM_Gpc3']*1e9
 	V2 = cosmocalc(zlo,H0=Ho,WM = wm)['VCM_Gpc3']*1e9
-	area = SURVEY_AREA*sqDeg2sr
+	area = SURVEY_AREA
 	vmax = area*(V1-V2)/(4*pi)
 	#print 'vmax',vmax,V1,V2,zup,zlo,SURVEY_AREA,sqDeg2sr
 	return vmax
@@ -78,8 +78,8 @@ def get_dnds(dnds_ecl,sbins):
 	dnds=[]
 	for i in range(len(sbins)):
 		s2_5 = 1e-26*(sbins[i]*1e-6)**2.5
-		print s2_5,dnds_ecl[i],sqDeg2sr*SURVEY_AREA
-		dndsi=(dnds_ecl[i]SURVEY_AREA)/(s2_5)
+		print s2_5,dnds_ecl[i],SURVEY_AREA
+		dndsi=(dnds_ecl[i]*SURVEY_AREA)/(s2_5)
 		dnds.append(dndsi)
 	return numpy.array(dnds)
 
@@ -95,9 +95,10 @@ def get_Lbins(sbins,z,dl):
 	return Lbins
 	
 def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
-	bin_norm = numpy.zeros(len(sbins)-1)
-	err_bin  = numpy.zeros(len(sbins)-1)
 	rho_m 	 = numpy.zeros(len(sbins)-1)
+	dnds_ecl = numpy.array(dnds_ecl)
+	sbins    = numpy.array(sbins)
+	print numpy.where(sbins>0)
 	
 	dnds_ecl = dnds_ecl[numpy.where(sbins>0)]
 	sbins    = sbins[numpy.where(sbins>0)]
@@ -112,8 +113,8 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
 	Vmax=get_Vmax(z_min,z_max)
 	o_Vmax    =  1./(Vmax)
 	print '1/vmax'
-	print o_Vmax,sqDeg2sr*SURVEY_AREA
-	dnds = get_dnds(dnds_ecl,medianArray(sbins))
+	print o_Vmax,SURVEY_AREA
+	dnds = get_dnds(dnds_ecl,sbins)
 	print 'dsdn'
 	print dnds
 	dndl = get_dndl(dnds, z,dl)
