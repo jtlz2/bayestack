@@ -14,6 +14,7 @@ from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
 from scipy.interpolate import interp1d
 from scipy.special import erf
+from scipy.stats import rice,rayleigh
 import matplotlib.pyplot as plt
 from profile_support import profile
 from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,\
@@ -247,7 +248,11 @@ def simulate(family,params,paramsList,bins,\
     # Now add noise if requested
     if simdocatnoise:
         numpy.random.seed(seed=SEED_SIM)
-        F+=numpy.random.normal(0.0,noise,N)
+        poln=False
+        if poln:
+            F+=rice.rvs(F/noise,size=N)
+        else:
+            F+=numpy.random.normal(0.0,noise,N)
 
     # Dump noisy fluxes to file
     if dump is not None:

@@ -33,7 +33,8 @@ __name__=__name_cached
 def main():
 
     settingsf=param_file.split('.')[-2]
-    expt=countModel(modelFamily,nlaws,settingsf,[dataset],floatNoise)
+    expt=countModel(modelFamily,nlaws,settingsf,[dataset],floatNoise,\
+                    doPoln=doPoln,doRayleigh=doRayleigh)
 
     # Set up MPI
     world=MPI.COMM_WORLD
@@ -102,6 +103,8 @@ def main():
         notes=['Bins taken from %s' % datafile,\
                '# Bin occupancies [i uJy uJy field^-1]:']
         remarks(log,notes)
+        notes='nsrc=%i'%expt.nsrc
+        remark(log,notes)
         for ibin in xrange(expt.nbins):
             try:
                 line='%i %f %f %f'%(ibin+1,expt.bins[ibin],expt.bins[ibin+1],expt.data[ibin])
@@ -121,6 +124,7 @@ def main():
                     evidence_tolerance=evidence_tolerance,\
                     # mode_tolerance=-1e90 bugfix for earlier versions
                     # of PyMultiNest
+                    sampling_efficiency=sampling_efficiency,\
                     mode_tolerance=-1e90,seed=SEED_SAMP,max_iter=max_iter,\
                     importance_nested_sampling=do_INS,\
                     outputfiles_basename=os.path.join(outdir,outstem),\
