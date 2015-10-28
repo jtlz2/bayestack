@@ -35,7 +35,6 @@ from cosmocalc import cosmocalc
 import pymultinest
 from bayestackClasses import countModel
 from utils import sqDeg2sr,fetchStats
-from plat import*
 from countUtils import calculateDnByDs,medianArray
 
 
@@ -61,13 +60,14 @@ SMIN_MAP_LOWER=stats['S0'][-1]
 s=loadtxt('%s/recon_stats.txt'%outdir)
 
 z = [ 0.7, 1 , 1.35, 1.7, 2, 2.3, 2.6, 3, 3.5, 4]
+#determining the redshift from the name of the datafile
 if 'sdss' in datafile:
 	ind = int(datafile[-5])
 	z_min= z[ind -1]
 	z_max= z[ind]
 	print z_min,z_max
     
-
+z_min, z_max = 1.8,2.5
 def get_Vmax(zlo,zup):
 	z  = zup
 	V1 = cosmocalc(z,H0=Ho,WM = wm)['VCM_Gpc3']*1e9
@@ -86,18 +86,58 @@ def get_dnds(dnds_ecl,sbins):
 		dnds.append(dndsi)
 	return numpy.array(dnds)
 
-def get_dndl(dnds,z,dl):
+def get_dnds_ecl(dnds,sbins):
+	
+	s2_5 = 1e-26 *(sbins)**2.5
+	print 's^2.5'
+	print s2_5
+	dnds_ecl = dnds *s2_5/SURVEY_AREA/sqDeg2sr
+	return dnds_ecl
+
+def get_dsdl(z,dl):
 	dsdl = 1./(math.pi*4 * (dl* 3.08e22)**2 * (1 + z)**((-0.7)+1))
-	print z
 	print 'dsdl'
 	print dsdl
-	return dnds*dsdl
-	
+	return dsdl
+
 def get_Lbins(sbins,z,dl):
 	Lbins = [math.pi*4 *(s*1e-32)* (dl* 3.08e22)**2 * (1 + z)**((-0.7)+1) for s in sbins]
-	return Lbins
+	return Lbins #W/Hz
+
+def get_sbins(fbins,z,dl):
+	sbins = fbins/(math.pi*4 * (dl* 3.08e22)**2 * (1 + z)**((-0.7)+1))
+	return sbins*1e26 #Jy
+
+def LFtodnds(lbins, LF , z_min, z_max):
+	#Converts LF(rho_m) to source coundts (dn/ds s^2.5)
+	LF=numpy.power(10,LF)
+	Lbins = numpy.power(10,lbins)
+	V = get_Vmax(z_min,z_max) 
+	print 'Vmax'
+	print V
+	mag = [(lbins[i+1] - lbins[i])/0.4 for i in range(len(lbins)-1)]
+	mag.append(mag[-1])
 	
+	print 'mag'
+	print mag
+	z    = mean((z_min,z_max))
+	dl   = cosmocalc(z,H0=Ho,WM = wm)['DL_Mpc']
+	dsdl = get_dsdl(z,dl)
+	dndl = LF * V*mag/Lbins
+	print 'dndl'
+	print dndl
+	sbins = get_sbins(Lbins,z,dl)
+	print 'sbins'
+	print sbins
+	dnds = dndl/dsdl
+	print 'dnds'
+	print dnds
+	dnds_ecl = get_dnds_ecl(dnds,sbins)
+	
+	return sbins*1e6,dnds_ecl
+		
 def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
+	#converts source counts (dnds s^2.5) to LF (rho_m) 
 	rho_m 	 = numpy.zeros(len(sbins)-1)
 	dnds_ecl = numpy.array(dnds_ecl)
 	sbins    = numpy.array(sbins)
@@ -120,7 +160,7 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
 	dnds = get_dnds(dnds_ecl,sbins)
 	print 'dsdn'
 	print dnds
-	dndl = get_dndl(dnds, z,dl)
+	dndl = get_dsdl(z,dl)*dnds
 	rho_m 	= dndl*o_Vmax
 	print 'dndl'
 	print dndl
@@ -140,6 +180,8 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
 	
 	print rho_m,Lbins
 	return rho_m,Lbins
+	
+
 
 
 
