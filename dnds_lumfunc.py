@@ -67,7 +67,6 @@ if 'sdss' in datafile:
 	z_max= z[ind]
 	print z_min,z_max
     
-z_min, z_max = 1.8,2.5
 def get_Vmax(zlo,zup):
 	z  = zup
 	V1 = cosmocalc(z,H0=Ho,WM = wm)['VCM_Gpc3']*1e9
