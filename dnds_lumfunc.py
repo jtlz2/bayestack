@@ -7,6 +7,7 @@ October 2015
  
 This function converts dnds into LF
 Usage:
+    ./dnds_lumfunc.py CHAINS_DIR
 
 Arguments
 dnds  : The reconstructed source counts (from reconstruct)
@@ -15,8 +16,8 @@ z_min : minimum redshift of slice
 z_max : max redshift of slice
 
 returns 
-rho_m : the normalized luminosity function (Log[Mpc^-3 mag^-1])
-Lbins : Log Luminosity bins corresponding to rho_m (Log[L])
+rho_m : the normalized luminosity function (Log10[Mpc^-3 mag^-1])
+Lbins : Log Luminosity bins corresponding to rho_m (Log10[L])
 
 dnds = [4.78118760e-05,   6.33563041e-05,   8.00873144e-05,   8.50948383e-05]
 sb = [ 45.,     55. ,    65.,     75.]
@@ -292,6 +293,22 @@ def testLumFuncs():
     return
 
 #-------------------------------------------------------------------------------
+
+def LFToDnByDs(Lbins,LFtype,LFparams,zlow,zhigh):
+    """
+    Wrapper function to convert lumfunc parameters to source counts
+    """
+    if LFtype=='LFschechter':
+        Lstar,alpha,norm=LFparams
+        Lbins,phi=schechter(Lbins,Lstar,alpha,norm)
+        Sbins,dNdS=LFtodnds(Lbins,phi,zlow,zhigh)
+    elif LFtype=='LFdoublePL':
+        pass
+
+    return Sbins,dNdS
+
+#-------------------------------------------------------------------------------
+
 
 def main():
     # Import the settings variables
