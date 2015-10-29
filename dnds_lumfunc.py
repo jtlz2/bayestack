@@ -289,14 +289,15 @@ def testLumFuncs():
     print '***All tests passed OK'
 
     # Test Schechter
-    
+
     return
 
 #-------------------------------------------------------------------------------
 
-def LFToDnByDs(Lbins,LFtype,LFparams,zlow,zhigh):
+def LFToDnByDsArray(Lbins,LFtype,LFparams,zlow,zhigh):
     """
-    Wrapper function to convert lumfunc parameters to source counts
+    Wrapper function to convert lumfunc parameters to source counts,
+    for an array of Lbins
     """
     if LFtype=='LFschechter':
         Lstar,alpha,norm=LFparams
@@ -306,6 +307,27 @@ def LFToDnByDs(Lbins,LFtype,LFparams,zlow,zhigh):
         pass
 
     return Sbins,dNdS
+
+#-------------------------------------------------------------------------------
+
+def LFToDnByDs(S,z,LFtype,LFparams):
+    """
+    Given a flux, redshift and luminosity function model, return dN/dS
+    """
+
+    if S < Smin or S > Smax:
+            return 0
+
+    if LFtype=='schechter':
+        Lstar,alpha,norm=LFparams
+        dl=cosmocalc(z,H0=Ho,WM = wm)['DL_Mpc']
+        Larr=get_Lbins([S],z,dl)
+        Lbins,phi=schechter(Larr,Lstar,alpha,norm)
+        Sbins,dnds=LFtodnds(Larr,phi,z,z)
+    elif LFtype=='LFdoublePL':
+        pass
+
+    return dnds
 
 #-------------------------------------------------------------------------------
 
