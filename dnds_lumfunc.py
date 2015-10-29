@@ -33,7 +33,7 @@ output
 from numpy import *
 import os,sys,math,shutil
 import importlib
-#from pylab import*
+from pylab import*
 #from matplotlib.ticker import AutoMinorLocator
 from cosmocalc import cosmocalc
 #import pymultinest
@@ -260,7 +260,7 @@ def schechter(Lbins,Lstar,alpha, norm):
     dL.append(dL[-1]) #adding last dL for dimensions
     Lr = Lbins/Lstar
     phi = norm *(Lr)**alpha *numpy.exp(-Lr) *dL
-    return Lbins, phi
+    return Lbins, log10(phi)
     
 #-------------------------------------------------------------------------------
 
@@ -284,6 +284,17 @@ def testLumFuncs():
     sb = [ 45.,     55. ,    65.,     75.]
     lbins,LF=get_lumfunc(dnds,sb,z_min,z_max)
     sb_out,dnds_out=LFtodnds(lbins,LF,z_min,z_max)
+    s=loadtxt('%s/recon_stats.txt'%outdir)
+    xrecon=s[:-1,0]; yrecon=s[:-1,1]
+    yrecon_down=s[:-1,2]; yrecon_up=s[:-1,3]
+    L,rho = get_lumfunc(yrecon,xrecon,z_min,z_max)
+    L_s,rho_s = schechter(L,1e23,-1.2, 1e10)
+    plot(L,rho,'.',label='recon')
+    plot(L[:-1],rho_s)
+    #xscale('log')
+    #yscale('log')
+    show()
+	
 
     assert(numpy.allclose(dnds_out,dnds[:-1])), '**get_lumfunc <-> LFtodnds do not match'
     print '***All tests passed OK'
