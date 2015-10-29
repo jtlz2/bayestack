@@ -109,6 +109,9 @@ def get_sbins(fbins,z,dl):
 
 def LFtodnds(lbins, LF , z_min, z_max):
 	#Converts LF(rho_m) to source coundts (dn/ds s^2.5)
+	#returns sbins, dnds
+	
+	Lbins = medianArray(Lbins)
 	LF=numpy.power(10,LF)
 	Lbins = numpy.power(10,lbins)
 	V = get_Vmax(z_min,z_max) 
@@ -136,10 +139,12 @@ def LFtodnds(lbins, LF , z_min, z_max):
 	return sbins*1e6,dnds_ecl
 		
 def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
-	#converts source counts (dnds s^2.5) to LF (rho_m) 
+	#converts source counts (dnds s^2.5) to LF (rho_m)
+	#returns Lbins, LF 
+	
 	rho_m 	 = numpy.zeros(len(sbins)-1)
 	dnds_ecl = numpy.array(dnds_ecl)
-	sbins    = numpy.array(sbins)
+	sbins    = medianArray(sbins)
 	print numpy.where(sbins>0)
 	
 	dnds_ecl = dnds_ecl[numpy.where(sbins>0)]
@@ -157,28 +162,37 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
 	print '1/vmax'
 	print o_Vmax,SURVEY_AREA*sqDeg2sr
 	dnds = get_dnds(dnds_ecl,sbins)
+	
 	print 'dsdn'
 	print dnds
 	dndl = get_dsdl(z,dl)*dnds
-	rho_m 	= dndl*o_Vmax
+	rho 	= dndl*o_Vmax
+	
 	print 'dndl'
 	print dndl
 	print 'rho'
 	print rho_m
-	#err_bin = dndl*(o_Vmax**2)
+
 	L = get_Lbins(sbins,z,dl) 
 	Lbins =log10(L)
-	for i in range(len(sbins)-1):
-		dm         = (Lbins[i+1] - Lbins[i])/0.4
-		rho		   = rho_m[i]/(dm)*L[i]
-		rho_m[i]   = log10(rho)
-		#lin_rho[i] = rho
-
-	#err_bin = err_bin**0.5
-	#error = [abs(log10(rho + err)) - abs(log10(rho)) for(err,rho) in zip(err_bin,lin_rho)]
 	
-	print rho_m,Lbins
-	return rho_m,Lbins
+	dL   = [(Lbins[i+1] - Lbins[i])/0.4 for i in range(len(Lbins)-1)]
+	dL.append(dL[-1]) #adding last dL for dimensions
+	
+	rho_m     = rho*L/dL
+	log_rho_m = log10(rho_m)
+
+	print log_rho_m,Lbins
+	return Lbins,log_rho_m
+
+def schechter(Lbins,Lstar,alpha, norm):
+	Lbins = medianArray(Lbins)
+	Lbins = numpy.power(10,Lbins)
+	dL = [(Lbins[i+1] - Lbins[i])/0.4 for i in range(len(Lbins)-1)]
+	dL.append(dL[-1]) #adding last dL for dimensions
+	Lr = Lbins/Lstar
+	phi = norm *(Lr)**alpha *numpy.exp(-Lr) *dL
+	return Lbins, phi
 	
 
 
