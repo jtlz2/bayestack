@@ -55,12 +55,13 @@ def dNdS_LF(S,z,params=None,paramsList=None,inta=None,area=None):
     """
 
     Lmin=Lmax=Lnorm=Lstar=Lslope=Lzevol=-99.0
-    Lmin=params[paramsList.index('LMIN')]
-    Lmax=params[paramsList.index('LMAX')]
-    Lnorm=params[paramsList.index('LNORM')]
-    Lstar=params[paramsList.index('LSTAR')]
-    Lslope=params[paramsList.index('LSLOPE')]
-    Lzevol=params[paramsList.index('LZEVOL')]
+    if family=='LFsch':
+        Lmin=params[paramsList.index('LMIN')]
+        Lmax=params[paramsList.index('LMAX')]
+        Lnorm=params[paramsList.index('LNORM')]
+        Lstar=params[paramsList.index('LSTAR')]
+        Lslope=params[paramsList.index('LSLOPE')]
+        Lzevol=params[paramsList.index('LZEVOL')]
 
     dl=cosmocalc(z,H0=Ho,WM=wm)['DL_Mpc']
     [Smin,Smax]=dnds_lumfunc.get_sbins([Lmin,Lmax],z,dl)
@@ -70,8 +71,8 @@ def dNdS_LF(S,z,params=None,paramsList=None,inta=None,area=None):
             return float(inta(S))
         else:
             L=dnds_lumfunc.get_Lbins([S],z,dl)
-            Lbins,log10(phi)=schechter(L,Lstar,Lslope,Lnorm)
-            return (1.0+z)**Lzevol*10**phi[0]
+            Lbins,log10phi=dnds_lumfunc.schechter(L,Lstar,Lslope,Lnorm)
+            return (10**log10phi[0])*(1.0+z)**Lzevol
     else:
         return 0.0
 
@@ -79,37 +80,26 @@ def dNdS_LF(S,z,params=None,paramsList=None,inta=None,area=None):
 #-------------------------------------------------------------------------------
 
 @profile
-def calculateIL(params,paramsList,bins=None,area=None,
-                family=None,dump=None,verbose=False,model=None):
-
+def IL(dNdS_LF,redshift,params,paramsList,Sbinlow,Sbinhigh,inta=None,area=None):
     """
-    pn_integral, but for luminosity function families
-    Flux arguments to this function are in uJy
+    The integrand is the product of dN/dS_LF (count model) and G (the Gaussian)
     ['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL'] + ['noise']
     """
 
-    if family=='LFsch':
-        Lmin=params[paramsList.index('LMIN')]
-        Lmax=params[paramsList.index('LMAX')]
-        Lnorm=params[paramsList.index('LNORM')]
-        Lstar=params[paramsList.index('LSTAR')]
-        Lslope=params[paramsList.index('LSLOPE')]
-        Lzevol=params[paramsList.index('LZEVOL')]
-        noise=params[paramsList.index('noise')]
-        redshift=?????
-        #for i in range(6): print params[i]
-        nbins=len(bins)-1
-        II = numpy.zeros(nbins)
-        for ibin in xrange(nbins):
-            II[ibin]=integrate.quad(lambda S:polynomialFuncErfsS(S,S_1,coeffs,Smin/1.0e6,Smax/1.0e6,bins[ibin]/1.0e6,bins[ibin+1]/1.0e6,noise/1.0e6,sqDeg2sr*area),Smin/1.0e6,Smax/1.0e6)[0]
-            #print ibin,bins[ibin],bins[ibin+1],II[ibin]
-        return II
+    Lmin=params[paramsList.index('LMIN')]
+    Lmax=params[paramsList.index('LMAX')]
+    dl=cosmocalc(z,H0=Ho,WM=wm)['DL_Mpc']
+    [Smin,Smax]=dnds_lumfunc.get_sbins([Lmin,Lmax],z,dl)
+    sigma=params[paramsList.index('noise')]
 
+    return integrate.quad(lambda S:dNdS_LF(S,redshift,params=params,paramsList=paramsList,\
+             inta=inta,area=area)*erfss(S,sigma/1.0e6,Sbinlow/1.0e6,Sbinhigh/1.0e6),\
+                                        Smin/1.0e6,Smax/1.0e6)[0]
 
 #-------------------------------------------------------------------------------
 
 @profile
-def calculateL3(params,paramsList,bins=None,area=None,\
+def calculateL3(params,paramsList,redshift,bins=None,area=None,\
                 family=None,dump=None,verbose=False,inta=None,doRayleigh=False):
 
     """
@@ -123,7 +113,8 @@ def calculateL3(params,paramsList,bins=None,area=None,\
         sqDeg2srr=sqDeg2sr
         #sqDeg2srr=1.0
         #print area,sqDeg2sr
-        II[ibin]=IL(dNdS_LF,params,paramsList,bins[ibin],bins[ibin+1],inta=inta,area=sqDeg2srr*area)
+        II[ibin]=IL(dNdS_LF,redshift,params,paramsList,bins[ibin],bins[ibin+1],\
+                    inta=inta,area=sqDeg2srr*area)
 
     return II
 
