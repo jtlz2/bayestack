@@ -203,13 +203,22 @@ class countModel(object):
             elif self.kind=='bins':
                 if p.startswith('b'): priorsDict[p]=[POLEAMPS_PRIOR,POLEAMPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
 
-            if p.startswith('n'): # noise
-                if floatNoise:
-                    priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
-                else:
-                    priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
-            elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
-            elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
+        if p.startswith('n'): # noise
+            if floatNoise:
+                priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
+            else:
+                priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
+        elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
+        elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
+
+        if p.startswith('L'): # LFS: ['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL']
+            priorsDict['LMIN']=[LMIN_PRIOR,LMIN_MIN,LMIN_MAX]
+            priorsDict['LMAX']=[LMAX_PRIOR,LMAX_MIN,LMAX_MAX]
+            priorsDict['LNORM']=[LNORM_PRIOR,LNORM_MIN,LNORM_MAX]
+            priorsDict['LSTAR']=[LSTAR_PRIOR,LSTAR_MIN,LSTAR_MAX]
+            priorsDict['LSLOPE']=[LSLOPE_PRIOR,LSLOPE_MIN,LSLOPE_MAX]
+            priorsDict['LZEVOL']=[LZEVOL_PRIOR,LZEVOL_MIN,LZEVOL_MAX]
+
         return priorsDict
 
     def setParams(self,params):
