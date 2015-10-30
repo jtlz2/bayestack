@@ -34,7 +34,7 @@ from numpy import *
 import os,sys,math,shutil
 import importlib
 from pylab import*
-#from matplotlib.ticker import AutoMinorLocator
+from matplotlib.ticker import AutoMinorLocator
 from cosmocalc import cosmocalc
 #import pymultinest
 from bayestackClasses import countModel
@@ -43,6 +43,9 @@ from countUtils import calculateDnByDs,medianArray
 
 param_file=sys.argv[-1]
 setf='%s.bayestack_settings' % param_file
+Ho=71
+wm=0.27
+LF_SPEC_INDEX = -0.7
 
 #expt=countModel(modelFamily,nlaws,setf,[dataset],floatNoise)
 #print expt.data
@@ -257,12 +260,15 @@ def schechter(Lbins,Lstar,alpha, norm):
         Lbins -
         log10(phi) -
     """
+    #if len(Lbin)==1:
+    	
     Lbins = medianArray(Lbins)
     Lbins = numpy.power(10,Lbins)
     dL = [(Lbins[i+1] - Lbins[i])/0.4 for i in range(len(Lbins)-1)]
     dL.append(dL[-1]) #adding last dL for dimensions
     Lr = Lbins/Lstar
-    phi = norm *(Lr)**alpha *numpy.exp(-Lr) *dL
+    print Lbins[0], Lstar, alpha, norm
+    phi = norm *(Lr)**alpha *numpy.exp(-Lr)/Lstar
     return Lbins, log10(phi)
     
 #-------------------------------------------------------------------------------
@@ -281,8 +287,6 @@ def testLumFuncs():
         print z_min,z_max
 
     # Testing get_lumfunc and LFtodnds
-    z_min=1.8
-    z_max=2.5
     dnds = [4.78118760e-05,   6.33563041e-05,   8.00873144e-05,   8.50948383e-05]
     sb = [ 45.,     55. ,    65.,     75.]
     lbins,LF=get_lumfunc(dnds,sb,z_min,z_max)
@@ -290,30 +294,52 @@ def testLumFuncs():
     s=loadtxt('%s/recon_stats.txt'%outdir)
     xrecon=s[:-1,0]; yrecon=s[:-1,1]
     yrecon_down=s[:-1,2]; yrecon_up=s[:-1,3]
-    L,rho = get_lumfunc(yrecon,xrecon,z_min,z_max)
-    L_s,rho_s = schechter(L,1e23,-1.2, 1e10)
-    plot(L,rho,'.',label='recon')
+            
+    L,rho     = get_lumfunc(yrecon,xrecon,z_min,z_max)
+    phi =7e16
+    Ls = 2e24
+    alpha=-1.8
+    a='alpha'
+    
+    L_s,rho_s = schechter(L,Ls,alpha, phi)
+    
+    plot(L,rho,'s',label='%3.2f < z < %3.2f'%(z_min,z_max))
     plot(L[:-1],rho_s)
+<<<<<<< HEAD
+    tick_params(axis='both',which = 'major', labelsize=15,width =2)
+    tick_params(axis='both',which = 'minor', labelsize=12, width=1)
+    text(23,-7.5,'  $\phi_* =%5.2e$ \n  $L_* =%5.2e$ \n  $\%s =%5.2f$'%(phi,Ls,a,alpha),fontsize=17)
+    xlabel('1.4 GHz log[L(W/Hz)]',fontsize = 18)
+    ylabel(r'log[$\rho_m$(mpc$^{-3}$mag$^{-1}$)]',fontsize = 18)
+
+    
+    #ax.xaxis.set_minor_locator(AutoMinorLocator())
+    #ax.yaxis.set_minor_locator(AutoMinorLocator())
+    
+    legend().draggable()
+    show()
+	
+=======
     #xscale('log')
     #yscale('log')
     #show()
     lff='lf.pdf'
     savefig(lff)
     print '--> Look in %s' % lff	
+>>>>>>> 5719d2a494a80d6c9dcf3b949b4c3b7244b6ca50
 
     assert(numpy.allclose(dnds_out,dnds[:-1])), '**get_lumfunc <-> LFtodnds do not match'
     print '***All tests passed OK'
 
     # Test Schechter
-
+    
     return
 
 #-------------------------------------------------------------------------------
 
-def LFToDnByDsArray(Lbins,LFtype,LFparams,zlow,zhigh):
+def LFToDnByDs(Lbins,LFtype,LFparams,zlow,zhigh):
     """
-    Wrapper function to convert lumfunc parameters to source counts,
-    for an array of Lbins
+    Wrapper function to convert lumfunc parameters to source counts
     """
     if LFtype=='LFschechter':
         Lstar,alpha,norm=LFparams
@@ -323,27 +349,6 @@ def LFToDnByDsArray(Lbins,LFtype,LFparams,zlow,zhigh):
         pass
 
     return Sbins,dNdS
-
-#-------------------------------------------------------------------------------
-
-def LFToDnByDs(S,z,LFtype,LFparams):
-    """
-    Given a flux, redshift and luminosity function model, return dN/dS
-    """
-
-    if S < Smin or S > Smax:
-            return 0
-
-    if LFtype=='schechter':
-        Lstar,alpha,norm=LFparams
-        dl=cosmocalc(z,H0=Ho,WM = wm)['DL_Mpc']
-        Larr=get_Lbins([S],z,dl)
-        Lbins,phi=schechter(Larr,Lstar,alpha,norm)
-        Sbins,dnds=LFtodnds(Larr,phi,z,z)
-    elif LFtype=='LFdoublePL':
-        pass
-
-    return dnds
 
 #-------------------------------------------------------------------------------
 
