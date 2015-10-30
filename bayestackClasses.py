@@ -364,6 +364,9 @@ class countModel(object):
             self.dataRealisation=polnUtils.calculateP3(cube,self.parameters,\
                     family=self.kind,bins=self.bins,\
                     area=self.survey.SURVEY_AREA,doRayleigh=self.doRayleigh)
+        elif self.kind=='LFsch':
+            self.dataRealisation=lumfuncUtils.calculateL3(cube,self.parameters,self.zofslice,\
+                    bins=self.bins,area=self.survey.SURVEY_AREA,family=self.kind)
         else:
             self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
                 family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA,\
