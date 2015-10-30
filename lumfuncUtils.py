@@ -3,6 +3,8 @@ Support functions for bayestack, bayestackClasses
 
 Luminosity functions and evolution thereof
 
+Depends on dnds_lumfunc module
+
 Jonathan Zwart
 October 2015
 
@@ -16,12 +18,10 @@ from math import pi,e,exp,log,log10,isinf,isnan
 from scipy import integrate,stats
 from scipy.interpolate import interp1d
 from scipy.special import erf
-from scipy.stats import rice,rayleigh
 import matplotlib.pyplot as plt
 from profile_support import profile
 from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,\
                            interpol,buildCDF,Jy2muJy,interpola
-from countUtils import powerLawFuncWrap
 from cosmocalc import cosmocalc
 import dnds_lumfunc
 
@@ -40,9 +40,13 @@ except:
     print '***Warning: Settings not loaded'
 
 #-------------------------------------------------------------------------------
-
 # LF utility functions
+
+@profile
 def erfss(S,Sbinlow,Sbinhigh,ssigma):
+    """
+    For a Gaussian noise model
+    """
     return 0.5*(erf((S-Sbinlow)/(sqrtTwo*ssigma)) - erf((S-Sbinhigh)/(sqrtTwo*ssigma)))
 
 #-------------------------------------------------------------------------------
@@ -52,6 +56,7 @@ def dNdS_LF(S,z,params=None,paramsList=None,inta=None,area=None):
     """
     Source count model
     S is in Jy
+    Cosmology is set globally
     """
 
     Lmin=Lmax=Lnorm=Lstar=Lslope=Lzevol=-99.0
@@ -100,7 +105,7 @@ def IL(dNdS_LF,redshift,params,paramsList,Sbinlow,Sbinhigh,inta=None,area=None):
 
 @profile
 def calculateL3(params,paramsList,redshift,bins=None,area=None,\
-                family=None,dump=None,verbose=False,inta=None,doRayleigh=False):
+                family=None,dump=None,verbose=False,inta=None):
 
     """
     For LF,
@@ -114,7 +119,7 @@ def calculateL3(params,paramsList,redshift,bins=None,area=None,\
         #sqDeg2srr=1.0
         #print area,sqDeg2sr
         II[ibin]=IL(dNdS_LF,redshift,params,paramsList,bins[ibin],bins[ibin+1],\
-                    inta=inta,area=sqDeg2srr*area)
+                    inta=None,area=sqDeg2srr*area)
 
     return II
 
