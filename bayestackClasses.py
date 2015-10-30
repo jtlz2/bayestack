@@ -147,10 +147,12 @@ class countModel(object):
                      'coeffs':['p%i'%ic for ic in xrange(self.nlaws)],\
                      'limits':['S%i'%ic for ic in xrange(2)],\
                      'poles':['b%i'%ic for ic in xrange(self.nlaws)],\
-                     'amp':['C'],'extra':['noise']}
+                     'amp':['C'],'extra':['noise'],\
+                     'schechter':['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LZEVOL']}
         familyMap={'ppl':['breaks','slopes','amp','extra'],\
                    'poly':['limits','coeffs','extra'],\
-                   'bins':['poles','extra']}
+                   'bins':['poles','extra'],\
+                   'LFsch':['schechter','extra']}
         self.paramsStruct=\
           [self.paramsAvail[p] for p in self.paramsAvail if p in familyMap[kind]]
         # --> This defines the order of the parameters:
