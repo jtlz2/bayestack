@@ -293,8 +293,10 @@ def testLumFuncs():
     plot(L[:-1],rho_s)
     #xscale('log')
     #yscale('log')
-    show()
-	
+    #show()
+    lff='lf.pdf'
+    savefig(lff)
+    print '--> Look in %s' % lff	
 
     assert(numpy.allclose(dnds_out,dnds[:-1])), '**get_lumfunc <-> LFtodnds do not match'
     print '***All tests passed OK'
