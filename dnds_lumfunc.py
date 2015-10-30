@@ -302,6 +302,7 @@ def testLumFuncs():
     
     plot(L,rho,'s',label='%3.2f < z < %3.2f'%(z_min,z_max))
     plot(L[:-1],rho_s)
+<<<<<<< HEAD
     tick_params(axis='both',which = 'major', labelsize=15,width =2)
     tick_params(axis='both',which = 'minor', labelsize=12, width=1)
     text(23,-7.5,'  $\phi_* =%5.2e$ \n  $L_* =%5.2e$ \n  $\%s =%5.2f$'%(phi,Ls,a,alpha),fontsize=17)
@@ -315,6 +316,14 @@ def testLumFuncs():
     legend().draggable()
     show()
 	
+=======
+    #xscale('log')
+    #yscale('log')
+    #show()
+    lff='lf.pdf'
+    savefig(lff)
+    print '--> Look in %s' % lff	
+>>>>>>> 5719d2a494a80d6c9dcf3b949b4c3b7244b6ca50
 
     assert(numpy.allclose(dnds_out,dnds[:-1])), '**get_lumfunc <-> LFtodnds do not match'
     print '***All tests passed OK'
