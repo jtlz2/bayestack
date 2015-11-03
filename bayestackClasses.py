@@ -147,10 +147,12 @@ class countModel(object):
                      'coeffs':['p%i'%ic for ic in xrange(self.nlaws)],\
                      'limits':['S%i'%ic for ic in xrange(2)],\
                      'poles':['b%i'%ic for ic in xrange(self.nlaws)],\
-                     'amp':['C'],'extra':['noise']}
+                     'amp':['C'],'extra':['noise'],\
+                     'schechter':['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LZEVOL']}
         familyMap={'ppl':['breaks','slopes','amp','extra'],\
                    'poly':['limits','coeffs','extra'],\
-                   'bins':['poles','extra']}
+                   'bins':['poles','extra'],\
+                   'LFsch':['schechter','extra']}
         self.paramsStruct=\
           [self.paramsAvail[p] for p in self.paramsAvail if p in familyMap[kind]]
         # --> This defines the order of the parameters:
@@ -203,13 +205,22 @@ class countModel(object):
             elif self.kind=='bins':
                 if p.startswith('b'): priorsDict[p]=[POLEAMPS_PRIOR,POLEAMPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
 
-            if p.startswith('n'): # noise
-                if floatNoise:
-                    priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
-                else:
-                    priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
-            elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
-            elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
+        if p.startswith('n'): # noise
+            if floatNoise:
+                priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
+            else:
+                priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
+        elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
+        elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
+
+        if p.startswith('L'): # LFS: ['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL']
+            priorsDict['LMIN']=[LMIN_PRIOR,LMIN_MIN,LMIN_MAX]
+            priorsDict['LMAX']=[LMAX_PRIOR,LMAX_MIN,LMAX_MAX]
+            priorsDict['LNORM']=[LNORM_PRIOR,LNORM_MIN,LNORM_MAX]
+            priorsDict['LSTAR']=[LSTAR_PRIOR,LSTAR_MIN,LSTAR_MAX]
+            priorsDict['LSLOPE']=[LSLOPE_PRIOR,LSLOPE_MIN,LSLOPE_MAX]
+            priorsDict['LZEVOL']=[LZEVOL_PRIOR,LZEVOL_MIN,LZEVOL_MAX]
+
         return priorsDict
 
     def setParams(self,params):
@@ -353,6 +364,9 @@ class countModel(object):
             self.dataRealisation=polnUtils.calculateP3(cube,self.parameters,\
                     family=self.kind,bins=self.bins,\
                     area=self.survey.SURVEY_AREA,doRayleigh=self.doRayleigh)
+        elif self.kind=='LFsch':
+            self.dataRealisation=lumfuncUtils.calculateL3(cube,self.parameters,self.zofslice,\
+                    bins=self.bins,area=self.survey.SURVEY_AREA,family=self.kind)
         else:
             self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
                 family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA,\

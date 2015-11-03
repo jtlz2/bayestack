@@ -256,6 +256,9 @@ def schechter(Lbins,Lstar,alpha, norm):
         Lstar - W Hz^-1
         alpha - no units
         norm - phi_star Mpc^-3 mag^-1
+    Outputs:
+        Lbins -
+        log10(phi) -
     """
     #if len(Lbin)==1:
     	
