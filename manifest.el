@@ -1,0 +1,10 @@
+#index z_min z_max 	z_med filename
+1 	0.7		1.		0.85  	sdss_dr12s1.txt
+2 	1.		1.35  	1.175 	sdss_dr12s2.txt
+3 	1.35	1.7   	1.525	sdss_dr12s3.txt
+4 	1.7 	2.0   	1.85	sdss_dr12s4.txt	
+5 	2.0 	2.3 	2.15	sdss_dr12s5.txt	
+6	2.3		2.6		2.45	sdss_dr12s6.txt
+7	2.6		3.0		2.8		sdss_dr12s7.txt
+8	3.0		3.5		3.25	sdss_dr12s8.txt
+9	3.5		4.0		3.75	sdss_dr12s9.txt
