@@ -261,17 +261,51 @@ def schechter(Lbins,Lstar,alpha, norm):
         Lbins -
         log10(phi) -
     """
-    #if len(Lbin)==1:
-    	
-    Lbins = medianArray(Lbins)
+    if type(Lbins) != float:
+        Lbins = medianArray(Lbins)
+        
     Lbins = numpy.power(10,Lbins)
-    dL = [(Lbins[i+1] - Lbins[i])/0.4 for i in range(len(Lbins)-1)]
-    dL.append(dL[-1]) #adding last dL for dimensions
     Lr = Lbins/Lstar
-    print Lbins[0], Lstar, alpha, norm
+    print Lbins, Lstar, alpha, norm
     phi = norm *(Lr)**alpha *numpy.exp(-Lr)/Lstar
     return Lbins, log10(phi)
     
+#-------------------------------------------------------------------------------
+def doublepowerlaw(Lbins,Lstar,alpha1, alpha2, C):
+    """
+    Inputs:
+        Lbins - Log10(W Hz^-1)
+        Lstar - W Hz^-1
+        alpha - no units
+        norm - phi_star Mpc^-3 mag^-1
+    Outputs:
+        Lbins -
+        log10(phi) -
+    """
+    if type(Lbins) != float:
+        Lbins = medianArray(Lbins)
+    
+    Lbins = numpy.power(10,Lbins)
+    Lr = Lbins/Lstar
+    print Lbins, Lstar, alpha1,alpha2, C
+    phi = C/ ((Lr)**alpha1 + (Lr)**alpha2)
+    return Lbins, log10(phi)
+    
+#-------------------------------------------------------------------------------
+
+def LFToDnByDs(Lbins,LFtype,LFparams,zlow,zhigh):
+    """
+    Wrapper function to convert lumfunc parameters to source counts
+    """
+    if LFtype=='LFschechter':
+        Lstar,alpha,norm=LFparams
+        Lbins,phi=schechter(Lbins,Lstar,alpha,norm)
+        Sbins,dNdS=LFtodnds(Lbins,phi,zlow,zhigh)
+    elif LFtype=='LFdoublePL':
+        pass
+
+    return Sbins,dNdS
+
 #-------------------------------------------------------------------------------
 
 def testLumFuncs():
@@ -297,15 +331,23 @@ def testLumFuncs():
     yrecon_down=s[:-1,2]; yrecon_up=s[:-1,3]
             
     L,rho     = get_lumfunc(yrecon,xrecon,z_min,z_max)
+    
+########## parameters##########    
     phi =7e16
     Ls = 2e24
     alpha=-1.8
     a='alpha'
+    alpha1 = 3.
+    alpha2 = 1.3
+    C = 8e-8
+#_____________________________#    
     
     L_s,rho_s = schechter(L,Ls,alpha, phi)
+    L2,rho2 = doublepowerlaw(L,Ls,alpha1,alpha2,C)
     
     plot(L,rho,'s',label='%3.2f < z < %3.2f'%(z_min,z_max))
-    plot(L[:-1],rho_s)
+    plot(L[:-1],rho_s,label='Schechter')
+    plot(L[:-1],rho2,label='Double power-law')
     tick_params(axis='both',which = 'major', labelsize=15,width =2)
     tick_params(axis='both',which = 'minor', labelsize=12, width=1)
     text(23,-7.5,'  $\phi_* =%5.2e$ \n  $L_* =%5.2e$ \n  $\%s =%5.2f$'%(phi,Ls,a,alpha),fontsize=17)
@@ -333,22 +375,6 @@ def testLumFuncs():
     return
 
 #-------------------------------------------------------------------------------
-
-def LFToDnByDs(Lbins,LFtype,LFparams,zlow,zhigh):
-    """
-    Wrapper function to convert lumfunc parameters to source counts
-    """
-    if LFtype=='LFschechter':
-        Lstar,alpha,norm=LFparams
-        Lbins,phi=schechter(Lbins,Lstar,alpha,norm)
-        Sbins,dNdS=LFtodnds(Lbins,phi,zlow,zhigh)
-    elif LFtype=='LFdoublePL':
-        pass
-
-    return Sbins,dNdS
-
-#-------------------------------------------------------------------------------
-
 
 def main():
     # Import the settings variables
