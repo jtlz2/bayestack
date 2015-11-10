@@ -34,7 +34,12 @@ def main():
 
     settingsf=param_file.split('.')[-2]
     expt=countModel(modelFamily,nlaws,settingsf,[dataset],floatNoise,\
-                    doPoln=doPoln,doRayleigh=doRayleigh)
+                    doPoln=doPoln,doRayleigh=doRayleigh,doRedshiftSlices=doRedshiftSlices)
+
+    #import bayestackClasses
+    #x=bayestackClasses.dataSetup('sdss',zmanifestf,redshiftSlices=True)
+    #print x
+    #sys.exit(0)
 
     # Set up MPI
     world=MPI.COMM_WORLD
