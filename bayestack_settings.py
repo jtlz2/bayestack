@@ -18,6 +18,7 @@ elif  'binner'      in exe: context='b'
 elif  'extractor'   in exe: context='e'
 elif  'resample'    in exe: context='u'
 elif  'inject'      in exe: context='i'
+elif  'dnds_lumfunc'in exe: context='z'
 print 'Context is %s' % context
 #-------------------------------------------------------------------------------
 
@@ -27,20 +28,30 @@ print 'Context is %s' % context
 binStyle=1
 nlaws=3 # Number of ppl laws (or poly coefficients) to fit
 floatNoise=False
-modelFamily='ppl'#'ppl' 'poly'
-outdir='chains_150522a' # based on 140123a
+modelFamily='LFdpl'#'ppl' 'poly' # 'LFsch' # 'LFdpl'
+outdir='chains_151109a' # based on 140123a
+noiseZones=[0] # Select which noise zones to analyse
+doPoln=False
+doRayleigh=True # Set Rice signal to zero, i.e. Rayleigh distribution
+doRedshiftSlices=True # For joint z slice analysis
+whichRedshiftSlices=[1]
+setBreaks=False
+# LF variables
+LF_SPEC_INDEX=-0.7
+Ho=71.0
+wm=0.27
 
-simFamily= 'skads' # 'array' 'skads' 'ppl' 'poly' 'bins' 'test'
-SMIN_SIM=0.01 # uJy
+simFamily= 'poly' # 'array' 'skads' 'ppl' 'poly' 'bins' 'test'
+SMIN_SIM=0.5#0.01 # uJy
 SMAX_SIM=85.0 # uJy
 #simParams=[SMIN_SIM,SMAX_SIM]
 #simParams=[1000.0,SMIN_SIM,SMAX_SIM,0.0]
 #simParams=[SMIN_SIM,SMAX_SIM,1.0]
-simParams=[SMIN_SIM,SMAX_SIM,5.0,1.0,0.5]
+simParams=[SMIN_SIM,SMAX_SIM,5.0,1.0,0.5,0.1]
 #simParamsList=['S0','S1']
 #simParamsList=['C','S0','S1','a0']
 #simParamsList=['S0','S1','p0']
-simParamsList=['S0','S1','p0','p1','p2']
+simParamsList=['S0','S1','p0','p1','p2','p4']
 simBins=numpy.linspace(-40.0,85.0,21)
 SEED_SIM=1234
 NSIM=72000
@@ -58,16 +69,16 @@ simPolePosns=None
 # Master parameters
 #MOTD=''
 RESUME=False # Turn checkpointing on
-nb= 26#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
+#nb= 22#40#38#40#39#37#41#50#39#37 #13 #24 #27 #34 #37  # 38 or 41
 dnds0=False # Leave as False otherwise no recon line...
 binsHigh=False # Run with this True then set to False
-#outdir='chains_150508a' # based on 140123a
+#outdir='chains_150514a' # based on 140123a
 run_num=outdir.split('_')[-1]
 #if context=='l': outdir=os.path.join('/home/jtlz2/bartolomeu/output',outdir)
 if context=='s' or context=='i': outdir='sims/%s' % outdir.split('_')[-1]
 logfile='README.txt'
 variablesfile='variables.txt'
-comment='Rearchitecting'
+comment='SDSS QSO RLF - tests'
 SEED_SAMP=1234 # [-1 for clock]
 #floatNoise=False
 
@@ -75,14 +86,15 @@ SEED_SAMP=1234 # [-1 for clock]
 #nlaws=1
 
 # Data set
-dataset='sims/150522a'
+#dataset='sims/151028a'
 #dataset='cosmos'
 #dataset='vvdf'
 #dataset='video'
-run_num_run='150522a'
+#run_num_run='151028a'
 #dataset='first'
 #dataset='mca'
-dataset='en1jvla'
+#dataset='en1jvla'
+dataset='sdss'
 
 #-------------------------------------------------------------------------------
 # Extraction settings
@@ -304,6 +316,8 @@ if NLAWS_SIM>3:
 #-------------------------------------------------------------------------------
 
 # Specify the data file (within outdir) and set up some survey parameters
+numRedshiftSlices=len(whichRedshiftSlices)
+numNoiseZones=5
 if dataset=='cosmos':
     #datafile='bondiover216_corr.txt'
     datafile='bondi2008_orig.txt'
@@ -341,24 +355,47 @@ elif dataset == 'mca':
     SURVEY_AREA=1.00
     SURVEY_NOISE=17.0
 elif dataset == 'en1jvla':
+    if not doPoln:
+        stokes='I'
+    else:
+        stokes='P'
     weightvlaf='/Users/jtlz2/Dropbox/elaisn1/maps/EN1.I.mosaic.sensitivity_vla.fits'
-    noisezonesf='noisezones.txt'
+    noisezonesf='noisezones_%s.txt'%stokes
     noisezonesf=os.path.join(dataset,noisezonesf)
     cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
               'noise0':[47,1.1,1.5],'noise1':[47,1.5,2.0],\
+              #'noise0':[47,1.5,2.0]}
+              #'noise0':[47,1.1,1.5]}
               'noise2':[47,2.0,2.5],'noise3':[47,2.5,3.0],\
-              'noise4':[47,2.5,5.0],'noise5':[47,5.0,13.0]}
+              'noise4':[47,3.0,5.0],'noise5':[47,5.0,13.0]}
     numNoiseZones=len([k for k in cutsDict.keys() if 'noise' in k])
-    datafiles=['en1jvla_a%i.txt'%n for n in range(numNoiseZones)]
+    datafiles=['en1jvla_%s_a%i.txt'%(stokes,n) for n in noiseZones]
     datafile=datafiles[0]
     SURVEY_AREAS={}; SURVEY_NOISES={}
-    nz=numpy.genfromtxt(noisezonesf)
+    if not os.path.exists(noisezonesf):
+        nz=numpy.zeros((numNoiseZones,4))
+    else:
+        nz=numpy.atleast_2d(numpy.genfromtxt(noisezonesf))
     for i,d in enumerate(datafiles):
+        #print nz
         SURVEY_AREAS[d]=nz[i,-1]
         SURVEY_NOISES[d]=nz[i,:-1]
-    SURVEY_NOISE=1.164
+    if not doPoln:
+        SURVEY_NOISE=1.164
+    else:
+        SURVEY_NOISE=1.164
     SURVEY_AREA=sum([a for (f,a) in SURVEY_AREAS.iteritems()])
     #SURVEY_AREA=0.1
+elif dataset=='sdss':
+    SURVEY_NOISE=150.0 # uJy
+    SURVEY_AREA=8609.67 # sq. deg.
+    zmanifestf='sdss/sdss_manifest.txt'
+    zmanifest=numpy.genfromtxt(zmanifestf)
+    datafiles=['sdss_dr12s%i.txt'%i for i in zmanifest[[s-1 for s in whichRedshiftSlices],0]]
+    datafile=datafiles[0]
+    #numRedshiftSlices=zmanifest.shape[0]
+    redshifts=zmanifest[[s-1 for s in whichRedshiftSlices],3]
+    numRedshiftSlices=len(whichRedshiftSlices)
 
 #-------------------------------------------------------------------------------
 
@@ -431,10 +468,25 @@ if context=='b' or True:
 
     elif dataset == 'en1jvla':
         BIN_CAT_FORM=8 # See /Users/jtlz2/elaisn1/servs/scripts/*.stil
-        BIN_CAT='/Users/jtlz2/elaisn1/servs/servs-en1-full-data-fusion-sextractor-cutdown-masked-vla-overlap-with-detns-150522.txt'
+        BIN_CAT='/Users/jtlz2/elaisn1/servs/servs-en1-full-data-fusion-sextractor-cutdown-masked-vla-overlap-with-detns-150813.txt'
+        #BIN_CAT='/Users/jtlz2/elaisn1/servs/servs-en1-full-data-fusion-sextractor-cutdown-masked-vla-overlap-with-detns-shifted10p10p-150817.txt'
+        #BIN_CAT='/Users/jtlz2/elaisn1/servs/servs-en1-full-data-fusion-sextractor-cutdown-masked-vla-overlap-with-detns-random-150817.txt'
+        if doPoln:
+            shiftedPolnPosns=True
+            randomPolnPosns=False
+            if shiftedPolnPosns:
+                BIN_CAT='/Users/jtlz2/elaisn1/servs/servs-en1-full-data-fusion-sextractor-cutdown-masked-vla-overlap-with-detns-shifted10p10p-w-poln-151001.txt'
+            elif randomPolnPosns:
+                BIN_CAT='/Users/jtlz2/elaisn1/servs/servs-en1-full-data-fusion-sextractor-cutdown-masked-vla-overlap-with-detns-random-w-poln-151001.txt'
+            else:
+                BIN_CAT='/Users/jtlz2/elaisn1/servs/servs-en1-full-data-fusion-sextractor-cutdown-masked-vla-overlap-w-poln-with-detns-150818.txt'
+
         BIN_CAT_CLIP=None
-        BIN_COL=46 # peak flux
-        BOUT_CAT='en1jvla/en1jvla.txt'
+        if doPoln:
+            BIN_COL=49 # peak P flux
+        else:
+            BIN_COL=46 # peak I flux
+        BOUT_CAT='en1jvla/en1jvla_%s.txt'%stokes
 
 #-------------------------------------------------------------------------------
 
@@ -496,7 +548,7 @@ datafile=os.path.join(dataset,datafile)
 # The data are corrected by the completeness/ang. size factor and
 #              normalized to 1 sq. deg.
 if os.path.exists(datafile):
-    if numNoiseZones==1:
+    if numNoiseZones==1 or numRedshiftSlices==0:
         # These are two hacks to change the recon binning scheme
         #if context=='r' and dataset=='first':
         #    datafile='%s/ketron2013_110_839_jz.txt' % dataset
@@ -581,9 +633,10 @@ SMAX_VVDF2=119230.0
 #binstyle='bondi2008'
 #binstyle='bondi2003'
 #binstyle='first'
-binstyle='video2014'
+#binstyle='video2014'
 #binstyle='mca2014'
-binstyle='en1jvla'
+#binstyle='en1jvla'
+binstyle='sdss'
 
 #-------------------------------------------------------------------------------
 
@@ -772,9 +825,49 @@ elif binstyle=='video2014' or binstyle=='mca2014':
 if binstyle=='en1jvla':
     bins=numpy.linspace(-4.6,5.8,40)
     bins=numpy.linspace(-15.0,5.8,40)
+    bins=numpy.linspace(-5.3,5.8,32)
+    binsZoned={}
+    #binsZoned[0]=numpy.array([-5.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,-0.005,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    #binsZoned[1]=numpy.array([-9.5,-6.5,-5.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    binsZoned[0]=numpy.array([-4.8,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    binsZoned[1]=numpy.array([-6.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    binsZoned[2]=numpy.array([-7.6,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
 
+    # For shifted data
+    binsZoned[0]=numpy.array([-4.5,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    binsZoned[1]=numpy.array([-7.4,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    binsZoned[2]=numpy.array([-7.1,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+
+    # For random-position data
+    binsZoned[0]=numpy.array([-5.6,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    binsZoned[1]=numpy.array([-6.9,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    binsZoned[2]=numpy.array([-10.7,-9.0,-7.5,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+
+    if doPoln:
+        #binsZoned[0]=numpy.array([0.0,0.125,0.25,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        #binsZoned[1]=numpy.array([0.0,0.125,0.25,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        #binsZoned[2]=numpy.array([0.0,0.125,0.25,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[0]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                  0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8])
+        binsZoned[1]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                  0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8])
+        binsZoned[2]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                  0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8])
+
+    assert(len(noiseZones)==1), 'too many noise zones'
+    bins=binsZoned[noiseZones[0]]
+
+elif binstyle=='sdss':
+    bins=[ -700., -340,  -295,  -251,  -206,\
+        -161. ,-138., -116., -93. ,-71., -48.,\
+        -26. ,  -4. ,18., 40.,   63., 85.,  108.,\
+         130,  153, 175,  197., 219 , 242., 264.,\
+         287., 309,  332., 354., 377., 422., 467.,\
+         512., 557., 646.,736.,   826.,  1006.,\
+         1140. , 1320.,  1500.]
+    
     #bins=bins[:38]
-    assert(len(bins)-1==nb)
+    #assert(len(bins)-1==nb)
 
     #bins=1000.0*numpy.array([0.08,0.12,0.18,\
     #                         0.27,0.41,0.61]) # mJy -> uJy
@@ -908,12 +1001,18 @@ SMAX_MAX=1000.0
 ##C_PRIOR='LOG'
 ##C_MIN=1.0
 ##C_MAX=1000.0
-SMIN_MIN=0.01        # uJy
-SMIN_MAX=20.0 # Was 20.0
-#SMIN_MIN=0.05        # uJy
-#SMIN_MAX=1.0
-SMAX_MIN=20.0      # uJy
-SMAX_MAX=100.0
+#SMIN_MIN=0.01        # uJy
+#SMIN_MAX=20.0 # Was 20.0
+##SMIN_MIN=0.05        # uJy
+##SMIN_MAX=1.0
+#SMAX_MIN=20.0      # uJy
+#SMAX_MAX=100.0
+
+# ELAIS-N1 JVLA priors
+SMIN_MIN=0.001 # i.e. 1 nJy
+SMIN_MAX=1.5
+SMAX_MIN=1.5
+SMAX_MAX=5.8
 
 # Based on S0=30 uJy - give SMAX the freedom to be roughly there
 #SMAX_MIN=20.0      # uJy
@@ -930,7 +1029,7 @@ SMAX_MAX=100.0
 
 C_PRIOR='LOG'
 C_MIN=1.0e-5
-C_MAX=1.0e7
+C_MAX=1.0e9
 
 # VIDEO > 5 sigma priors
 #SMIN_MIN=0.01        # uJy
@@ -995,7 +1094,7 @@ C_MAX=1.0e7
 POLYCOEFF_PRIOR='LOG'
 #POLYCOEFF_MIN=1.0e9
 #POLYCOEFF_MAX=1.0e23
-POLYCOEFF_MIN=1.0e8
+POLYCOEFF_MIN=1.0e5
 POLYCOEFF_MAX=1.0e24
 
 # Priors for bin/pole/node amplitudes
@@ -1027,11 +1126,44 @@ S2_MAX=SMAX_MAX
 #SMIN_MIN=SMIN_MAX=1.21
 #SMIN_MIN=1.21
 
+
+# LF parameters
+
+# Prior types
+LMIN_PRIOR='LOG'
+LMAX_PRIOR='LOG'
+LSTAR_PRIOR='LOG'
+LSLOPE_PRIOR='U'
+LNORM_PRIOR='LOG'
+LZEVOL_PRIOR='U'
+LSLOPE2_PRIOR='U'
+
+# Prior ranges
+LMIN_MIN=1.0e20
+LMIN_MAX=1.0e23
+LMAX_MIN=1.0e23
+LMAX_MAX=1.0e25
+LSTAR_MIN=1.0e20
+LSTAR_MAX=1.0e25
+LSLOPE_MIN=0.0
+LSLOPE_MAX=-8.0
+LNORM_MIN=1.0e-10
+LNORM_MAX=1.0e-5
+LSLOPE2_MIN=0.0
+LSLOPE2_MAX=-8.0
+
+# LF redshift evolution (if > 1 z slice only)
+LZEVOL_MIN=-5.0
+LZEVOL_MAX=5.0
+if len(whichRedshiftSlices) <= 1:
+    LZEVOL_MIN=LZEVOL_MAX=0.0 # delta fn on LZEVOL
+
 #S0_MIN=S0_MAX=S0_TRUE            # delta fn on S0
 #BETA_MIN=BETA_MAX=BETA_TRUE    # delta fn on beta
 #D_MIN=D_MAX=D_TRUE            # delta fn on C
 
 NOISE_MIN=0.5*SURVEY_NOISE
+#NOISE_MAX=2.0*SURVEY_NOISE
 NOISE_MAX=2.0*SURVEY_NOISE
 if not floatNoise:
     NOISE_MIN=NOISE_MAX=SURVEY_NOISE # delta fn on NOISE
@@ -1126,7 +1258,38 @@ elif nlaws == 4:
                'S1':S1_TRUE,
                'delta':DELTA_TRUE,
                'S2':S2_TRUE}
-
+elif modelFamily=='LFsch':
+    parameters=['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL']
+    plotRanges={'LNORM':[LNORM_MIN,LNORM_MAX],
+                'LSTAR':[LSTAR_MIN,LSTAR_MAX],
+                'LSLOPE':[LSLOPE_MIN,LSLOPE_MAX],
+                'LMIN':[LMIN_MIN,LMIN_MAX],
+                'LMAX':[LMAX_MIN,LMAX_MAX],
+                'LZEVOL':[LZEVOL_MIN,LZEVOL_MAX]}
+    plotTruth={'LNORM':LNORM_TRUE,
+               'LSTAR':LSTAR_TRUE,
+               'LSLOPE':LSLOPE_TRUE,
+               'LMIN':LMIN_TRUE,
+               'LMAX':LMAX_TRUE,
+               'LZEVOL':LZEVOL_TRUE}
+elif modelFamily=='LFdpl':
+    parameters=['LNORM','LSTAR','LSLOPE','LSLOPE2','LMIN','LMAX','LZEVOL']
+    plotRanges={'LNORM':[LNORM_MIN,LNORM_MAX],
+                'LSTAR':[LSTAR_MIN,LSTAR_MAX],
+                'LSLOPE':[LSLOPE_MIN,LSLOPE_MAX],
+                'LSLOPE':[LSLOPE2_MIN,LSLOPE2_MAX],
+                'LMIN':[LMIN_MIN,LMIN_MAX],
+                'LMAX':[LMAX_MIN,LMAX_MAX],
+                'LZEVOL':[LZEVOL_MIN,LZEVOL_MAX]}
+    plotTruth={'LNORM':LNORM_TRUE,
+               'LSTAR':LSTAR_TRUE,
+               'LSLOPE':LSLOPE_TRUE,
+               'LSLOPE2':LSLOPE2_TRUE,
+               'LMIN':LMIN_TRUE,
+               'LMAX':LMAX_TRUE,
+               'LZEVOL':LZEVOL_TRUE}
+    
+                
 if floatNoise:
     parameters += ['sigma']
     plotRanges['sigma']=[NOISE_MIN,NOISE_MAX]
@@ -1145,14 +1308,17 @@ labelDict={'C':r'$C/$Jy$^{-1}$sr$^{-1}$',\
            'slope':r'$\alpha$','Smin':r'$S_{\mathrm{min}}$/$\mu$Jy',\
            'Smax':r'$S_{\mathrm{max}}$/$\mu$Jy','beta':r'$\beta$',\
            'S0':r'$S_0/\mu$Jy','gamma':r'$\gamma$','S1':r'$S_1/\mu$Jy',\
-           'delta':r'$\delta$','S2':r'$S_2/\mu$Jy','sigma':r'$\sigma/\mu$Jy'}
+           'delta':r'$\delta$','S2':r'$S_2/\mu$Jy','sigma':r'$\sigma/\mu$Jy',\
+           'LNORM':r'$\rho^*$','LSTAR':r'$L^*/WHz^{-1}$','LSLOPE':r'$\alpha_{LF}$',\
+           'LMIN':r'$L_{\mathrm{min}}/WHz^{-1}$','LMAX':r'$L_{\mathrm{max}}/WHz^{-1}$/',\
+           'LZEVOL':r'$\beta_{LF}$','LSLOPE2':r'$\alpha_{LF,2}$'}
 
 #-------------------------------------------------------------------------------
 
 # Set some MultiNEST parameters here
 outstem='1-'
 
-n_live_points=1000 # was 1000
+n_live_points=500 # was 1000
 multimodal=False
 max_modes=3
 SEED_SAMP=SEED_SAMP # [-1 for clock]
@@ -1164,6 +1330,7 @@ do_INS=False
 
 max_iter=0
 evidence_tolerance=0.5 # was 0.5
+sampling_efficiency=0.8 # default is 0.8
 
 # Warning messages etc.
 #print 'MOTD: %s' % MOTD
