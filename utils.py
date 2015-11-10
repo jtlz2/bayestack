@@ -3,7 +3,7 @@ Collection of my utilities (pertaining to lumfunc project)
 Also includes some useful constants
 """
 
-import os
+import os,sys
 import numpy
 import scipy
 from scipy import stats
@@ -74,6 +74,7 @@ def touch2(fname, times=None):
 
 #-------------------------------------------------------------------------------
 
+@profile
 def strictly_increasing(L):
     """http://stackoverflow.com/questions/4983258/python-how-to-check-list-monotonicity
     """
@@ -81,15 +82,40 @@ def strictly_increasing(L):
 
 #-------------------------------------------------------------------------------
 
-def poissonLhoodMulti(data,realisation,silent=True,fractions=None):
+@profile
+def poissonLhoodMulti2(dataObject,realisationObject,silent=True):
+    #print dataObject.zsliceData
+    #print realisationObject
     loglike=0.0
-    for j in range(fractions.size):
-        loglike += poissonLhood(data[:,j],realisation[:,j],silent=silent)
-    loglike += data[:,0].size * numpy.log(fractions).sum()
+    # Loop over z slices
+    for r,z in enumerate(sorted(dataObject.zsliceData.keys())):
+        #zbins=dataObject.zsliceData[z][1]
+        data=dataObject.zsliceData[z][0]
+        realisation=realisationObject[z]
+        if not silent:
+            for i in range(len(data)):
+                print i,data[i],realisation[i]
+        kk=data[numpy.where(realisation > 0)];
+        iii=realisation[numpy.where(realisation > 0)]
+        loglike += (kk*numpy.log(iii) + kk - kk*numpy.log(kk) - iii).sum()
     return loglike
 
 #-------------------------------------------------------------------------------
 
+@profile
+def poissonLhoodMulti(data,realisation,silent=True,fractions=None,redshifts=None):
+    loglike=0.0
+    if fractions is not None:
+        for j in range(fractions.size):
+            loglike += poissonLhood(data[:,j],realisation[:,j],silent=silent)
+        loglike += data[:,0].size * numpy.log(fractions).sum()
+    elif redshifts is not None:
+        print redshifts
+    return loglike
+
+#-------------------------------------------------------------------------------
+
+@profile
 def poissonLhood(data,realisation,silent=True):
     if not silent:
         for i in range(len(data)):
