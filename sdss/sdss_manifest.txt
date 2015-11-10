@@ -1,4 +1,4 @@
-#index z_min   z_max  z_med   area_sqdeg  sigma_uJy   filename
+# index z_min  z_max  z_med   area_sqdeg  sigma_uJy   filename
   1     0.7    1.     0.85    8609.6      150.0       sdss_dr12s1.txt
   2     1.     1.35   1.175   8609.6      150.0       sdss_dr12s2.txt
   3     1.35   1.7    1.525   8609.6      150.0       sdss_dr12s3.txt
