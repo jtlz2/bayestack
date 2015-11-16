@@ -92,7 +92,7 @@ def main():
             while(notOK):
                 x=numpy.random.randint(0,hdr['NAXIS1'])
                 y=numpy.random.randint(0,hdr['NAXIS2'])
-                if vla_map[y,x]!=0: # This condition needs to be revisited after upsampling
+                if vla_map[y,x]!=0:
                     notOK=False
                     ncumul+=1
                     print '%i %i %f %f %f %f %e %e %e %e %e'\
