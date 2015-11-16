@@ -8,6 +8,7 @@ import numpy
 import scipy
 from scipy import stats
 from scipy.interpolate import interp1d
+from scipy import ndimage
 from profile_support import profile
 import pymultinest
 
@@ -71,6 +72,24 @@ def touch2(fname, times=None):
     with file(fname, 'a'):
         os.utime(fname, times)
     return
+
+#-------------------------------------------------------------------------------
+
+def block_mean(ar, fact):
+    """
+    See http://stackoverflow.com/questions/18666014/downsample-array-in-python
+
+    Run as e.g.
+    ar = np.random.rand(20000).reshape((100, 200))
+    block_mean(ar, 5).shape  # (20, 40)
+    """
+    assert isinstance(fact, int), type(fact)
+    sx, sy = ar.shape
+    X, Y = numpy.ogrid[0:sx, 0:sy]
+    regions = sy/fact * (X/fact) + Y/fact
+    res = ndimage.mean(ar, labels=regions, index=numpy.arange(regions.max() + 1))
+    res.shape = (sx/fact, sy/fact)
+    return res
 
 #-------------------------------------------------------------------------------
 
