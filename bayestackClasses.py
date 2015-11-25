@@ -192,7 +192,7 @@ class countModel(object):
         self.doRedshiftSlices=doRedshiftSlices
         if self.doRedshiftSlices:
             self.zDataObject=dataSetup('sdss',zmanifestf,redshiftSlices=self.doRedshiftSlices)
-        self.redshifts=redshifts
+            self.redshifts=redshifts
 
         # Set up parameters for this model
         self.paramsAvail=\
