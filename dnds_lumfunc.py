@@ -30,15 +30,15 @@ output
 
 '''
 
+#from numpy import *
 import numpy
-from numpy import *
 import os,sys,math,shutil
 import importlib
 from pylab import*
 from matplotlib.ticker import AutoMinorLocator
 from cosmocalc import cosmocalc
 #import pymultinest
-#from bayestackClasses import countModel
+from bayestackClasses import countModel
 from utils import sqDeg2sr,fetchStats
 from countUtils import calculateDnByDs,medianArray
 
@@ -108,6 +108,31 @@ def get_dnds_ecl(dnds,sbins):
 
 #-------------------------------------------------------------------------------
 
+def get_z(ind):
+    """
+Computes the redshift slice from the binfile
+
+returns z_min, z_max and z_mean
+    """
+    #z = [ 0.7, 1. , 1.35, 1.7, 2., 2.3, 2.6, 3., 3.5, 4.]
+    z =[0.2, 0.45, 0.7, 1.0, 1.3, 1.6, 1.85, 2.15, 2.35, 2.55, 2.85, 3.15, 3.5]
+    
+    z_min  = z[ind -1]
+    z_max  = z[ind]
+    z_mean = mean((z_min,z_max))
+    
+    return z_min,z_max, z_mean
+    #return 1.8,2.5,2.15
+	
+#-------------------------------------------------------------------------------
+
+def get_dl(z):
+    """
+Returns the luminosity distance in Mpc
+    """
+    return cosmocalc(z,H0=Ho,WM = wm)['DL_Mpc']
+    
+#-------------------------------------------------------------------------------
 
 def get_dsdl(z,dl):
     """
@@ -173,7 +198,7 @@ def LFtodnds(lbins, LF , z_min, z_max):
     print 'mag'
     print mag
     z    = mean((z_min,z_max))
-    dl   = cosmocalc(z,H0=Ho,WM = wm)['DL_Mpc']
+    dl   = get_dl(z)
     dsdl = get_dsdl(z,dl)
     dndl = LF * V*mag/Lbins
     print 'dndl'
@@ -191,15 +216,19 @@ def LFtodnds(lbins, LF , z_min, z_max):
 #-------------------------------------------------------------------------------
 
         
-def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
+def get_lumfunc(dnds_ecl,sbins,z_min,z_max,dnds_ecl_up=[],dnds_ecl_down=[]):
     """
     Units:
-        dnds_ecl - dnds_eucl in standard units
-        sbins - flux bins in muJy
+        dnds_ecl 		- dnds_eucl in standard units
+        sbins 			- flux bins in muJy
+        dnds_ecl_up 	- upper error bound
+        dnds_ecl_down 	- lowwer error bound 
     Returns:
-        Lbins - Log10(W Hz^-1)
-        LF - rho_m Mpc^-3 mag^-1
-
+        Lbins 		- Log10(W Hz^-1)
+        Log_rho_m (LF) 	- log(rho_m Mpc^-3 mag^-1)
+        log_err_up		- upper bound of LF 
+        log_err_down	- lower bound of LF 
+        
     Converts source counts (dnds s^2.5) to LF (rho_m)
     returns Lbins, LF 
     """
@@ -211,14 +240,24 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
     
     dnds_ecl = dnds_ecl[numpy.where(sbins>0)]
     sbins    = sbins[numpy.where(sbins>0)]
+    dnds_ecl_up = dnds_ecl_up[numpy.where(sbins>0)]
+    dnds_ecl_down =dnds_ecl_down[numpy.where(sbins>0)]
     print 'recon'
     print dnds_ecl
     
-    #print len(dnds_ecl), len(sbins)
-    #print sbins
+    #Luminosity distance
     z  = mean((z_min,z_max))
-    dl = cosmocalc(z,H0=Ho,WM = wm)['DL_Mpc']
+    dl = cosmocalc(z,H0=Ho,WM = wm)['DL_Mpc'] #mean LDist
+    dl_min =cosmocalc(z_min,H0=Ho,WM = wm)['DL_Mpc'] #minimum Ldist 
+    dl_max =cosmocalc(z_max,H0=Ho,WM = wm)['DL_Mpc'] #maximu
     
+    #error esitmate
+    dl_err_down = dl - dl_min
+    dl_err_up   = dl_max - dl
+    err_up = numpy.sqrt( (dl_err_up/dl)**2 + (dnds_ecl_up/dnds_ecl)**2 )
+    err_down = numpy.sqrt( (dl_err_down/dl)**2 + (dnds_ecl_down/dnds_ecl)**2 )
+    print 'errors\n'
+    print dl_err_down, dl_err_up, err_up, err_down,'\n'
     Vmax=get_Vmax(z_min,z_max)
     o_Vmax    =  1./(Vmax)
     print '1/vmax'
@@ -243,8 +282,19 @@ def get_lumfunc(dnds_ecl,sbins,z_min,z_max):
     
     rho_m     = rho*L/dL
     log_rho_m = log10(rho_m)
+    rho_err_up = rho_m*err_up
+    rho_err_down = rho_m*err_down
+		
+    log_err_up = numpy.log10(rho_m + rho_err_up) - numpy.log10(rho_m)
+    log_err_down = numpy.log10(rho_m) - numpy.log10(rho_m - rho_err_down)  
+	
+    print 'more errors \n \n'
+    print rho_err_up, rho_err_down,rho_m ,log_err_up, log_err_down,'\n \n'
 
+	
     print log_rho_m,Lbins
+    if len(dnds_ecl_up) > 0.:
+    	return Lbins,log_rho_m, log_err_up, log_err_down
     return Lbins,log_rho_m
 
 #-------------------------------------------------------------------------------
@@ -333,9 +383,9 @@ def testLumFuncs():
     L,rho     = get_lumfunc(yrecon,xrecon,z_min,z_max)
     
 ########## parameters##########    
-    phi =7e16
-    Ls = 2e24
-    alpha=-1.8
+    phi =5e16
+    Ls = 6e25
+    alpha=-1
     a='alpha'
     alpha1 = 3.
     alpha2 = 1.3
@@ -347,10 +397,10 @@ def testLumFuncs():
     
     plot(L,rho,'s',label='%3.2f < z < %3.2f'%(z_min,z_max))
     plot(L[:-1],rho_s,label='Schechter')
-    plot(L[:-1],rho2,label='Double power-law')
+    #plot(L[:-1],rho2,label='Double power-law')
     tick_params(axis='both',which = 'major', labelsize=15,width =2)
     tick_params(axis='both',which = 'minor', labelsize=12, width=1)
-    text(23,-7.5,'  $\phi_* =%5.2e$ \n  $L_* =%5.2e$ \n  $\%s =%5.2f$'%(phi,Ls,a,alpha),fontsize=17)
+    text(23,-8.9,'  $\phi_* =%5.2e$ \n  $L_* =%5.2e$ \n  $\%s =%5.2f$'%(phi,Ls,a,alpha),fontsize=17)
     xlabel('1.4 GHz log[L(W/Hz)]',fontsize = 18)
     ylabel(r'log[$\rho_m$(mpc$^{-3}$mag$^{-1}$)]',fontsize = 18)
 
@@ -358,8 +408,9 @@ def testLumFuncs():
     #ax.xaxis.set_minor_locator(AutoMinorLocator())
     #ax.yaxis.set_minor_locator(AutoMinorLocator())
     
-#    legend().draggable()
-#    show()
+    legend().draggable()
+    show()
+	
     #xscale('log')
     #yscale('log')
     #show()
