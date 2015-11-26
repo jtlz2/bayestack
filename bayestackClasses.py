@@ -35,7 +35,9 @@ from scipy.special import erf
 from priors import Priors
 import countUtils
 import polnUtils
-from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood,medianArray
+import lumfuncUtils
+from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood,medianArray,poissonLhoodMulti2
+from cosmocalc import cosmocalc
 #import cosmolopy
 
 #-------------------------------------------------------------------------------
@@ -69,6 +71,53 @@ class surveySetup(object):
             self.SURVEY_AREA=areas[0]*(1.0-self.HALO_MASK)# sq.deg. [Boris -> 0.97 sq. deg.]
             #self.radioSynthBeamFWHM=4.0 # pixels/upsamplingFactor
             #self.radioSynthOmegaSr=sqDeg2sr*beamFac*(self.radioSynthBeamFWHM/3600.0)**2
+
+#-------------------------------------------------------------------------------
+
+class dataSetup(object):
+    """
+    Structure for organizing multiple data sets
+    Run as e.g.
+    dataObject=dataSetup('sdss','sdss_manifest.txt',redshiftSlices=True)
+    """
+
+    def __init__(self,whichSurvey,manifestf,noiseZones=False,redshiftSlices=False):
+        self.whichSurvey=whichSurvey
+        self.noiseZones=noiseZones
+        self.redshiftSlices=redshiftSlices
+        self.manifestf=manifestf
+        self.manifest=numpy.genfromtxt(self.manifestf)
+        # Extract selected z slices
+        self.manifest=self.manifest[[s-1 for s in whichRedshiftSlices],:]
+        self.whichRedshiftSlices=whichRedshiftSlices
+        if self.redshiftSlices:
+            self.datafiles=['%s/sdss_dr12s%i.txt'%(whichSurvey,r) for r in self.whichRedshiftSlices]
+            self.datafile=self.datafiles[0]
+            self.numRedshiftSlices=len(whichRedshiftSlices) #self.manifest.shape[0]
+            self.redshifts=self.manifest[:,3]
+            self.sliceAreasTemp=self.manifest[:,4]  # Needs to be rejigged
+            self.sliceNoisesTemp=self.manifest[:,5] # Needs to be rejigged
+            self.zsliceData={}; self.dls={}; self.sliceAreas={}; self.sliceNoises={}
+            # Rejig z information
+            for r in range(self.numRedshiftSlices):
+                z=self.redshifts[r]
+                dataf=self.datafiles[r]
+                self.zsliceData[z]=self.loadData(dataf)
+                self.dls[z]=cosmocalc(z,H0=Ho,WM=wm)['DL_Mpc']
+                self.sliceAreas[z]=self.sliceAreasTemp[r]
+                self.sliceNoises[z]=self.sliceNoisesTemp[r]
+            print 'Loaded',self.datafiles
+        elif self.noiseZones:
+            pass
+
+        return
+
+    def loadData(self,datafile):
+        dataMatrix=numpy.genfromtxt(datafile)
+        corrected_data=dataMatrix[:,3]*dataMatrix[:,8]
+        binsDogleg=numpy.concatenate((dataMatrix[:,0],[dataMatrix[-1,1]]))
+        return corrected_data,binsDogleg
+
 
 #-------------------------------------------------------------------------------
 
@@ -124,7 +173,8 @@ class countModel(object):
     
     """
 
-    def __init__(self,kind,order,settingsf,whichSurvey,floatNoise,doPoln=False,doRayleigh=False):
+    def __init__(self,kind,order,settingsf,whichSurvey,floatNoise,doPoln=False,\
+                 doRayleigh=False,doRedshiftSlices=False):
         # Import settings
         print 'Settings file is %s' % settingsf
         set_module=importlib.import_module(settingsf)
@@ -139,6 +189,10 @@ class countModel(object):
         self.floatNoise=floatNoise
         self.doPoln=doPoln
         self.doRayleigh=doRayleigh
+        self.doRedshiftSlices=doRedshiftSlices
+        if self.doRedshiftSlices:
+            self.zDataObject=dataSetup('sdss',zmanifestf,redshiftSlices=self.doRedshiftSlices)
+            self.redshifts=redshifts
 
         # Set up parameters for this model
         self.paramsAvail=\
@@ -148,11 +202,13 @@ class countModel(object):
                      'limits':['S%i'%ic for ic in xrange(2)],\
                      'poles':['b%i'%ic for ic in xrange(self.nlaws)],\
                      'amp':['C'],'extra':['noise'],\
-                     'schechter':['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LZEVOL']}
+                     'schechter':['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LZEVOL'],\
+                     'doublepl':['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LSLOPE2','LZEVOL']}
         familyMap={'ppl':['breaks','slopes','amp','extra'],\
                    'poly':['limits','coeffs','extra'],\
                    'bins':['poles','extra'],\
-                   'LFsch':['schechter','extra']}
+                   'LFsch':['schechter','extra'],\
+                   'LFdpl':['doublepl','extra'],}
         self.paramsStruct=\
           [self.paramsAvail[p] for p in self.paramsAvail if p in familyMap[kind]]
         # --> This defines the order of the parameters:
@@ -190,13 +246,10 @@ class countModel(object):
         for p in parameters:
             if self.kind=='ppl':
                 if p.startswith('C'): priorsDict[p]=[C_PRIOR,C_MIN,C_MAX] # amplitude
-		elif p.startswith('S') and setBreaks: #fixed breaks
+                elif p.startswith('S') and setBreaks: #fixed breaks
                     if nlaws > 1: priorsDict[p]=['U',S1_MIN,S1_MAX] # This only catchs S1 
-                		
                	    if nlaws > 2 and p =='S2': priorsDict[p]=['U',S2_MIN,S2_MAX]
-                
                     if nlaws > 3 and p =='S3': priorsDict[p]=['U',S3_MIN,S3_MAX]
-  		
                 elif p.startswith('S'): priorsDict[p]=['U',SMIN_MIN,SMAX_MAX] # breaks
                 elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
@@ -205,21 +258,22 @@ class countModel(object):
             elif self.kind=='bins':
                 if p.startswith('b'): priorsDict[p]=[POLEAMPS_PRIOR,POLEAMPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
 
-        if p.startswith('n'): # noise
-            if floatNoise:
-                priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
-            else:
-                priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
-        elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
-        elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
+            if p.startswith('n'): # noise
+                if floatNoise:
+                    priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
+                else:
+                    priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
+            elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
+            elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
 
-        if p.startswith('L'): # LFS: ['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL']
-            priorsDict['LMIN']=[LMIN_PRIOR,LMIN_MIN,LMIN_MAX]
-            priorsDict['LMAX']=[LMAX_PRIOR,LMAX_MIN,LMAX_MAX]
-            priorsDict['LNORM']=[LNORM_PRIOR,LNORM_MIN,LNORM_MAX]
-            priorsDict['LSTAR']=[LSTAR_PRIOR,LSTAR_MIN,LSTAR_MAX]
-            priorsDict['LSLOPE']=[LSLOPE_PRIOR,LSLOPE_MIN,LSLOPE_MAX]
-            priorsDict['LZEVOL']=[LZEVOL_PRIOR,LZEVOL_MIN,LZEVOL_MAX]
+            # LFs: ['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL'] + ['LSLOPE2']
+            if p=='LMIN': priorsDict['LMIN']=[LMIN_PRIOR,LMIN_MIN,LMIN_MAX]
+            elif p=='LMAX': priorsDict['LMAX']=[LMAX_PRIOR,LMAX_MIN,LMAX_MAX]
+            elif p=='LNORM': priorsDict['LNORM']=[LNORM_PRIOR,LNORM_MIN,LNORM_MAX]
+            elif p=='LSTAR': priorsDict['LSTAR']=[LSTAR_PRIOR,LSTAR_MIN,LSTAR_MAX]
+            elif p=='LSLOPE': priorsDict['LSLOPE']=[LSLOPE_PRIOR,LSLOPE_MIN,LSLOPE_MAX]
+            elif p=='LSLOPE2': priorsDict['LSLOPE2']=[LSLOPE2_PRIOR,LSLOPE2_MIN,LSLOPE2_MAX]
+            elif p=='LZEVOL': priorsDict['LZEVOL']=[LZEVOL_PRIOR,LZEVOL_MIN,LZEVOL_MAX]
 
         return priorsDict
 
@@ -237,6 +291,9 @@ class countModel(object):
         return corrected_data,binsDogleg
 
     def evaluate(self,params):
+        """
+        Not yet geared for LFs
+        """
         if self.kind=='ppl':
             C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
             paramsList=self.parameters
@@ -307,6 +364,13 @@ class countModel(object):
             S_1=1.0 # ref flux
             evaluations=[1.0 * countUtils.polyFunc(S,S_1,Smin/1.0e6,Smax/1.0e6,\
                                              coeffs) for S in self.binsMedian/1.0e6]
+        elif self.kind=='LFsch':
+            # XXXX
+            pass
+        elif self.kind=='LFdpl':
+            # XXXX
+            pass
+
         else:
             print '***%s unsupported right now!' % self.kind
             return
@@ -364,9 +428,20 @@ class countModel(object):
             self.dataRealisation=polnUtils.calculateP3(cube,self.parameters,\
                     family=self.kind,bins=self.bins,\
                     area=self.survey.SURVEY_AREA,doRayleigh=self.doRayleigh)
-        elif self.kind=='LFsch':
-            self.dataRealisation=lumfuncUtils.calculateL3(cube,self.parameters,self.zofslice,\
-                    bins=self.bins,area=self.survey.SURVEY_AREA,family=self.kind)
+        elif self.kind in ['LFsch','LFdpl']:
+            self.zRealiseObject={}
+            for r in range(len(sorted(self.zDataObject.zsliceData.keys()))):
+                z=self.redshifts[r]
+                zbins=self.zDataObject.zsliceData[z][1]
+                dl=self.zDataObject.dls[z]
+                self.zRealiseObject[z]=lumfuncUtils.calculateL3(cube,self.parameters,\
+                    bins=zbins,area=self.survey.SURVEY_AREA,family=self.kind,\
+                    redshift=z,dl=dl)
+            return self.zRealiseObject
+            #self.ziter=self.redshifts[0] # Need to select z somehow!!
+            #self.dataRealisation=lumfuncUtils.calculateL3(cube,self.parameters,\
+            #        bins=self.bins,area=self.survey.SURVEY_AREA,family=self.kind,\
+            #        redshift=self.ziter)
         else:
             self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
                 family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA,\
@@ -404,9 +479,17 @@ class countModel(object):
         else:
             #self.transform(cube,ndim,nparams)
             #print self.currentPhysParams
-            if self.survey.multi:
+            if self.doRedshiftSlices:
+                if not (cube[self.parameters.index('LMIN')]<cube[self.parameters.index('LSTAR')]<cube[self.parameters.index('LMAX')]):
+                    print '+',
+                    return -1.0e99
+                else:
+                    return poissonLhoodMulti2(self.zDataObject,self.realise(cube),\
+                                         silent=True)
+            elif self.survey.multi:
                 return poissonLhoodMulti(self.data,self.realise(cube),\
-                                         silent=True,fractions=self.fractions)
+                                         silent=True,fractions=self.fractions,\
+                                         redshifts=self.redshifts)
             else:
                return poissonLhood(self.data,self.realise(cube),silent=True)
 

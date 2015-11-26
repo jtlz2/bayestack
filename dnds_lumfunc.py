@@ -44,7 +44,7 @@ from countUtils import calculateDnByDs,medianArray
 
 param_file=sys.argv[-1]
 setf='%s.bayestack_settings' % param_file
-Ho=71
+Ho=71.0
 wm=0.27
 LF_SPEC_INDEX = -0.7
 
@@ -313,13 +313,13 @@ def schechter(Lbins,Lstar,alpha, norm):
     """
     if type(Lbins) != float:
         Lbins = medianArray(Lbins)
-        
+
     Lbins = numpy.power(10,Lbins)
     Lr = Lbins/Lstar
     print Lbins, Lstar, alpha, norm
     phi = norm *(Lr)**alpha *numpy.exp(-Lr)/Lstar
     return Lbins, log10(phi)
-    
+
 #-------------------------------------------------------------------------------
 def doublepowerlaw(Lbins,Lstar,alpha1, alpha2, C):
     """
@@ -334,7 +334,7 @@ def doublepowerlaw(Lbins,Lstar,alpha1, alpha2, C):
     """
     if type(Lbins) != float:
         Lbins = medianArray(Lbins)
-    
+
     Lbins = numpy.power(10,Lbins)
     Lr = Lbins/Lstar
     print Lbins, Lstar, alpha1,alpha2, C

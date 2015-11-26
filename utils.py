@@ -3,11 +3,12 @@ Collection of my utilities (pertaining to lumfunc project)
 Also includes some useful constants
 """
 
-import os
+import os,sys
 import numpy
 import scipy
 from scipy import stats
 from scipy.interpolate import interp1d
+from scipy import ndimage
 from profile_support import profile
 import pymultinest
 
@@ -74,6 +75,25 @@ def touch2(fname, times=None):
 
 #-------------------------------------------------------------------------------
 
+def block_mean(ar, fact):
+    """
+    See http://stackoverflow.com/questions/18666014/downsample-array-in-python
+
+    Run as e.g.
+    ar = np.random.rand(20000).reshape((100, 200))
+    block_mean(ar, 5).shape  # (20, 40)
+    """
+    assert isinstance(fact, int), type(fact)
+    sx, sy = ar.shape
+    X, Y = numpy.ogrid[0:sx, 0:sy]
+    regions = sy/fact * (X/fact) + Y/fact
+    res = ndimage.mean(ar, labels=regions, index=numpy.arange(regions.max() + 1))
+    res.shape = (sx/fact, sy/fact)
+    return res
+
+#-------------------------------------------------------------------------------
+
+@profile
 def strictly_increasing(L):
     """http://stackoverflow.com/questions/4983258/python-how-to-check-list-monotonicity
     """
@@ -81,15 +101,40 @@ def strictly_increasing(L):
 
 #-------------------------------------------------------------------------------
 
-def poissonLhoodMulti(data,realisation,silent=True,fractions=None):
+@profile
+def poissonLhoodMulti2(dataObject,realisationObject,silent=True):
+    #print dataObject.zsliceData
+    #print realisationObject
     loglike=0.0
-    for j in range(fractions.size):
-        loglike += poissonLhood(data[:,j],realisation[:,j],silent=silent)
-    loglike += data[:,0].size * numpy.log(fractions).sum()
+    # Loop over z slices
+    for r,z in enumerate(sorted(dataObject.zsliceData.keys())):
+        #zbins=dataObject.zsliceData[z][1]
+        data=dataObject.zsliceData[z][0]
+        realisation=realisationObject[z]
+        if not silent:
+            for i in range(len(data)):
+                print i,data[i],realisation[i]
+        kk=data[numpy.where(realisation > 0)];
+        iii=realisation[numpy.where(realisation > 0)]
+        loglike += (kk*numpy.log(iii) + kk - kk*numpy.log(kk) - iii).sum()
     return loglike
 
 #-------------------------------------------------------------------------------
 
+@profile
+def poissonLhoodMulti(data,realisation,silent=True,fractions=None,redshifts=None):
+    loglike=0.0
+    if fractions is not None:
+        for j in range(fractions.size):
+            loglike += poissonLhood(data[:,j],realisation[:,j],silent=silent)
+        loglike += data[:,0].size * numpy.log(fractions).sum()
+    elif redshifts is not None:
+        print redshifts
+    return loglike
+
+#-------------------------------------------------------------------------------
+
+@profile
 def poissonLhood(data,realisation,silent=True):
     if not silent:
         for i in range(len(data)):
@@ -311,6 +356,46 @@ def peak_confidence(vector,bins=None):
     peak=(b[bin_max_posn_lower]+b[bin_max_posn_lower+1])/2.0
     
     return peak
+
+#-------------------------------------------------------------------------------
+
+@profile
+def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False):
+    """
+    For a given central value (could be median),
+    return error bars corrected to avoid touching the edges
+    value_central is the median unless otherwise supplied (e.g. ymap[ibin]
+    """
+
+    if value_central is None:
+        percentile_central=50.0 # median
+    else:
+        percentile_central=stats.percentileofscore(vector,value_central,kind='weak')
+
+    percentile_low=percentile_central-(100.0*alpha/2.0)
+    percentile_high=percentile_central+(100.0*alpha/2.0)
+
+    # Correct the confidence region to avoid touching the edges
+    if percentile_high > 100.0:
+        dpc_high=percentile_high-100.0
+        percentile_low -= dpc_high
+    elif percentile_low < 0.0:
+        dpc_low=0.0-percentile_low
+        percentile_high += dpc_low
+    elif (percentile_high > 100.0) and (percentile_low < 0.0):
+        print '***cannot compute.... %f %f'%(percentile_low,percentile_high)
+        sys.exit(0)
+
+    central  = stats.scoreatpercentile(vector,percentile_central)
+    err_low  = central - stats.scoreatpercentile(vector,percentile_low)
+    err_high = stats.scoreatpercentile(vector,percentile_high) - central
+
+    if ret_all:
+        return central,err_low,err_high,\
+          stats.scoreatpercentile(vector,percentile_low),\
+          stats.scoreatpercentile(vector,percentile_high)
+    else:
+        return central,err_low,err_high
 
 #-------------------------------------------------------------------------------
 

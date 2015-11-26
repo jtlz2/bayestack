@@ -3,10 +3,10 @@ Support functions for bayestack, bayestackClasses
 
 Luminosity functions and evolution thereof
 
-Depends on dnds_lumfunc module
+No longer depends on dnds_lumfunc module
 
 Jonathan Zwart
-October 2015
+November 2015
 
 """
 
@@ -23,7 +23,6 @@ from profile_support import profile
 from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,\
                            interpol,buildCDF,Jy2muJy,interpola
 from cosmocalc import cosmocalc
-import dnds_lumfunc
 
 if 'chains' in sys.argv[-1]:
     potential_settings=glob.glob(os.path.join(sys.argv[-1],'*settings*py'))
@@ -51,33 +50,108 @@ def erfss(S,Sbinlow,Sbinhigh,ssigma):
 
 #-------------------------------------------------------------------------------
 
+def get_Lbins(sbins,z,dl):
+    """
+    Units:
+        sbins - muJy
+        dl - Mpc
+        Lbins - W Hz^-1
+    """
+    Lbins = [pi*4 *(s*1e-32)* (dl* 3.08e22)**2 * (1 + z)**((LF_SPEC_INDEX)+1) for s in sbins]
+    return Lbins #W/Hz
+
+#-------------------------------------------------------------------------------
+
+    
+def get_sbins(fbins,z,dl):
+    """
+    Units:
+        fbins - W Hz^-1 [luminosity bins]
+        dl - Mpc
+        sbins - ***Jy
+    """
+    sbins = fbins/(pi*4 * (dl* 3.08e22)**2 * (1 + z)**((LF_SPEC_INDEX)+1))
+    return sbins*1e26 #Jy
+
+#-------------------------------------------------------------------------------
+
 @profile
-def dNdS_LF(S,z,params=None,paramsList=None,inta=None,area=None):
+def schechter(L,Lstar,alpha,norm):
+    """
+    Inputs:
+        Lbins - Log10(W Hz^-1)
+        * Lstar - W Hz^-1
+        * alpha - no units
+        * norm - phi_star Mpc^-3 mag^-1
+    Outputs:
+        Lbins -
+        log10(phi) -
+    """
+
+    Lr = L/Lstar
+    #print L, Lstar, alpha, norm
+    phi = norm *(Lr**alpha) *numpy.exp(-Lr)/Lstar
+    return [L],[numpy.log10(phi)]
+
+#-------------------------------------------------------------------------------
+
+@profile
+def doublepowerlaw(L,Lstar,alpha1,alpha2,C):
+    """
+    Inputs:
+        Lbins - Log10(W Hz^-1)
+        * Lstar - W Hz^-1
+        * alpha1 - no units
+        * alpha2 - no units
+        * C - phi_star Mpc^-3 mag^-1
+    Outputs:
+        Lbins -
+        log10(phi) -
+    """
+
+    Lr = L/Lstar
+    #print Lbins, Lstar, alpha1,alpha2, C
+    phi = C/ ((Lr)**alpha1 + (Lr)**alpha2)
+    return [L],[numpy.log10(phi)]
+
+#-------------------------------------------------------------------------------
+
+@profile
+def dNdS_LF(S,z,dl,params=None,paramsList=None,inta=None,area=None,family=None):
     """
     Source count model
     S is in Jy
     Cosmology is set globally
     """
 
-    Lmin=Lmax=Lnorm=Lstar=Lslope=Lzevol=-99.0
-    if family=='LFsch':
+    Lmin=Lmax=Lnorm=Lstar=Lslope=Lslope2=Lzevol=-99.0
+
+    if family in ['LFsch','LFdpl']:
         Lmin=params[paramsList.index('LMIN')]
         Lmax=params[paramsList.index('LMAX')]
         Lnorm=params[paramsList.index('LNORM')]
         Lstar=params[paramsList.index('LSTAR')]
         Lslope=params[paramsList.index('LSLOPE')]
         Lzevol=params[paramsList.index('LZEVOL')]
+    if family=='LFdpl':
+        Lslope2=params[paramsList.index('LSLOPE2')]
 
-    dl=cosmocalc(z,H0=Ho,WM=wm)['DL_Mpc']
-    [Smin,Smax]=dnds_lumfunc.get_sbins([Lmin,Lmax],z,dl)
+    #dl=cosmocalc(z,H0=Ho,WM=wm)['DL_Mpc']
+    [Smin,Smax]=get_sbins([Lmin,Lmax],z,dl) # Jy
 
     if Smin < S < Smax:
         if inta is not None:
             return float(inta(S))
         else:
-            L=dnds_lumfunc.get_Lbins([S],z,dl)
-            Lbins,log10phi=dnds_lumfunc.schechter(L,Lstar,Lslope,Lnorm)
-            return (10**log10phi[0])*(1.0+z)**Lzevol
+            L=get_Lbins([1.0e6*S],z,dl)
+            if family=='LFsch':
+                Lbins,log10phi=schechter(L[0],Lstar,Lslope,Lnorm)
+            elif family=='LFdpl':
+                Lbins,log10phi=doublepowerlaw(L[0],Lstar,Lslope,Lslope2,Lnorm)
+            #print ',',L[0],10**log10phi[0],Lstar,Lslope,Lnorm
+            phi=(10**log10phi[0])*(1.0+z)**Lzevol
+            #if phi==0.0: phi=1.0e-99 # Hmm
+            return phi
     else:
         return 0.0
 
@@ -85,41 +159,45 @@ def dNdS_LF(S,z,params=None,paramsList=None,inta=None,area=None):
 #-------------------------------------------------------------------------------
 
 @profile
-def IL(dNdS_LF,redshift,params,paramsList,Sbinlow,Sbinhigh,inta=None,area=None):
+def IL(dNdS_LF,redshift,dl,params,paramsList,Sbinlow,Sbinhigh,\
+       inta=None,area=None,family=None):
     """
     The integrand is the product of dN/dS_LF (count model) and G (the Gaussian)
-    ['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL'] + ['noise']
+    Schechter: ['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL'] + ['noise']
+    Double PL: ['LNORM','LSTAR','LSLOPE','LSLOPE2','LMIN','LMAX','LZEVOL'] + ['noise']
     """
 
     Lmin=params[paramsList.index('LMIN')]
     Lmax=params[paramsList.index('LMAX')]
-    dl=cosmocalc(z,H0=Ho,WM=wm)['DL_Mpc']
-    [Smin,Smax]=dnds_lumfunc.get_sbins([Lmin,Lmax],z,dl)
+    #dl=cosmocalc(redshift,H0=Ho,WM=wm)['DL_Mpc']
+    [Smin,Smax]=1.0e6*get_sbins([Lmin,Lmax],redshift,dl)
     sigma=params[paramsList.index('noise')]
-
-    return integrate.quad(lambda S:dNdS_LF(S,redshift,params=params,paramsList=paramsList,\
-             inta=inta,area=area)*erfss(S,sigma/1.0e6,Sbinlow/1.0e6,Sbinhigh/1.0e6),\
+#    print sigma,Sbinlow,Sbinhigh,Smin,Smax
+    return integrate.quad(lambda S:dNdS_LF(S,redshift,dl,params=params,paramsList=paramsList,\
+             inta=inta,area=area,family=family)*erfss(S,sigma/1.0e6,Sbinlow/1.0e6,Sbinhigh/1.0e6),\
                                         Smin/1.0e6,Smax/1.0e6)[0]
 
 #-------------------------------------------------------------------------------
 
 @profile
-def calculateL3(params,paramsList,redshift,bins=None,area=None,\
-                family=None,dump=None,verbose=False,inta=None):
+def calculateL3(params,paramsList,bins=None,area=None,\
+                family=None,dump=None,verbose=False,inta=None,redshift=None,dl=None):
 
     """
     For LF,
     function to calculate mock data for a given power law or interpolation object
     """
 
+    #dl=cosmocalc(redshift,H0=Ho,WM=wm)['DL_Mpc']
+    
     nbins=len(bins)
     II = numpy.zeros(nbins-1)
     for ibin in xrange(nbins-1):
         sqDeg2srr=sqDeg2sr
         #sqDeg2srr=1.0
         #print area,sqDeg2sr
-        II[ibin]=IL(dNdS_LF,redshift,params,paramsList,bins[ibin],bins[ibin+1],\
-                    inta=None,area=sqDeg2srr*area)
+        II[ibin]=IL(dNdS_LF,redshift,dl,params,paramsList,bins[ibin],bins[ibin+1],\
+                    inta=inta,area=sqDeg2srr*area,family=family)
 
     return II
 
