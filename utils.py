@@ -375,7 +375,7 @@ def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False):
 
     percentile_low=percentile_central-(100.0*alpha/2.0)
     percentile_high=percentile_central+(100.0*alpha/2.0)
-
+    #print 'yyy',percentile_central,percentile_low,percentile_high
     # Correct the confidence region to avoid touching the edges
     if percentile_high > 100.0:
         dpc_high=percentile_high-100.0
@@ -385,20 +385,20 @@ def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False):
         dpc_low=0.0-percentile_low
         percentile_low=0.0
         percentile_high += dpc_low
-    print 'xxx',percentile_low,percentile_high
-    assert ((percentile_high <= 100.0) and (percentile_low >= 0.0)),\
-      '***cannot compute.... %f %f'%(percentile_low,percentile_high)
+    #print 'xxx',percentile_central,percentile_low,percentile_high
+    #print 'zzz',stats.scoreatpercentile(vector,percentile_low),\
+    #stats.scoreatpercentile(vector,percentile_central),stats.scoreatpercentile(vector,percentile_high)
+    #assert ((percentile_high <= 100.0) and (percentile_low >= 0.0)), '***cannot compute.... %f %f'%(percentile_low,percentile_high)
 
-    value_central  = stats.scoreatpercentile(vector,percentile_central)
-    err_low  = central - stats.scoreatpercentile(vector,percentile_low)
-    err_high = stats.scoreatpercentile(vector,percentile_high) - central
-
+    err_low  = value_central - stats.scoreatpercentile(vector,percentile_low)
+    err_high = stats.scoreatpercentile(vector,percentile_high) - value_central
+    
     if ret_all:
-        return central,err_low,err_high,\
+        return value_central,err_low,err_high,\
           stats.scoreatpercentile(vector,percentile_low),\
           stats.scoreatpercentile(vector,percentile_high)
     else:
-        return central,err_low,err_high
+        return value_central,err_low,err_high
 
 #-------------------------------------------------------------------------------
 
