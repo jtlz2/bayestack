@@ -360,6 +360,46 @@ def peak_confidence(vector,bins=None):
 #-------------------------------------------------------------------------------
 
 @profile
+def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False):
+    """
+    For a given central value (could be median),
+    return error bars corrected to avoid touching the edges
+    value_central is the median unless otherwise supplied (e.g. ymap[ibin]
+    """
+
+    if value_central is None:
+        percentile_central=50.0 # median
+    else:
+        percentile_central=stats.percentileofscore(vector,value_central,kind='weak')
+
+    percentile_low=percentile_central-(100.0*alpha/2.0)
+    percentile_high=percentile_central+(100.0*alpha/2.0)
+
+    # Correct the confidence region to avoid touching the edges
+    if percentile_high > 100.0:
+        dpc_high=percentile_high-100.0
+        percentile_low -= dpc_high
+    elif percentile_low < 0.0:
+        dpc_low=0.0-percentile_low
+        percentile_high += dpc_low
+    elif (percentile_high > 100.0) and (percentile_low < 0.0):
+        print '***cannot compute.... %f %f'%(percentile_low,percentile_high)
+        sys.exit(0)
+
+    central  = stats.scoreatpercentile(vector,percentile_central)
+    err_low  = central - stats.scoreatpercentile(vector,percentile_low)
+    err_high = stats.scoreatpercentile(vector,percentile_high) - central
+
+    if ret_all:
+        return central,err_low,err_high,\
+          stats.scoreatpercentile(vector,percentile_low),\
+          stats.scoreatpercentile(vector,percentile_high)
+    else:
+        return central,err_low,err_high
+
+#-------------------------------------------------------------------------------
+
+@profile
 def calculate_confidence(vector,alpha=0.68,ret_all=False):
     """
     from stacker.py (modified)
