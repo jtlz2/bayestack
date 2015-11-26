@@ -360,11 +360,12 @@ def peak_confidence(vector,bins=None):
 #-------------------------------------------------------------------------------
 
 @profile
-def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False):
+def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False,\
+                          truncate_edges=False):
     """
     For a given central value (could be median),
-    return error bars corrected to avoid touching the edges
-    value_central is the median unless otherwise supplied (e.g. ymap[ibin]
+    return error bars (optionally) corrected to avoid touching the edges
+    value_central is the median unless otherwise supplied (e.g. ymap[ibin])
     """
 
     if value_central is None:
@@ -377,14 +378,15 @@ def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False):
     percentile_high=percentile_central+(100.0*alpha/2.0)
     #print 'yyy',percentile_central,percentile_low,percentile_high
     # Correct the confidence region to avoid touching the edges
-    if percentile_high > 100.0:
-        dpc_high=percentile_high-100.0
-        percentile_low -= dpc_high
-        percentile_high=100.0
-    elif percentile_low < 0.0:
-        dpc_low=0.0-percentile_low
-        percentile_low=0.0
-        percentile_high += dpc_low
+    if truncate_edges:
+        if percentile_high > 100.0:
+            dpc_high=percentile_high-100.0
+            percentile_low -= dpc_high
+            percentile_high=100.0
+        elif percentile_low < 0.0:
+            dpc_low=0.0-percentile_low
+            percentile_low=0.0
+            percentile_high += dpc_low
     #print 'xxx',percentile_central,percentile_low,percentile_high
     #print 'zzz',stats.scoreatpercentile(vector,percentile_low),\
     #stats.scoreatpercentile(vector,percentile_central),stats.scoreatpercentile(vector,percentile_high)
