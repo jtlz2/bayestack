@@ -369,6 +369,7 @@ def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False):
 
     if value_central is None:
         percentile_central=50.0 # median
+        value_central=stats.scoreatpercentile(vector,percentile_central)
     else:
         percentile_central=stats.percentileofscore(vector,value_central,kind='weak')
 
@@ -379,14 +380,16 @@ def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False):
     if percentile_high > 100.0:
         dpc_high=percentile_high-100.0
         percentile_low -= dpc_high
+        percentile_high=100.0
     elif percentile_low < 0.0:
         dpc_low=0.0-percentile_low
+        percentile_low=0.0
         percentile_high += dpc_low
-    elif (percentile_high > 100.0) and (percentile_low < 0.0):
-        print '***cannot compute.... %f %f'%(percentile_low,percentile_high)
-        sys.exit(0)
+    print 'xxx',percentile_low,percentile_high
+    assert ((percentile_high <= 100.0) and (percentile_low >= 0.0)),\
+      '***cannot compute.... %f %f'%(percentile_low,percentile_high)
 
-    central  = stats.scoreatpercentile(vector,percentile_central)
+    value_central  = stats.scoreatpercentile(vector,percentile_central)
     err_low  = central - stats.scoreatpercentile(vector,percentile_low)
     err_high = stats.scoreatpercentile(vector,percentile_high) - central
 
