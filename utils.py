@@ -360,23 +360,22 @@ def peak_confidence(vector,bins=None):
 #-------------------------------------------------------------------------------
 
 @profile
-def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False,\
+def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=True,\
                           truncate_edges=False):
     """
     For a given central value (could be median),
     return error bars (optionally) corrected to avoid touching the edges
     value_central is the median unless otherwise supplied (e.g. ymap[ibin])
     """
-
+    k='strict'
     if value_central is None:
         percentile_central=50.0 # median
         value_central=stats.scoreatpercentile(vector,percentile_central)
     else:
-        percentile_central=stats.percentileofscore(vector,value_central,kind='weak')
+        percentile_central=stats.percentileofscore(vector,value_central,kind=k)
 
     percentile_low=percentile_central-(100.0*alpha/2.0)
     percentile_high=percentile_central+(100.0*alpha/2.0)
-    #print 'yyy',percentile_central,percentile_low,percentile_high
     # Correct the confidence region to avoid touching the edges
     if truncate_edges:
         if percentile_high > 100.0:
@@ -387,9 +386,6 @@ def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=False,\
             dpc_low=0.0-percentile_low
             percentile_low=0.0
             percentile_high += dpc_low
-    #print 'xxx',percentile_central,percentile_low,percentile_high
-    #print 'zzz',stats.scoreatpercentile(vector,percentile_low),\
-    #stats.scoreatpercentile(vector,percentile_central),stats.scoreatpercentile(vector,percentile_high)
     #assert ((percentile_high <= 100.0) and (percentile_low >= 0.0)), '***cannot compute.... %f %f'%(percentile_low,percentile_high)
 
     err_low  = value_central - stats.scoreatpercentile(vector,percentile_low)
