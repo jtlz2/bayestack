@@ -17,7 +17,8 @@ import numpy
 from scipy import stats
 import pymultinest
 from bayestackClasses import countModel
-from utils import sqDeg2sr,calculate_confidence,peak_confidence,medianArray
+from utils import sqDeg2sr,fetchStats,calculate_confidence,\
+     calculate_confidence2,peak_confidence,medianArray
 
 param_file=sys.argv[-1]
 settingsf='%s.bayestack_settings' % param_file
@@ -37,8 +38,17 @@ def main():
     globals().update(set_module.__dict__)
 
     # Set up the experiment
-    expt=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise,\
+    # A first pass is needed in order to fetch the parameter mapping
+    dummy=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise,\
                     doPoln=doPoln,doRayleigh=doRayleigh)
+    # Now we can fetch SMIN_MAP
+    plotTruth=dict((name,-99.0) for name in dummy.parameters)
+    SMIN_MAP=fetchStats(outdir,dummy.parameters,plotTruth)['S0'][0]
+
+    startBin=SMIN_MAP; stopBin=5.0*SURVEY_NOISE; nbins=100 # For evaluation + plotting
+    mybins=numpy.logspace(numpy.log10(startBin),numpy.log10(stopBin),nbins)
+    expt=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise,\
+                    doPoln=doPoln,doRayleigh=doRayleigh,mybins=mybins)
 
     f='%spost_equal_weights.dat' % outstem
     f=os.path.join(outdir,f)
@@ -132,21 +142,29 @@ def main():
         x = x[~numpy.isnan(x)]
         #ss=stats.bayes_mvs(x,alpha=0.68)[0]
         #x*=numpy.power(s[ibin,0]/1.0e6,2.5)
-
+        # Select statistic on which to centre reconstruction:
+        value_central=ymap[ibin] # MAP
+        #value_central=numpy.median(x) # median
+        #value_central=peak_confidence(x,bins=10) # peak/mode
         try:
             ss=numpy.zeros(3)
-            ss[0],dlow,dhigh,ss[1],ss[2]=calculate_confidence(x,alpha=0.68,ret_all=True)
+            #ss[0],dlow,dhigh,ss[1],ss[2]=calculate_confidence(x,alpha=0.68,ret_all=True)
+            ss[0],dlow,dhigh,ss[1],ss[2]=calculate_confidence2(x,alpha=0.95,ret_all=True,\
+                                                               value_central=value_central,\
+                                                               truncate_edges=True)
         except:
             ss=numpy.nan*numpy.ones(3)
-        tt=peak_confidence(x,bins=10)
+
+#        tt=peak_confidence(x,bins=10)
         #ss*=numpy.power(s[ibin,0]/1.0e6,2.5)
         #print ss[0],tt
 #        s[ibin,1]=ss[0]  # median
 #        s[ibin,1]=tt     # peak
-        s[ibin,1]=ymap[ibin] # MAP
+#        s[ibin,1]=ymap[ibin] # MAP
+        s[ibin,1]=value_central
         #print ymap
-        s[ibin,2]=ss[0]-ss[1]  # lower
-        s[ibin,3]=ss[2]-ss[0]  # upper
+        s[ibin,2]=value_central-ss[1]  # lower
+        s[ibin,3]=ss[2]-value_central  # upper
         s[ibin,4]=stats.skew(x) # skewness
         s[ibin,5]=stats.kurtosis(x) # kurtosis
         print ibin,s[ibin,0],s[ibin,1],dlow,dhigh,ss[1],ss[2],s[ibin,4],s[ibin,5]#,stats.skewtest(x)
