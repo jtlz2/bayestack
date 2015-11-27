@@ -39,6 +39,7 @@ import lumfuncUtils
 from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood,medianArray,poissonLhoodMulti2
 from cosmocalc import cosmocalc
 #import cosmolopy
+from collections import OrderedDict
 
 #-------------------------------------------------------------------------------
 
@@ -174,7 +175,7 @@ class countModel(object):
     """
 
     def __init__(self,kind,order,settingsf,whichSurvey,floatNoise,doPoln=False,\
-                 doRayleigh=False,doRedshiftSlices=False):
+                 doRayleigh=False,doRedshiftSlices=False,mybins=None):
         # Import settings
         print 'Settings file is %s' % settingsf
         set_module=importlib.import_module(settingsf)
@@ -195,23 +196,26 @@ class countModel(object):
             self.redshifts=redshifts
 
         # Set up parameters for this model
+        # --> This defines the order of the parameters:
         self.paramsAvail=\
-                    {'breaks':['S%i'%ic for ic in xrange(self.nlaws+1)],\
-                     'slopes':['a%i'%ic for ic in xrange(self.nlaws)],\
-                     'coeffs':['p%i'%ic for ic in xrange(self.nlaws)],\
-                     'limits':['S%i'%ic for ic in xrange(2)],\
-                     'poles':['b%i'%ic for ic in xrange(self.nlaws)],\
-                     'amp':['C'],'extra':['noise'],\
-                     'schechter':['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LZEVOL'],\
-                     'doublepl':['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LSLOPE2','LZEVOL']}
+                    OrderedDict([('extra',['noise']),\
+                     ('amp',['C']),\
+
+                     ('breaks',['S%i'%ic for ic in xrange(self.nlaws+1)]),\
+                     ('coeffs',['p%i'%ic for ic in xrange(self.nlaws)]),\
+                     ('limits',['S%i'%ic for ic in xrange(2)]),\
+                     ('poles',['b%i'%ic for ic in xrange(self.nlaws)]),\
+
+                     ('slopes',['a%i'%ic for ic in xrange(self.nlaws)]),\
+                     ('schechter',['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LZEVOL']),\
+                     ('doublepl',['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LSLOPE2','LZEVOL'])])
         familyMap={'ppl':['breaks','slopes','amp','extra'],\
                    'poly':['limits','coeffs','extra'],\
                    'bins':['poles','extra'],\
                    'LFsch':['schechter','extra'],\
-                   'LFdpl':['doublepl','extra'],}
+                   'LFdpl':['doublepl','extra']}
         self.paramsStruct=\
           [self.paramsAvail[p] for p in self.paramsAvail if p in familyMap[kind]]
-        # --> This defines the order of the parameters:
         self.parameters=list(itertools.chain(*self.paramsStruct))
         self.nparams=len(self.parameters)
         print self.nparams,self.parameters
@@ -234,6 +238,10 @@ class countModel(object):
             self.fdata[df],self.fbins[df]=self.loadData(df)
             self.fnbins[df]=len(self.fbins[df])-1
             self.fbinsMedian[df]=medianArray(self.fbins[df])
+        if mybins is not None:
+            self.bins=mybins
+            self.binsMedian=medianArray(self.bins)
+            self.nbins=len(self.bins)-1
 
         return
 
@@ -294,6 +302,8 @@ class countModel(object):
         """
         Not yet geared for LFs
         """
+#        if mybins is not None:
+#            self.binsMedian=mybins
         if self.kind=='ppl':
             C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
             paramsList=self.parameters
