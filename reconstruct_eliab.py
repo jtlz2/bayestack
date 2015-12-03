@@ -38,7 +38,10 @@ def main():
     globals().update(set_module.__dict__)
 
     # Set up the experiment
-    expt=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise)
+    expt=countModel(modelFamily,nlaws,settingsf,dataset,floatNoise,\
+                    mybins=numpy.logspace(1.0,3.0,500))
+    #expt.binsMedian=numpy.logspace(1.0,3.0,53)
+    #expt.nbins=len(expt.binsMedian)
 
     f='%spost_equal_weights.dat' % outstem
     f=os.path.join(outdir,f)
@@ -66,7 +69,7 @@ def main():
     drawmap=summary[-(ncols+1):-2]
    
 
-    
+    #xx=numpy.logspace(1.0,3.0,53)
     
 
     if False:
@@ -76,7 +79,7 @@ def main():
     # Convert drawmap into correct units etc.
     power=2.5
     #ymap=expt.evaluate(expt.convertPosterior(drawmap,power))
-    ymap=expt.evaluate(drawmap,expt.binsMedian)
+    ymap=expt.evaluate(drawmap)#,expt.binsMedian)
     print len(ymap)
     #print 'yy',['%e'%y for y in ymap]
     #sys.exit(0)
@@ -87,7 +90,7 @@ def main():
 
     for isamp in xrange(nsamp):
         #z[isamp,ncols-1:]=expt.evaluate(expt.convertPosterior(z[isamp,:],power))
-        z[isamp,ncols-1:]=expt.evaluate(z[isamp,:],expt.binsMedian)
+        z[isamp,ncols-1:]=expt.evaluate(z[isamp,:])#,expt.binsMedian)
         if expt.kind!='ppl' or True:
             z[isamp,ncols-1:]*=numpy.power(expt.binsMedian/1.0e6,power)
 
@@ -101,11 +104,12 @@ def main():
     numpy.savetxt(reconf,recons)
 
     # Generate stats here...
-    s=numpy.zeros((len(expt.binsMedian),6))
+    s=numpy.zeros((expt.nbins,6))
     s[:,0]=expt.binsMedian
-
+    #print ymap
+    #sys.exit(0)
     print '# ibin flux fit low high dlower dupper skew kurtosis'
-    for ibin in xrange(len(expt.binsMedian)):
+    for ibin in xrange(expt.nbins):
         x = recons[:,ibin]
         # Remove NaNs from stats vectors
         # http://stackoverflow.com/questions/11620914/removing-nan-values-from-an-array
