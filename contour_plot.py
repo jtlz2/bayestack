@@ -14,6 +14,7 @@ from scipy import interpolate
 import line_profiler
 from utils import *
 #from settings import *
+import matplotlib
 
 from matplotlib.path import Path
 
@@ -170,8 +171,8 @@ def contourTri(chain,**kwargs):
 
 
     TRUNCATE_C=False
-    TRUNCATE_C_LIMIT=2.0#1.0e4
-    C_COL=4#0
+    TRUNCATE_C_LIMIT=2.0e7#1.0e4
+    C_COL=1#0
     FONTSIZE=4; ROTATION=60.0
     FIGSIZE=(8.27,11.69); DPI=400
     AXIS_LABEL_OFFSET=-0.4
@@ -289,6 +290,8 @@ def contourTri(chain,**kwargs):
         if panel[1] == (nparams-1):
             ax[ipanel].set_xlabel(labelDict[labels[panel[0]]],fontsize=8)
             ax[ipanel].xaxis.set_label_coords(0.5,AXIS_LABEL_OFFSET) # align axis labels
+            x_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
+            ax[ipanel].xaxis.set_major_formatter(x_formatter)
 
         else:
             ax[ipanel].set_xlabel('')
@@ -296,6 +299,8 @@ def contourTri(chain,**kwargs):
         if panel[0] == 0:
             ax[ipanel].set_ylabel(labelDict[labels[panel[1]]],fontsize=8)
             ax[ipanel].yaxis.set_label_coords(AXIS_LABEL_OFFSET,0.5) # align axis labels
+            y_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
+            ax[ipanel].yaxis.set_major_formatter(y_formatter)
         else:
             ax[ipanel].set_ylabel('')
             ax[ipanel].get_yaxis().set_ticklabels([])
@@ -307,7 +312,7 @@ def contourTri(chain,**kwargs):
                 xxlo,xxhi=ax[ipanel].xaxis.get_data_interval()
                 if xxhi>TRUNCATE_C_LIMIT:
                     pylab.xlim(xxlo,TRUNCATE_C_LIMIT)
-                #ax[ipanel].set_xscale('log')
+                ax[ipanel].set_xscale('log')
                 autoscale=True
                 #locs,labels = plt.xticks()
                 #plt.xticks(locs, map(lambda x: "%g" % x, locs*1.0e5))
