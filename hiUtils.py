@@ -35,9 +35,29 @@ except:
     print '***Warning: Settings not loaded'
 
 #-------------------------------------------------------------------------------
-# LF utility functions
 
-@profile
+def Sline2MHI(Sline_Jy,D_kpc=1044.0,dv_kms=15.90):
+    """
+    http://www.cv.nrao.edu/course/astr534/HILine.html
+    """
+
+    redshift=-99.0
+    M_Msol = 2.36e5 * D_kpc**2 * Sline_Jy * dv_kms
+
+    return M_Msol
+
+#-------------------------------------------------------------------------------
+
+def MHI2Sline(M_Msol,D_kpc=1044.0,dv_kms=15.90):
+    """
+    """
+    redshift=-99.0
+    Sline_Jy=M_Msol/(2.36e5 * D_kpc**2 * dv_kms)
+
+    return Sline_Jy
+
+#-------------------------------------------------------------------------------
+
 def erfss(S,Sbinlow,Sbinhigh,ssigma):
     """
     For a Gaussian noise model
@@ -113,39 +133,39 @@ def doublepowerlaw(L,Lstar,alpha1,alpha2,C):
 #-------------------------------------------------------------------------------
 
 @profile
-def dNdS_LF(S,z,dl,params=None,paramsList=None,inta=None,area=None,family=None):
+def dNdS_HI(S,z,dl,params=None,paramsList=None,inta=None,area=None,family=None):
     """
     Source count model
     S is in Jy
     Cosmology is set globally
     """
 
-    Lmin=Lmax=Lnorm=Lstar=Lslope=Lslope2=Lzevol=-99.0
+    Mmin=Mmax=Mnorm=Mstar=Mslope=Mslope2=Mzevol=-99.0
 
-    if family in ['LFsch','LFdpl']:
-        Lmin=params[paramsList.index('LMIN')]
-        Lmax=params[paramsList.index('LMAX')]
-        Lnorm=params[paramsList.index('LNORM')]
-        Lstar=params[paramsList.index('LSTAR')]
-        Lslope=params[paramsList.index('LSLOPE')]
-        Lzevol=params[paramsList.index('LZEVOL')]
-    if family=='LFdpl':
-        Lslope2=params[paramsList.index('LSLOPE2')]
+    if family in ['HIsch','HIdpl']:
+        Mmin=params[paramsList.index('MMIN')]
+        Mmax=params[paramsList.index('MMAX')]
+        Mnorm=params[paramsList.index('MNORM')]
+        Mstar=params[paramsList.index('MSTAR')]
+        Mslope=params[paramsList.index('MSLOPE')]
+        Mzevol=params[paramsList.index('MZEVOL')]
+    if family=='HIdpl':
+        Mslope2=params[paramsList.index('MSLOPE2')]
 
     #dl=cosmocalc(z,H0=Ho,WM=wm)['DL_Mpc']
-    [Smin,Smax]=get_sbins([Lmin,Lmax],z,dl) # Jy
+    [Smin,Smax]=MHI2Sline([Mmin,Mmax]) # Jy
 
     if Smin < S < Smax:
         if inta is not None:
             return float(inta(S))
         else:
-            L=get_Lbins([1.0e6*S],z,dl)
-            if family=='LFsch':
-                Lbins,log10phi=schechter(L[0],Lstar,Lslope,Lnorm)
-            elif family=='LFdpl':
-                Lbins,log10phi=doublepowerlaw(L[0],Lstar,Lslope,Lslope2,Lnorm)
+            M=Sline2MHI(S,D_kpc=1044.0,dv_kms=15.90)
+            if family=='HIsch':
+                Mbins,log10phi=schechter(M,Mstar,Mslope,Mnorm)
+            elif family=='HIdpl':
+                Mbins,log10phi=doublepowerlaw(M,Mstar,Mslope,Mslope2,Mnorm)
             #print ',',L[0],10**log10phi[0],Lstar,Lslope,Lnorm
-            phi=(10**log10phi[0])*(1.0+z)**Lzevol
+            phi=(10**log10phi[0])*(1.0+z)**Mzevol
             #if phi==0.0: phi=1.0e-99 # Hmm
             return phi
     else:
@@ -155,44 +175,45 @@ def dNdS_LF(S,z,dl,params=None,paramsList=None,inta=None,area=None,family=None):
 #-------------------------------------------------------------------------------
 
 @profile
-def IL(dNdS_LF,redshift,dl,params,paramsList,Sbinlow,Sbinhigh,\
+def IH(dNdS_HI,redshift,dl,params,paramsList,Sbinlow,Sbinhigh,\
        inta=None,area=None,family=None):
     """
-    The integrand is the product of dN/dS_LF (count model) and G (the Gaussian)
-    Schechter: ['LNORM','LSTAR','LSLOPE','LMIN','LMAX','LZEVOL'] + ['noise']
-    Double PL: ['LNORM','LSTAR','LSLOPE','LSLOPE2','LMIN','LMAX','LZEVOL'] + ['noise']
+    The integrand is the product of dN/dS_HI (count model) and G (the Gaussian)
+    Schechter: ['MNORM','MSTAR','MSLOPE','MMIN','MMAX','MZEVOL'] + ['noise']
+    Double PL: ['MNORM','MSTAR','MSLOPE','MSLOPE2','MMIN','MMAX','MZEVOL'] + ['noise']
     """
 
-    Lmin=params[paramsList.index('LMIN')]
-    Lmax=params[paramsList.index('LMAX')]
+    Mmin=params[paramsList.index('MMIN')]
+    Mmax=params[paramsList.index('MMAX')]
     #dl=cosmocalc(redshift,H0=Ho,WM=wm)['DL_Mpc']
-    [Smin,Smax]=1.0e6*get_sbins([Lmin,Lmax],redshift,dl)
+    [Smin,Smax]=1.0e6*MHI2Sline([Mmin,Mmax])
     sigma=params[paramsList.index('noise')]
 #    print sigma,Sbinlow,Sbinhigh,Smin,Smax
-    return integrate.quad(lambda S:dNdS_LF(S,redshift,dl,params=params,paramsList=paramsList,\
-             inta=inta,area=area,family=family)*erfss(S,sigma/1.0e6,Sbinlow/1.0e6,Sbinhigh/1.0e6),\
+    return integrate.quad(lambda S:dNdS_HI(S,redshift,dl,params=params,\
+              paramsList=paramsList,inta=inta,area=area,family=family)\
+              *erfss(S,sigma/1.0e6,Sbinlow/1.0e6,Sbinhigh/1.0e6),\
                                         Smin/1.0e6,Smax/1.0e6)[0]
 
 #-------------------------------------------------------------------------------
 
 @profile
-def calculateL3(params,paramsList,bins=None,area=None,\
+def calculateH3(params,paramsList,bins=None,area=None,\
                 family=None,dump=None,verbose=False,inta=None,redshift=None,dl=None):
 
     """
-    For LF,
+    For HI Mass function,
     function to calculate mock data for a given power law or interpolation object
     """
 
     #dl=cosmocalc(redshift,H0=Ho,WM=wm)['DL_Mpc']
-    
+
     nbins=len(bins)
     II = numpy.zeros(nbins-1)
     for ibin in xrange(nbins-1):
         sqDeg2srr=sqDeg2sr
         #sqDeg2srr=1.0
         #print area,sqDeg2sr
-        II[ibin]=IL(dNdS_LF,redshift,dl,params,paramsList,bins[ibin],bins[ibin+1],\
+        II[ibin]=IH(dNdS_HI,redshift,dl,params,paramsList,bins[ibin],bins[ibin+1],\
                     inta=inta,area=sqDeg2srr*area,family=family)
 
     return II
