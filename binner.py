@@ -57,14 +57,14 @@ def main():
         CORR_BINS=numpy.ones(len(bins)-1)
 
     print 'Reading from %s' % BIN_CAT
-    cat=numpy.genfromtxt(BIN_CAT)
+    cat=numpy.atleast_2d(numpy.genfromtxt(BIN_CAT))
 
     # Convert unit if required
     if BIN_CAT_FORM in [0,2,3]:
         cat[:,BIN_COL] *= 1000.0 # mJy -> uJy in SURVEY_AREA sq. deg.
         # 5 sigma:
         #cat=cat[numpy.where((cat[:,BIN_COL]/cat[:,BIN_COL+1])>0.0)]
-    elif BIN_CAT_FORM in [6,8]:
+    elif BIN_CAT_FORM in [6,8,10]:
         cat[:,BIN_COL] *= Jy2muJy
     else:
         pass
