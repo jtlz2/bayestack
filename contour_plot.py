@@ -175,7 +175,7 @@ def contourTri(chain,**kwargs):
     C_COL=1#0
     FONTSIZE=4; ROTATION=60.0
     FIGSIZE=(8.27,11.69); DPI=400
-    AXIS_LABEL_OFFSET=-0.4
+    AXIS_LABEL_OFFSET=-0.5
 
     # !!!! BEWARE THE BINSIZE --- PLOT IS A STRONG FUNCTION OF THIS
     if 'binsize' in kwargs:
@@ -248,19 +248,22 @@ def contourTri(chain,**kwargs):
         Y=Y1
     
         N100,N95,N68 = findconfidence(Z)
+        assert([N95,N68,N100]==sorted([N95,N68,N100]))
+        #Z=reversed(Z); X=reversed(X); Y=reversed(Y)
 
+        levels=[N68,N95,numpy.inf].sort()
         if 'col' in kwargs:
             col=kwargs['col']
         else:
-            col =('#a3c0f6','#0057f6') #A pretty blue
-
+            col =('#FFFFFF','#a3c0f6','#0057f6') #A pretty blue (pale then dark)
+            #col =('#0057f6','#a3c0f6')
+        ccol=[x for y, x in sorted(zip(col, [N95,N68,N100]))]
         # Now construct the subplot
         ax[ipanel]=pylab.subplot2grid((nparams,nparams),panel[::-1]) # Reverse quadrant
-
         if 'line' in kwargs and kwargs['line']==True:
-            CS=pylab.contour(X, Y,Z,levels=[N95,N68,N100],colors=col, linewidth=100)
+            CS=pylab.contour(X,Y,Z,levels=[N95,N68,N100,numpy.inf].sort(),colors=col,linewidth=100)
         else:
-            CS=pylab.contourf(X, Y,Z,levels=[N95,N68,N100],colors=col)
+            CS=pylab.contourf(X,Y,Z,levels=levels,colors=col)
 
 
         # Identify points lying within 68 percent contour region
