@@ -100,7 +100,8 @@ def dNdP0(P,params=None,paramsList=None,inta=None,area=None):
 
     #noise=params[paramsList.index('noise')]
 
-    if Pmin/1.0e6 < P < Pmax/1.0e6:
+    #if Pmin/1.0e6 < P < Pmax/1.0e6:
+    if True: # CHECK THIS!!!!!
         if inta is not None:
             return float(inta(P))
         else:
@@ -162,8 +163,16 @@ def IP(dNdP0,params,paramsList,Pbinlow,Pbinhigh,inta=None,area=None,doRayleigh=F
     Pmin=params[paramsList.index('S0')]
     iPmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
     Pmax=params[paramsList.index('S%i'%iPmax)]
+    #print iPmax,Pmax
     sigma_QU=params[paramsList.index('noise')]
-    return integrate.quad(lambda p0:dNdP0(p0,params=params,paramsList=paramsList,\
+    if doRayleigh: # Experimental
+        C=params[paramsList.index('C')]
+        I=C*integrate.quad(lambda p0:rices(p0,sigma_QU/1.0e6,Pbinlow/1.0e6,Pbinhigh/1.0e6,\
+                                        doRayleigh=doRayleigh),Pmin/1.0e6,Pmax/1.0e6)[0]
+        #print C,I
+        return I
+    else:
+        return integrate.quad(lambda p0:dNdP0(p0,params=params,paramsList=paramsList,\
              inta=inta,area=area)*rices(p0,sigma_QU/1.0e6,Pbinlow/1.0e6,Pbinhigh/1.0e6,\
                                         doRayleigh=doRayleigh),Pmin/1.0e6,Pmax/1.0e6)[0]
 
