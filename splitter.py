@@ -36,6 +36,7 @@ import numpy
 import pyfits
 from profile_support import profile
 from utils import *
+from scipy.stats import rice,rayleigh
 import countUtils
 import stackUtils
 import matplotlib.pyplot as plt
@@ -68,10 +69,8 @@ def main():
         cat[:,BIN_COL] *= 1000.0 # mJy -> uJy in SURVEY_AREA sq. deg.
         # 5 sigma:
         #cat=cat[numpy.where((cat[:,BIN_COL]/cat[:,BIN_COL+1])>0.0)]
-    elif BIN_CAT_FORM in [6,8]:
-        cat[:,BIN_COL] *= Jy2muJy
     else:
-        pass
+        cat[:,BIN_COL] *= Jy2muJy
 
     # Check the corrections
     assert(len(CORR_BINS) == len(bins)-1),\
@@ -95,7 +94,7 @@ def main():
     # Calculate survey areas and record these to file
     noiseRanges=sorted([cutsDict[z][1:] for z in cutsDict.keys() if z.startswith('noise')])
     noiseAreas=stackUtils.calculateNoiseZones(\
-                    weightvlaf,noiseRanges,SURVEY_NOISE,noisezonesf)
+                    weightvlaf,noiseRanges,SURVEY_NOISE,noisezonesf,maskf)
 
     # Set up the plot
     fig = plt.figure()
@@ -105,28 +104,43 @@ def main():
     for n in range(numNoiseZones):
         f='.'.join(['_'.join([BOUT_CAT.split('.')[-2],'a%i'%n]),'txt'])
         ccat=stackUtils.secateur(cat,BIN_COL,cutsDict,n)
-        print cat.shape,ccat.shape
+        #print cat.shape,ccat.shape
+        #print ccat[:,BIN_COL]
+        print 'Minimum flux in catalogue/uJy = %f'%ccat[:,BIN_COL].min()
         #ccat[:,BIN_COL]=ccat[:,45]/numpy.power(ccat[:,47],0.5)
         countUtils.writeCountsFile(f,bins,ccat[:,BIN_COL],SURVEY_AREA,\
                                idl_style=idl_s,verbose=False,corrs=CORR_BINS)
         binwidth=1.0*SURVEY_NOISE
+        if doPoln:
+            binwidth=0.25*SURVEY_NOISE
         lab='%s$\mu$Jy (%5.3f deg$^2$)'%(str(cutsDict['noise%i'%n][1:]),noiseAreas[n])
         m,b,p=plt.hist(ccat[:,BIN_COL],bins=numpy.arange(bins[0],\
                     (20.0*SURVEY_NOISE)+binwidth,binwidth),\
                     histtype='step',color=colors[n],label=lab)
         noise=numpy.mean(cutsDict['noise%i'%n][1:])
-        noise=cutsDict['noise%i'%n][-1]
-        print noise
-        print cutsDict['noise%i'%n][1:]
+        #noise=cutsDict['noise%i'%n][-1]
+        #print noise, cutsDict['noise%i'%n][1:]
         y = numpy.max(m)*gaussian(b,0.0,noise,norm=False)
+        if doPoln:
+            noise=cutsDict['noise%i'%n][-2]
+            # See http://comments.gmane.org/gmane.comp.python.scientific.user/31555
+            loc=1.0/noise # 0.0
+            y = rice(loc,scale=noise).pdf(b)
+            y *= numpy.max(m)/y.max()
+            z = rayleigh(scale=noise).pdf(b) # = rice(0.0,scale=noise).pdf(b)
+            z *= numpy.max(m)/z.max()
+            plt.plot(b,z,'%s-'%colors[n],linewidth=1)
         plt.plot(b,y,'%s--'%colors[n],linewidth=1)
 
     if True:
         # Now plot a histogram of fluxes to file, with fine binning
         print 'Flux range/uJy = %f -> %f' % (ccat[:,BIN_COL].min(),ccat[:,BIN_COL].max())
         plt.yscale('log')
+        if doPoln: plt.xscale('log')
         plt.xlim(bins[0],20.0*SURVEY_NOISE)
         plt.ylim(0.5,1.0e3)
+        #if doPoln:
+        #    plt.ylim(0.5,2.0e3)
         plt.xlabel('S/$\mu$Jy')
         plt.ylabel('Number of objects')
         plt.legend(loc='upper right',prop={'size':10},frameon=False,numpoints=1)
