@@ -1,20 +1,19 @@
 #!/bin/bash
-#PBS -N 150522a
+#PBS -N 160505a
 #PBS -o $HOME/Dropbox/bayestack/chains_$PBS_JOBNAME/output-$PBS_JOBID.log
 #PBS -e $HOME/Dropbox/bayestack/chains_$PBS_JOBNAME/output-$PBS_JOBID.err
 #PBS -S /bin/bash
 #PBS -l walltime=72:00:00
 #PBS -l nodes=2:ppn=48
-#PBS -l mem=4GB
-#PBS -m bea
-#PBS -M jtlz2@astro.columbia.edu
+#PBS -l mem=12GB
+##PBS -m bea
+##PBS -M jtlz2@astro.columbia.edu
 
 RUNPATH=$HOME/Dropbox/bayestack
 cd $RUNPATH
-
 date
 pwd
 
-mpiexec.osc -np $PBS_NP ./bayestack.py bayestack_settings.py
+LD_LIBRARY_PATH="/usr/local/lib/" mpiexec.osc -n $PBS_NP ./bayestack.py bayestack_settings.py
 date
 
