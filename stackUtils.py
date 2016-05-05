@@ -30,6 +30,29 @@ except:
 
 #-------------------------------------------------------------------------------
 
+def cmask(index,radius,array):
+    a,b = index
+    nx,ny = array.shape
+    y,x = np.ogrid[-a:nx-a,-b:ny-b]
+    mask = x*x + y*y <= radius*radius
+
+    return array[mask]
+
+#-----------------------------------------------------------
+
+def tophat(height,size,radius):
+    """
+    """
+    x, y = numpy.mgrid[-size//2 + 1:size//2 + 1, -size//2 + 1:size//2 + 1]
+    mask = x*x + y*y <= radius*radius
+    t = numpy.zeros((size,size))
+    t[mask] = height
+
+    return t,mask
+
+#-------------------------------------------------------------------------------
+
+
 @profile
 def readRadio(fradio=None):
     """
@@ -47,22 +70,38 @@ def readRadio(fradio=None):
 
 #-------------------------------------------------------------------------------
 
-def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE,noisezonesf):
+def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE,noisezonesf,maskf=None):
     """
     Given a *sensitivity* map
     and a list of noise ranges, calculate the number of pixels in each range
     """
 
     uu=pyfits.open(wvlaf)
-    W_VLA=uu[0].data[0,0,:,:]
+    try:
+        W_VLA=uu[0].data[0,0,:,:]
+    except IndexError:
+        W_VLA=uu[0].data[:,:]
     D1 = uu[0].header['CDELT1']
     D2 = uu[0].header['CDELT2']
     uu.close()
     SAperPix = abs(D1*D2) # Area per pixel in *sq. deg.*
-    rmsmap=SURVEY_NOISE*numpy.power(W_VLA[numpy.where(W_VLA!=0.0)],-0.5)
+    #rmsmap=SURVEY_NOISE*numpy.power(W_VLA[W_VLA!=0.0],-0.5)
+    rmsmap=SURVEY_NOISE*numpy.power(W_VLA,-0.5)
 
-    pixels=rmsmap.flatten()
+    # Open up the mask
+    if maskf is not None:
+        mm=pyfits.open(maskf)
+        try:
+            M_VLA=mm[0].data[0,0,:,:]
+        except IndexError:
+            M_VLA=mm[0].data[:,:]
+        mm.close()
+        mask=M_VLA
+
+        pixels=rmsmap[mask==0.0].flatten()
     #print pixels.min(),pixels.max()
+    else:
+        pixels=rmsmap.flatten()
 
     nz=open(noisezonesf,'w')
     hdr='# zone noise_min_uJy noise_max_uJy area_sq_deg'
