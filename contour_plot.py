@@ -255,13 +255,24 @@ def contourTri(chain,**kwargs):
         if 'col' in kwargs:
             col=kwargs['col']
         else:
-            col =('#FFFFFF','#a3c0f6','#0057f6') #A pretty blue (pale then dark)
-            #col =('#0057f6','#a3c0f6')
-        ccol=[x for y, x in sorted(zip(col, [N95,N68,N100]))]
+            #col =('#FFFFFF','#a3c0f6','#0057f6') #A pretty blue (pale then dark)
+            col =('#a3c0f6','#0057f6')
+        #ccol=[x for y, x in sorted(zip(col, [N95,N68,N100]))]
         # Now construct the subplot
         ax[ipanel]=pylab.subplot2grid((nparams,nparams),panel[::-1]) # Reverse quadrant
+
+        #levels=[N68,N95,N100,numpy.inf].sort()
+        # Fix levels https://github.com/dfm/corner.py/pull/73
+        levelshiftfix=1.0e-4
+        levels=[N68-levelshiftfix,N95,N100+levelshiftfix,numpy.inf]
+        #for n,l in enumerate(levels[:-2]):
+        #    print n,l,col[n]
+        #print levels
+        levels.sort()
+        #print levels
+        #print col
         if 'line' in kwargs and kwargs['line']==True:
-            CS=pylab.contour(X,Y,Z,levels=[N95,N68,N100,numpy.inf].sort(),colors=col,linewidth=100)
+            CS=pylab.contour(X,Y,Z,levels=levels,colors=col,linewidth=100)
         else:
             CS=pylab.contourf(X,Y,Z,levels=levels,colors=col)
 
