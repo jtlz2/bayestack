@@ -199,21 +199,24 @@ class countModel(object):
         # --> This defines the order of the parameters:
         self.paramsAvail=\
                     OrderedDict([('extra',['noise']),\
-                     ('amp',['C']),\
-
                      ('breaks',['S%i'%ic for ic in xrange(self.nlaws+1)]),\
+                     ('amp',['C']),\
                      ('coeffs',['p%i'%ic for ic in xrange(self.nlaws)]),\
                      ('limits',['S%i'%ic for ic in xrange(2)]),\
                      ('poles',['b%i'%ic for ic in xrange(self.nlaws)]),\
 
                      ('slopes',['a%i'%ic for ic in xrange(self.nlaws)]),\
                      ('schechter',['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LZEVOL']),\
-                     ('doublepl',['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LSLOPE2','LZEVOL'])])
+                     ('doublepl',['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LSLOPE2','LZEVOL']),\
+                     ('schechterM',['MMIN','MMAX','MNORM','MSTAR','MSLOPE','MZEVOL']),\
+                     ('doubleplM',['MMIN','MMAX','MNORM','MSTAR','MSLOPE','MSLOPE2','MZEVOL'])])
         familyMap={'ppl':['breaks','slopes','amp','extra'],\
                    'poly':['limits','coeffs','extra'],\
                    'bins':['poles','extra'],\
                    'LFsch':['schechter','extra'],\
-                   'LFdpl':['doublepl','extra']}
+                   'LFdpl':['doublepl','extra'],\
+                   'HIsch':['schechterM','extra'],\
+                   'HIdpl':['doubleplM','extra']}
         self.paramsStruct=\
           [self.paramsAvail[p] for p in self.paramsAvail if p in familyMap[kind]]
         self.parameters=list(itertools.chain(*self.paramsStruct))
@@ -283,6 +286,15 @@ class countModel(object):
             elif p=='LSLOPE2': priorsDict['LSLOPE2']=[LSLOPE2_PRIOR,LSLOPE2_MIN,LSLOPE2_MAX]
             elif p=='LZEVOL': priorsDict['LZEVOL']=[LZEVOL_PRIOR,LZEVOL_MIN,LZEVOL_MAX]
 
+            # MFs: ['MNORM','MSTAR','MSLOPE','MMIN','MMAX','MZEVOL'] + ['MSLOPE2']
+            if p=='MMIN': priorsDict['MMIN']=[MMIN_PRIOR,MMIN_MIN,MMIN_MAX]
+            elif p=='MMAX': priorsDict['MMAX']=[MMAX_PRIOR,MMAX_MIN,MMAX_MAX]
+            elif p=='MNORM': priorsDict['MNORM']=[MNORM_PRIOR,MNORM_MIN,MNORM_MAX]
+            elif p=='MSTAR': priorsDict['MSTAR']=[MSTAR_PRIOR,MSTAR_MIN,MSTAR_MAX]
+            elif p=='MSLOPE': priorsDict['MSLOPE']=[MSLOPE_PRIOR,MSLOPE_MIN,MSLOPE_MAX]
+            elif p=='MSLOPE2': priorsDict['MSLOPE2']=[MSLOPE2_PRIOR,MSLOPE2_MIN,MSLOPE2_MAX]
+            elif p=='MZEVOL': priorsDict['MZEVOL']=[MZEVOL_PRIOR,MZEVOL_MIN,MZEVOL_MAX]
+
         return priorsDict
 
     def setParams(self,params):
@@ -300,7 +312,7 @@ class countModel(object):
 
     def evaluate(self,params):
         """
-        Not yet geared for LFs
+        Not yet geared for LFs OR MFs
         """
 #        if mybins is not None:
 #            self.binsMedian=mybins
@@ -324,16 +336,20 @@ class countModel(object):
             #print 'iS',iSmax
             Smax=params[paramsList.index('S%i'%iSmax)]
             #print paramsList,iSmax,nlaws#nlaws,S0,S1,S2,Smax,C
-            print nlaws,C,alpha,beta,Smin,Smax,S0,gamma,S1,delta,S2
+#            print nlaws,C,alpha,beta,Smin,Smax,S0,gamma,S1,delta,S2
             #print 'C',C
 #            evaluations=[countUtils.powerLawFuncWrap(nlaws,S,C,alpha,-99.0,beta,\
 #                        Smin/1.0e6,Smax/1.0e6,S0/1.0e6,gamma,S1/1.0e6,delta,S2/1.0e6,\
 #                        1.0) for S in self.binsMedian/1.0e6]
             power=0.0
+            # C is already in sr units
             evaluations=[countUtils.powerLawFuncWrap(nlaws,S,C,alpha+power,-99.0,beta+power,\
                         -1.0e10,1.0e10,S0/1.0e6,gamma+power,S1/1.0e6,delta+power,S2/1.0e6,\
                         1.0) for S in self.binsMedian/1.0e6]
 
+                        #self.survey.SURVEY_AREA) for S in self.binsMedian/1.0e6]
+            #print *sqDeg2sr
+            #sys.exit(0)
             #power=0.0
             #if nlaws==2:
             #    evaluations=[countUtils.powerLawFuncWrap(2,S,C,\
@@ -364,8 +380,13 @@ class countModel(object):
             if doPoln:
                 s=1.0#*sqDeg2sr*self.survey.SURVEY_AREA#sqDeg2sr
                 # ??
-                evaluations=[e*s for e in evaluations]
-            print evaluations
+                #print self.survey.SURVEY_AREA
+                #sys.exit(0)
+                #evaluations=[e*s for e in evaluations]
+                evaluations=[e*self.survey.SURVEY_AREA for e in evaluations]
+                #evaluations=[e*s*sqDeg2sr/self.survey.SURVEY_AREA for e in evaluations]
+            #print evaluations
+            #sys.exit(0)
         elif self.kind=='poly':
             paramsList=self.parameters
             Smin=params[paramsList.index('S0')]
@@ -374,10 +395,27 @@ class countModel(object):
             S_1=1.0 # ref flux
             evaluations=[1.0 * countUtils.polyFunc(S,S_1,Smin/1.0e6,Smax/1.0e6,\
                                              coeffs) for S in self.binsMedian/1.0e6]
-        elif self.kind=='LFsch':
+
+    	if self.kind in ['LFsch','LFdpl']:
+    	#only works for a single fit, needs some handling to do zeval
+    		n = len(sorted(self.zDataObject.zsliceData.keys()))
+    		#evaluations= numpy.zeros(n)
+    		#evaluations=[]
+    		for r in range(n):
+    			z=self.redshifts[r]
+                zbins=self.zDataObject.zsliceData[z][1]
+                dl=self.zDataObject.dls[z]
+                evaluations = [lumfuncUtils.dNdS_LF(S, z, dl,params,\
+                  self.parameters,inta= None,\
+                  area=self.survey.SURVEY_AREA,family=self.kind) for S in self.binsMedian/1.0e6]
+        	
+        	return evaluations
+
+     
+        elif self.kind=='HIsch':
             # XXXX
             pass
-        elif self.kind=='LFdpl':
+        elif self.kind=='HIdpl':
             # XXXX
             pass
 
@@ -452,6 +490,20 @@ class countModel(object):
             #self.dataRealisation=lumfuncUtils.calculateL3(cube,self.parameters,\
             #        bins=self.bins,area=self.survey.SURVEY_AREA,family=self.kind,\
             #        redshift=self.ziter)
+        elif self.kind in ['HIsch','HIdpl']:
+            self.zRealiseObject={}
+            for r in range(len(sorted(self.zDataObject.zsliceData.keys()))):
+                z=self.redshifts[r]
+                zbins=self.zDataObject.zsliceData[z][1]
+                dl=self.zDataObject.dls[z]
+                self.zRealiseObject[z]=hiUtils.calculateH3(cube,self.parameters,\
+                    bins=zbins,area=self.survey.SURVEY_AREA,family=self.kind,\
+                    redshift=z,dl=dl)
+            return self.zRealiseObject
+            #self.ziter=self.redshifts[0] # Need to select z somehow!!
+            #self.dataRealisation=lumfuncUtils.calculateH3(cube,self.parameters,\
+            #        bins=self.bins,area=self.survey.SURVEY_AREA,family=self.kind,\
+            #        redshift=self.ziter)
         else:
             self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
                 family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA,\
@@ -474,7 +526,9 @@ class countModel(object):
         # NB List comprehension will not modify cube in place
         for i in range(ndim):
             cube[i]=self.priors.GeneralPrior(cube[i],self.priorsDict[self.parameters[i]][0],self.priorsDict[self.parameters[i]][1],self.priorsDict[self.parameters[i]][2])
-        #print 'c1',[cube[i] for i in range(ndim)]
+            #print i,cube[i]
+            #if i != 0: cube[i]=1.0
+            #print 'c1',[cube[i] for i in range(ndim)]
         self.currentPhysParams=[cube[i] for i in range(ndim)]
         #self.setParams(cube)
         #self.transform(cube,ndim,nparams)
@@ -483,7 +537,9 @@ class countModel(object):
 
     def loglike(self,cube,ndim,nparams):
         # Test the break positions if necessary (Si present in params list)
-        if not strictly_increasing([cube[i] for i in range(ndim) if self.parameters[i].startswith('S')]):
+        if not strictly_increasing([cube[i] for i in range(ndim) if \
+            (self.parameters[i].startswith('S') and not self.parameters[i].startswith('SL'))]):
+            #print [cube[i] for i in range(ndim)]
             print '+',
             return -1.0e99
         else:
