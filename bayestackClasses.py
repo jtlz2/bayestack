@@ -396,7 +396,7 @@ class countModel(object):
             evaluations=[1.0 * countUtils.polyFunc(S,S_1,Smin/1.0e6,Smax/1.0e6,\
                                              coeffs) for S in self.binsMedian/1.0e6]
 
-    	if self.kind in ['LFsch','LFdpl']:
+    	elif self.kind in ['LFsch','LFdpl']:
     	#only works for a single fit, needs some handling to do zeval
     		n = len(sorted(self.zDataObject.zsliceData.keys()))
     		#evaluations= numpy.zeros(n)
@@ -412,12 +412,6 @@ class countModel(object):
         	return evaluations
 
      
-        elif self.kind=='HIsch':
-            # XXXX
-            pass
-        elif self.kind=='HIdpl':
-            # XXXX
-            pass
         elif self.kind=='HIsch':
             # XXXX
             pass
