@@ -4,6 +4,7 @@ Also includes some useful constants
 """
 
 import os,sys
+import shelve
 import numpy
 import scipy
 from scipy import stats
@@ -374,8 +375,9 @@ def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=True,\
     else:
         percentile_central=stats.percentileofscore(vector,value_central,kind=k)
 
-    percentile_low=percentile_central-(100.0*alpha/2.0)
-    percentile_high=percentile_central+(100.0*alpha/2.0)
+    pcl=percentile_low=percentile_central-(100.0*alpha/2.0)
+    pch=percentile_high=percentile_central+(100.0*alpha/2.0)
+
     # Correct the confidence region to avoid touching the edges
     if truncate_edges:
         if percentile_high > 100.0:
@@ -386,6 +388,8 @@ def calculate_confidence2(vector,value_central=None,alpha=0.68,ret_all=True,\
             dpc_low=0.0-percentile_low
             percentile_low=0.0
             percentile_high += dpc_low
+    #print 'www',pcl,percentile_low,pch,percentile_high,percentile_central,value_central
+
     #assert ((percentile_high <= 100.0) and (percentile_low >= 0.0)), '***cannot compute.... %f %f'%(percentile_low,percentile_high)
 
     err_low  = value_central - stats.scoreatpercentile(vector,percentile_low)
@@ -666,13 +670,17 @@ def reportRelativeEvidences(globList):
     """
 
     print '\n-> Comparing runs %s' % (', '.join(globList))
-    Hdict={}; Zdict={};dZdict={}
+    Hdict={}; Zdict={};dZdict={}#; shelvesDict={}
     for run in globList:
         statsf='%s/1-'%run
         nparams=numpy.genfromtxt('%spost_equal_weights.dat'%statsf).shape[-1]-1
         ana=pymultinest.analyse.Analyzer(nparams,outputfiles_basename=statsf).get_stats()
         Z=ana['global evidence']; dZ=ana['global evidence error']
         Hdict[Z]=run; Zdict[run]=Z; dZdict[run]=dZ
+        #try:
+        #    shelvesDict=restoreShelf('%s/shelves.txt'%run)
+        #except:
+        #    print 'No shelves found'
 
     #Identify H0
     Zmin=min(Hdict.keys())
@@ -683,9 +691,13 @@ def reportRelativeEvidences(globList):
     print 'Hmax = %s (Z=%f)' % (Hmax,Zmax)
     print
 
-    print '# H_i Z dZ DeltaZ dDeltaZ verdict'    
+    print '# H_i Z dZ DeltaZ dDeltaZ null verdict'    
     for run in globList:
         DeltaZ=Zdict[run]-Zdict[H0]
+        if False:#shelvesDict[run]['doRayleigh']:
+            Ry='R'
+        else:
+            Ry=''
         if run==H0:
             dDeltaZ=0.0
         else:
@@ -696,8 +708,8 @@ def reportRelativeEvidences(globList):
             result='<-*- winner'
         else:
             result=' '
-        print '%s: Z = %f +/- %6.4f | %6.4f +/- %6.4f %s' \
-          % (run,Zdict[run],dZdict[run],DeltaZ,dDeltaZ,result)
+        print '%s: Z = %f +/- %6.4f | %6.4f +/- %6.4f %s %s' \
+          % (run,Zdict[run],dZdict[run],DeltaZ,dDeltaZ,Ry,result)
     print
 
     print "% ...and here's the LaTeX:"
@@ -828,5 +840,19 @@ def printLaTeX(parameters,statsDict,dump=None):
         print '\n-> writing summary stats to \input{%s}'%outf
 
     return
+
+#-------------------------------------------------------------------------------
+
+@profile
+def restoreShelf(shelvef):
+    """
+    http://stackoverflow.com/questions/2960864/how-can-i-save-all-the-variables-in-the-current-python-session
+    """
+    my_shelf = shelve.open(filename)
+    shelvesDict={}
+    for key in my_shelf:
+        shelvesDict[key]=my_shelf[key]
+    my_shelf.close()
+    return shelvesDict
 
 #-------------------------------------------------------------------------------

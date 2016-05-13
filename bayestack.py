@@ -8,7 +8,7 @@ mpirun -np 4 ./bayestack.py bayestack_settings.py
 """
 
 import os,sys
-import time,shutil,glob
+import time,shutil,glob,shelve
 import importlib
 import pymultinest
 from bayestackClasses import countModel
@@ -90,6 +90,16 @@ def main():
     if master:
         variablesf=os.path.join(outdir,variablesfile)
         dump_variable_values(set_module,variablesf,verbose=False)
+        # and shelve them
+        #shelvef=os.path.join(outdir,'shelves.txt')
+        #http://stackoverflow.com/questions/2960864/how-can-i-save-all-the-variables-in-the-current-python-session
+        #my_shelf = shelve.open(shelvef,'n') # 'n' for new
+        #for key in dir():
+        #    try:
+        #        my_shelf[key] = globals()[key]
+        #    except TypeError:
+        #        pass #print('ERROR shelving: {0}'.format(key))
+        #my_shelf.close()
 
         startTime = time.strftime('%X %x %Z')
         shutil.copy(param_file,os.path.join(outdir,'bayestack_settings.py'))
@@ -135,7 +145,8 @@ def main():
                     outputfiles_basename=os.path.join(outdir,outstem),\
         # NB MPI is already init'ed by mpi4py (crashes otherwise)
                     init_MPI=False)
-    except:
+    except Exception as e:
+	print e
         return 1
 
     if master:

@@ -17,10 +17,10 @@ import numpy
 from scipy import stats
 import pymultinest
 from bayestackClasses import countModel
-from utils import sqDeg2sr,fetchStats,calculate_confidence,\
+from utils import fetchStats,calculate_confidence,\
      calculate_confidence2,peak_confidence,medianArray
 
-param_file=sys.argv[-1]
+param_file=sys.argv[-1].rstrip('\\')
 settingsf='%s.bayestack_settings' % param_file
 
 #-------------------------------------------------------------------------------
@@ -98,7 +98,7 @@ def main():
     #sys.exit(0)
     if expt.kind!='ppl' or True:
         ymap*=numpy.power(expt.binsMedian/1.0e6,power)
-    print 'yy',ymap
+    #print 'jj',ymap
     #sys.exit(0)
 
     for isamp in xrange(nsamp):
@@ -131,7 +131,7 @@ def main():
     #sys.exit(0)
 
     # Generate stats here...
-    s=numpy.zeros((expt.nbins,6))
+    s=numpy.zeros((expt.nbins,7))
     s[:,0]=expt.binsMedian
 
     print '# ibin flux fit low high dlower dupper skew kurtosis'
@@ -144,7 +144,8 @@ def main():
         #x*=numpy.power(s[ibin,0]/1.0e6,2.5)
         # Select statistic on which to centre reconstruction:
         value_central=ymap[ibin] # MAP
-        #value_central=numpy.median(x) # median
+        #print 'jj',ymap[ibin]
+    #    value_central=numpy.median(x) # median
         #value_central=peak_confidence(x,bins=10) # peak/mode
         try:
             ss=numpy.zeros(3)
@@ -169,10 +170,12 @@ def main():
         s[ibin,5]=stats.kurtosis(x) # kurtosis
         print ibin,s[ibin,0],s[ibin,1],dlow,dhigh,ss[1],ss[2],s[ibin,4],s[ibin,5]#,stats.skewtest(x)
 
+    s[:,6]=numpy.power(s[:,0]/1.0e6,-power)*numpy.cumsum(s[::-1,1])[::-1] # integral counts
+
     # ...and output to file
     rstatsf='recon_stats.txt'
     rstatsf=os.path.join(outdir,rstatsf)
-    hdr='# median_flux_uJy dnds_2p5_Jy1p5srm1 delta_dnds_2p5_lower_Jy1p5srm1 delta_dnds_2p5_upper_Jy1p5srm1 skewness kurtosis'
+    hdr='# median_flux_uJy dnds_2p5_Jy1p5srm1 delta_dnds_2p5_lower_Jy1p5srm1 delta_dnds_2p5_upper_Jy1p5srm1 skewness kurtosis integral_sr'
     fid = open(rstatsf,'w')
     print hdr
     print s

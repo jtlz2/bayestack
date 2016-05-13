@@ -22,7 +22,7 @@ from utils import *
 import contour_plot
 from bayestackClasses import countModel
 
-param_file=sys.argv[-1]
+param_file=sys.argv[-1].rstrip('\\')
 setf='%s.bayestack_settings' % param_file
 #param_dir=sys.argv[-1]
 #param_file='settings.py'
@@ -61,7 +61,7 @@ def main():
     expt=countModel(modelFamily,nlaws,setf,dataset,floatNoise)
     # Insert hacks here
     #plotRanges['C']=[0,200]
-    labelDict=dict((name,name) for name in expt.parameters)
+    #labelDict=dict((name,name) for name in expt.parameters)
     plotTruth=dict((name,-99.0) for name in expt.parameters)
     plotRanges=dict((k,v[-2:]) for (k,v) in expt.priorsDict.items())
 
@@ -86,13 +86,14 @@ def main():
     title=''
     truth=None
     extn='pdf'
+    binsize=40
     bundle=contour_plot.contourTri(chain,\
                             line=line,\
                             outfile='%s/triangle-%s-publn.%s'%(outdir,run_num,extn),\
                             labels=expt.parameters,\
                             ranges=plotRanges,truth=truth,\
                             autoscale=autoscale,title=title,\
-                            binsize=50,labelDict=labelDict)
+                            binsize=binsize,labelDict=labelDict)
 
     stats=fetchStats(outdir,expt.parameters,plotTruth)
     printLaTeX(expt.parameters,stats,dump=outdir)

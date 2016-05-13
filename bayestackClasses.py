@@ -418,6 +418,12 @@ class countModel(object):
         elif self.kind=='HIdpl':
             # XXXX
             pass
+        elif self.kind=='HIsch':
+            # XXXX
+            pass
+        elif self.kind=='HIdpl':
+            # XXXX
+            pass
 
         else:
             print '***%s unsupported right now!' % self.kind

@@ -22,7 +22,7 @@ from utils import sqDeg2sr,sqrtTwo,find_nearest,medianArray,\
 
 if 'chains' in sys.argv[-1]:
     potential_settings=glob.glob(os.path.join(sys.argv[-1],'*settings*py'))
-    assert(len(potential_settings)==1), '***More than one potential settings file!'
+    assert(len(potential_settings)==1), '***More than one potential (or missing) settings file!'
     settingsf='.'.join([sys.argv[-1],potential_settings[0].split('/')[-1].split('.')[-2]])
 else:
     settingsf=sys.argv[-1].split('.')[-2]
@@ -103,7 +103,7 @@ def simulate(family,params,paramsList,bins,\
 
     # Initialize seed for variates AND any noise
     if seed is not None:
-        numpy.random.seed(seed=SEED_SIM)
+        numpy.random.seed(seed=seed)
 
     if family=='ppl':
         C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
@@ -247,7 +247,7 @@ def simulate(family,params,paramsList,bins,\
 
     # Now add noise if requested
     if simdocatnoise:
-        numpy.random.seed(seed=SEED_SIM)
+        numpy.random.seed(seed=seed)
         poln=False
         if poln:
             F+=rice.rvs(F/noise,size=N)
@@ -328,7 +328,7 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
                 line='%f %i %i' % (median_bins[ibin],-99.0,counts[ibin])
             else:
                 line='%f %f %f %i %e %e %e %e %f %i %i %i' % \
-                  (bins[ibin],bins[ibin+1],median_bins[ibin],round(counts[ibin]),\
+                  (bins[ibin],bins[ibin+1],median_bins[ibin],round(corrs[ibin]*counts[ibin]),\
                    dn_by_ds[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_eucl[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
@@ -344,7 +344,7 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
 
         print 'Look in %s' % outputf
 
-    return
+    return counts
 
 #-------------------------------------------------------------------------------
 
