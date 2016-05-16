@@ -395,12 +395,23 @@ class countModel(object):
             S_1=1.0 # ref flux
             evaluations=[1.0 * countUtils.polyFunc(S,S_1,Smin/1.0e6,Smax/1.0e6,\
                                              coeffs) for S in self.binsMedian/1.0e6]
-        elif self.kind=='LFsch':
-            # XXXX
-            pass
-        elif self.kind=='LFdpl':
-            # XXXX
-            pass
+
+    	elif self.kind in ['LFsch','LFdpl']:
+    	#only works for a single fit, needs some handling to do zeval
+    		n = len(sorted(self.zDataObject.zsliceData.keys()))
+    		#evaluations= numpy.zeros(n)
+    		#evaluations=[]
+    		for r in range(n):
+    			z=self.redshifts[r]
+                zbins=self.zDataObject.zsliceData[z][1]
+                dl=self.zDataObject.dls[z]
+                evaluations = [lumfuncUtils.dNdS_LF(S, z, dl,params,\
+                  self.parameters,inta= None,\
+                  area=self.survey.SURVEY_AREA,family=self.kind) for S in self.binsMedian/1.0e6]
+        	
+        	return evaluations
+
+     
         elif self.kind=='HIsch':
             # XXXX
             pass
