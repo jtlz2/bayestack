@@ -94,7 +94,7 @@ def main():
     # Calculate survey areas and record these to file
     noiseRanges=sorted([cutsDict[z][1:] for z in cutsDict.keys() if z.startswith('noise')])
     noiseAreas=stackUtils.calculateNoiseZones(\
-                    weightvlaf,noiseRanges,SURVEY_NOISE,noisezonesf,maskf)
+                    weightvlaf,noiseRanges,SURVEY_NOISE,noisezonesf,maskf=maskf)
 
     # Set up the plot
     fig = plt.figure()
@@ -103,9 +103,9 @@ def main():
     idl_s=False
     for n in range(numNoiseZones):
         f='.'.join(['_'.join([BOUT_CAT.split('.')[-2],'a%i'%n]),'txt'])
-        ccat=stackUtils.secateur(cat,BIN_COL,cutsDict,n)
+        ccat=stackUtils.secateur(cat,cutsDict,n)
         #print cat.shape,ccat.shape
-        #print ccat[:,BIN_COL]
+        #print ccat[:,WEIGHT_COL]
         print 'Minimum flux in catalogue/uJy = %f'%ccat[:,BIN_COL].min()
         #ccat[:,BIN_COL]=ccat[:,45]/numpy.power(ccat[:,47],0.5)
         countUtils.writeCountsFile(f,bins,ccat[:,BIN_COL],SURVEY_AREA,\

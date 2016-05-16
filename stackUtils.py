@@ -124,7 +124,7 @@ def calculateNoiseZones(wvlaf,noiseRanges,SURVEY_NOISE,noisezonesf,maskf=None):
 
 #-------------------------------------------------------------------------------
 
-def secateur(incat,BINCOL,cutsDict,numNoiseZone):
+def secateur(incat,cutsDict,numNoiseZone):
     """
     Make cuts on the catalogue here
     Excise stars - 0, 1, -1
