@@ -108,7 +108,7 @@ def main():
         #print ccat[:,WEIGHT_COL]
         print 'Minimum flux in catalogue/uJy = %f'%ccat[:,BIN_COL].min()
         #ccat[:,BIN_COL]=ccat[:,45]/numpy.power(ccat[:,47],0.5)
-        countUtils.writeCountsFile(f,bins,ccat[:,BIN_COL],SURVEY_AREA,\
+        countUtils.writeCountsFile(f,bins,ccat[:,BIN_COL],noiseAreas[n],\
                                idl_style=idl_s,verbose=False,corrs=CORR_BINS)
         binwidth=1.0*SURVEY_NOISE
         if doPoln:
