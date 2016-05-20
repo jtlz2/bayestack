@@ -334,9 +334,9 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
                    dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
                    dn_by_ds_errs[ibin]/(sqDeg2sr*area),\
                    corrs[ibin],\
-                   round(counts[ibin:].sum()*1.00/area),\
-                   round(numpy.sqrt(counts[ibin:].sum()*1.00/area)),\
-                   round(numpy.sqrt(counts[ibin:].sum()*1.00/area)))
+                   round(counts[ibin:].sum()*1.00), #/area),\
+                   round(numpy.sqrt(counts[ibin:].sum()*1.00)), #/area)),\
+                   round(numpy.sqrt(counts[ibin:].sum()*1.00))) #/area)))
             s.write('%s\n'%line)
             if verbose: print line
         print counts.sum()
