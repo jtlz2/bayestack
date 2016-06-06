@@ -68,7 +68,7 @@ def main():
     # Load the data
     chain=pylab.loadtxt('%s/1-post_equal_weights.dat'%outdir)
 
-    if doRayleigh:
+    if doPoln and doRayleigh:
         rayParams=['C','noise']
         pip=[ip for ip,p in enumerate(expt.parameters) if p in rayParams]
         expt.parameters=rayParams
