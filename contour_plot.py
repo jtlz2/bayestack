@@ -10,12 +10,9 @@ import sys,os
 import numpy
 import pylab
 from scipy import interpolate
-#from lumfunc import *
 import line_profiler
 from utils import *
-#from settings import *
 import matplotlib
-
 from matplotlib.path import Path
 
 
@@ -58,95 +55,6 @@ def findconfidence(H):
 
 #-------------------------------------------------------------------------------
 
-def contour(chain,p,**kwargs):
-    """
-    Original alias for contourSingle
-    """
-    return contourSingle(chain,p,**kwargs)
-
-#-------------------------------------------------------------------------------
-
-def contourSingle(chain,p,**kwargs):
-    """
-    #Given a chain, labels and a list of which parameters to plot, plots the contours
-    # Arguments:
-    # chain=an array of the chain (not using weights, i.e. each row counts only once)
-    # p= a list of integers: the two parameters you want to plot (refers to two columns in the chain)
-    #kwargs:        labels= the labels of the parameters (list of strings)
-    #               col=a tuple of the two colours for the contour plot
-    #               line=boolean whether or not to just do a line contour plot
-    #               outfile='outf.png'
-    """
-
-    # !!!! BEWARE THE BINSIZE --- PLOT IS A STRONG FUNCTION OF THIS
-    binsize=50
-    H,xedges,yedges=numpy.histogram2d(chain[:,p[0]],chain[:,p[1]],bins=(binsize,binsize))
-    
-    x=[]
-    y=[]
-    z=[]
-    for i in range(len(xedges[:-1])):
-        for j in range(len(yedges[:-1])):
-            x.append(xedges[:-1][i])
-            y.append(yedges[:-1][j])
-            z.append(H[i, j])
-
-    SMOOTH=False
-    if SMOOTH:
-        sz=50
-        smth=80e6
-        spl = interpolate.bisplrep(x, y, z,  s=smth)
-        X = numpy.linspace(min(xedges[:-1]), max(xedges[:-1]), sz)
-        Y = numpy.linspace(min(yedges[:-1]), max(yedges[:-1]), sz)
-        Z = interpolate.bisplev(X, Y, spl)
-    else:
-        X=xedges[:-1]
-        Y=yedges[:-1]
-        Z=H
-
-    #I think this is the weird thing I have to do to make the contours work properly
-    X1=numpy.zeros([len(X), len(X)])
-    Y1=numpy.zeros([len(X), len(X)])
-    for i in range(len(X)):
-        X1[ :, i]=X
-        Y1[i, :]=Y
-    X=X1
-    Y=Y1
-    
-    N100,N95,N68 = findconfidence(Z)
-
-    if 'col' in kwargs:
-        col=kwargs['col']
-    else:
-        col =('#a3c0f6','#0057f6') #A pretty blue
-
-    if 'labels' in kwargs:
-        labels=kwargs['labels']
-    else:
-        labels = ['x', 'y']
-
-    pylab.clf()
-
-    if 'line' in kwargs and kwargs['line']==True:
-        pylab.contour(X, Y,Z,levels=[N95,N68,N100],colors=col, linewidth=100)
-    else:
-        pylab.contourf(X, Y,Z,levels=[N95,N68,N100],colors=col)
-    pylab.xlabel(labels[p[0]],fontsize=22)
-    pylab.ylabel(labels[p[1]],fontsize=22)
-
-    
-    if 'outfile' in kwargs:
-        outfile=kwargs['outfile']
-        pylab.savefig(outfile)
-        #pylab.close()
-    else:
-        pylab.show()
-
-    return
-
-#-------------------------------------------------------------------------------
-
-
 def contourTri(chain,**kwargs):
     """
     #Given a chain, labels and a list of which parameters to plot, plots the contours
@@ -169,13 +77,14 @@ def contourTri(chain,**kwargs):
     # Collate the contour-region info
     bundle=chain
 
-
+    # Furniture fiddle factors
     TRUNCATE_C=False
     TRUNCATE_C_LIMIT=2.0e7#1.0e4
     C_COL=1#0
     FONTSIZE=4; ROTATION=60.0
     FIGSIZE=(8.27,11.69); DPI=400
-    AXIS_LABEL_OFFSET=-0.5
+    AXIS_LABEL_OFFSET=-0.3#-0.5
+    #pylab.gcf().subplots_adjust(left=0.2)
 
     # !!!! BEWARE THE BINSIZE --- PLOT IS A STRONG FUNCTION OF THIS
     if 'binsize' in kwargs:
@@ -212,9 +121,22 @@ def contourTri(chain,**kwargs):
     # Start setting up the plot
     ipanel=0; ax={}
     pylab.clf()
+
+    # Set up the bins
+    bins_arr={}
+    log_bins=[labels.index('C')]
+    for a in p:
+        bins_arr[a]=numpy.linspace(chain[:,a].min(),chain[:,a].max(),binsize)
+        if a in log_bins:
+            bins_arr[a]=numpy.logspace(numpy.log10(chain[:,a].min()),\
+                                       numpy.log10(chain[:,a].max()),binsize)
+
+    # Set up the 2-D panels
     for panel in pairs:
-        ipanel+=1        
-        H,xedges,yedges=numpy.histogram2d(chain[:,panel[0]],chain[:,panel[1]],bins=(binsize,binsize))
+        ipanel+=1
+        #bin_spec=(binsize,binsize)
+        bin_spec=(bins_arr[panel[0]],bins_arr[panel[1]])
+        H,xedges,yedges=numpy.histogram2d(chain[:,panel[0]],chain[:,panel[1]],bins=bin_spec)
 
         x=[]
         y=[]
@@ -338,14 +260,20 @@ def contourTri(chain,**kwargs):
             pylab.xlim(xlo,xhi)
             pylab.ylim(ylo,yhi)
 
+        # Handle log bins
+        if panel[0] in log_bins:
+            ax[ipanel].set_xscale('log')
+        elif panel[1] in log_bins:
+            ax[ipanel].set_yscale('log')
+
         # Some housekeeping
         pylab.xticks(fontsize=FONTSIZE,rotation=ROTATION)
         pylab.yticks(fontsize=FONTSIZE,rotation=0)
 
     # Set up the 1-D plots on the diagonal
     for iparam in range(nparams):
-        #        b=numpy.histogram(R,bins=bins)
-        J,edges=numpy.histogram(chain[:,iparam],density=True,bins=binsize)
+        bin_spec=bins_arr[iparam]
+        J,edges=numpy.histogram(chain[:,iparam],density=True,bins=bin_spec)
         ax1d=pylab.subplot2grid((nparams,nparams),(iparam,iparam))
         pylab.plot(edges[:-1],J,color='k')
         #print iparam,nparams,labels[iparam]
@@ -379,7 +307,10 @@ def contourTri(chain,**kwargs):
         ax1d.get_yaxis().set_ticklabels([])
         pylab.xticks(fontsize=FONTSIZE,rotation=ROTATION)
         pylab.yticks(fontsize=FONTSIZE)
-        #if iparam == 0: ax1d.set_xscale('log')
+
+        # Handle log bins
+        if iparam in log_bins:
+            ax1d.set_xscale('log')
     #ax1d.set_xscale('linear')
 
     #axinfo=pylab.subplot2grid((nparams,nparams),(0,nparams-3))
@@ -389,7 +320,7 @@ def contourTri(chain,**kwargs):
     pylab.axis('off')
     pylab.title(title)
 
-    # Plot the truth - this needs to be generalized for non-lumfunc
+    # Plot the truth - this needs to be generalized
     if 'truth' in kwargs and kwargs['truth'] is not None:
         truth=kwargs['truth']
         note=['nparams %i\n truth:' % nparams]
@@ -397,60 +328,6 @@ def contourTri(chain,**kwargs):
             notelet='%s = %4.2f' % (k,v)
             note.append(notelet)
         pylab.text(0,0,'\n'.join(note))
-
-        if 'reconstruct' in kwargs:
-            reconstruct=kwargs['reconstruct']
-            axrecon=pylab.subplot2grid((nparams,nparams),(0,nparams-2),\
-                                       rowspan=2,colspan=2)
-            axrecon.set_xscale('log')
-            axrecon.set_yscale('log')
-            pylab.xticks(fontsize=FONTSIZE,rotation=60)
-            pylab.yticks(fontsize=FONTSIZE)
-            median_bins=medianArray(reconstruct[0])
-            dnds=calculateDnByDs(median_bins,reconstruct[1])
-            dndsN=calculateDnByDs(median_bins,ksNoisy)
-            print median_bins
-            print dnds
-            print truth.items()
-            recon=numpy.zeros(numpy.shape(median_bins))
-            post=numpy.zeros(numpy.shape(median_bins))
-            print '# i Smedian ks dnds dndsS2.5 NRecon dndsRecon dndsS2.5Recon log10dnds log10dndsR diffR dndsN'
-            if nparams == 4:
-                (C,alpha,Smin,Smax)\
-                  =(truth['C'],truth['alpha'],truth['Smin'],truth['Smax'])
-                area=10.0 # Hack
-                # Reconstruct powerLaw points given truth
-                for i in range(len(median_bins)):
-                    recon[i]=powerLawFuncS(median_bins[i],\
-                                                   C,alpha,Smin,Smax,area)
-                    post[i]=powerLawFuncS(median_bins[i],\
-                                                  9.8,-0.63,0.04,14.1,area)
-                #recon *= lumfunc.ksRaw
-                #dndsR=lumfunc.calculateDnByDs(median_bins,recon)
-                # **** XXXX Where does the 1000 come from!? :(( XXXX
-                dndsR=recon*1000.0
-                dndsP=post*1000.0
-                # cols: i Smedian ks dnds dndsS2.5 NRecon dndsRecon
-                # dndsS2.5Recon log10dnds log10dndsR diffR dndsN
-                for i in range(len(median_bins)):
-                    print '%i %f %i %i %i %i %i %i %f %f %i %i' % (i,median_bins[i],\
-                                                  reconstruct[-1][i],dnds[i],\
-                      dnds[i]*median_bins[i]**2.5,recon[i],dndsR[i],\
-                      dndsR[i]*median_bins[i]**2.5,numpy.log10(dnds[i]),\
-                        numpy.log10(dndsR[i]),int(dndsR[i]-dnds[i]),dndsN[i])
-
-                      #print recon
-            pylab.xlim(reconstruct[0][0],reconstruct[0][-1])
-            #pylab.ylim(1.0e2,1.0e8)
-
-            #pylab.plot(median_bins,dnds*numpy.power(median_bins,2.5)*lumfunc.sqDeg2sr,'+')
-            power=2.5
-            pylab.plot(median_bins,dnds*sqDeg2sr*numpy.power(median_bins,power),'+')
-            pylab.plot(median_bins,dndsR*sqDeg2sr*numpy.power(median_bins,power),'-')
-            pylab.plot(median_bins,dndsN*sqDeg2sr*numpy.power(median_bins,power),'+')
-            pylab.plot(median_bins,dndsP*sqDeg2sr*numpy.power(median_bins,power),'-')
-            #pylab.plot(dnds,dndsR*numpy.power(median_bins,1.0))
-            #b=lumfunc.simtable(lumfunc.bins,a=-1.5,seed=1234,noise=10.0,dump=False)
 
     if 'outfile' in kwargs:
         outfile=kwargs['outfile']
