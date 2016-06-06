@@ -90,7 +90,7 @@ def contourTri(chain,**kwargs):
         furniture={'TRUNCATE_C':False,'TRUNCATE_C_LIMIT':2.0e7,\
                'C_COL':labels.index('C'),'FONTSIZE':4,'ROTATION':60.0,\
                'FIGSIZE':(8.27,11.69), 'DPI':400,\
-               'AXIS_LABEL_OFFSET':-0.3}
+               'AXIS_LABEL_OFFSET':-0.3,'LOG_BINS':[labels.index('C')]}
     TRUNCATE_C=furniture['TRUNCATE_C']
     TRUNCATE_C_LIMIT=furniture['TRUNCATE_C_LIMIT']
     C_COL=furniture['C_COL']
@@ -99,6 +99,7 @@ def contourTri(chain,**kwargs):
     FIGSIZE=furniture['FIGSIZE']
     DPI=furniture['DPI']
     AXIS_LABEL_OFFSET=furniture['AXIS_LABEL_OFFSET']
+    log_bins=furniture['LOG_BINS']
     #pylab.gcf().subplots_adjust(left=0.2)
 
     # !!!! BEWARE THE BINSIZE --- PLOT IS A STRONG FUNCTION OF THIS
@@ -133,7 +134,7 @@ def contourTri(chain,**kwargs):
 
     # Set up the bins
     bins_arr={}
-    log_bins=[labels.index('C')]
+    #log_bins=[labels.index('C')]
     for a in p:
         bins_arr[a]=numpy.linspace(chain[:,a].min(),chain[:,a].max(),binsize)
         if a in log_bins:
