@@ -77,13 +77,28 @@ def contourTri(chain,**kwargs):
     # Collate the contour-region info
     bundle=chain
 
+    if 'labels' in kwargs:
+        labels=kwargs['labels']
+        parameters=labels # How did this ever work without??
+    else:
+        labels = ['x', 'y']
+
     # Furniture fiddle factors
-    TRUNCATE_C=False
-    TRUNCATE_C_LIMIT=2.0e7#1.0e4
-    C_COL=1#0
-    FONTSIZE=4; ROTATION=60.0
-    FIGSIZE=(8.27,11.69); DPI=400
-    AXIS_LABEL_OFFSET=-0.3#-0.5
+    if 'furniture' in kwargs:
+        furniture=kwargs['furniture']
+    else:
+        furniture={'TRUNCATE_C':False,'TRUNCATE_C_LIMIT':2.0e7,\
+               'C_COL':labels.index('C'),'FONTSIZE':4,'ROTATION':60.0,\
+               'FIGSIZE':(8.27,11.69), 'DPI':400,\
+               'AXIS_LABEL_OFFSET':-0.3}
+    TRUNCATE_C=furniture['TRUNCATE_C']
+    TRUNCATE_C_LIMIT=furniture['TRUNCATE_C_LIMIT']
+    C_COL=furniture['C_COL']
+    FONTSIZE=furniture['FONTSIZE']
+    ROTATION=furniture['ROTATION']
+    FIGSIZE=furniture['FIGSIZE']
+    DPI=furniture['DPI']
+    AXIS_LABEL_OFFSET=furniture['AXIS_LABEL_OFFSET']
     #pylab.gcf().subplots_adjust(left=0.2)
 
     # !!!! BEWARE THE BINSIZE --- PLOT IS A STRONG FUNCTION OF THIS
@@ -92,12 +107,6 @@ def contourTri(chain,**kwargs):
     else:
         binsize=50
     print 'Using binsize = %i' % binsize
-
-    if 'labels' in kwargs:
-        labels=kwargs['labels']
-        parameters=labels # How did this ever work without??
-    else:
-        labels = ['x', 'y']
 
     if 'ranges' in kwargs:
         ranges=kwargs['ranges']

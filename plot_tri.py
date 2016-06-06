@@ -68,6 +68,12 @@ def main():
     # Load the data
     chain=pylab.loadtxt('%s/1-post_equal_weights.dat'%outdir)
 
+    if doRayleigh:
+        rayParams=['C','noise']
+        pip=[ip for ip,p in enumerate(expt.parameters) if p in rayParams]
+        expt.parameters=rayParams
+        chain=chain[:,pip]
+
     # Local plot
     line=True
     autoscale=False
@@ -86,14 +92,19 @@ def main():
     title=''
     truth=None
     extn='pdf'
-    binsize=40
+    binsize=25
+    furniture={'TRUNCATE_C':False,'TRUNCATE_C_LIMIT':2.0e7,\
+               'C_COL':expt.parameters.index('C'),'FONTSIZE':4,\
+               'ROTATION':60.0,'FIGSIZE':(8.27,11.69), 'DPI':400,\
+               'AXIS_LABEL_OFFSET':-0.3}
     bundle=contour_plot.contourTri(chain,\
                             line=line,\
                             outfile='%s/triangle-%s-publn.%s'%(outdir,run_num,extn),\
                             labels=expt.parameters,\
                             ranges=plotRanges,truth=truth,\
                             autoscale=autoscale,title=title,\
-                            binsize=binsize,labelDict=labelDict)
+                            binsize=binsize,labelDict=labelDict,\
+                            furniture=furniture)
 
     stats=fetchStats(outdir,expt.parameters,plotTruth)
     printLaTeX(expt.parameters,stats,dump=outdir)
