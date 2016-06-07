@@ -312,15 +312,16 @@ def contourTri(chain,**kwargs):
         if not autoscale:
             xlo,xhi=ranges[parameters[iparam]]
             pylab.xlim(xlo,xhi)
+
+        # Handle log bins
+        if iparam in log_bins:
+            ax1d.set_xscale('log')
         if iparam < (nparams-1):
             ax1d.get_xaxis().set_ticklabels([])
         ax1d.get_yaxis().set_ticklabels([])
         pylab.xticks(fontsize=FONTSIZE,rotation=ROTATION)
         pylab.yticks(fontsize=FONTSIZE)
 
-        # Handle log bins
-        if iparam in log_bins:
-            ax1d.set_xscale('log')
     #ax1d.set_xscale('linear')
 
     #axinfo=pylab.subplot2grid((nparams,nparams),(0,nparams-3))
