@@ -231,12 +231,6 @@ def contourTri(chain,**kwargs):
         else:
             labelDict=dict((name,name) for name in parameters)
 
-        # Handle log bins
-        if panel[0] in log_bins:
-            ax[ipanel].set_xscale('log')
-        elif panel[1] in log_bins:
-            ax[ipanel].set_yscale('log')
-
         # Set the axis labels only for left and bottom:
         #print ax[ipanel].get_xlabel(),ax[ipanel].get_ylabel()
         if panel[1] == (nparams-1):
@@ -244,10 +238,10 @@ def contourTri(chain,**kwargs):
             ax[ipanel].xaxis.set_label_coords(0.5,AXIS_LABEL_OFFSET) # align axis labels
             x_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
             ax[ipanel].xaxis.set_major_formatter(x_formatter)
-
         else:
             ax[ipanel].set_xlabel('')
             ax[ipanel].get_xaxis().set_ticklabels([])
+
         if panel[0] == 0:
             ax[ipanel].set_ylabel(labelDict[labels[panel[1]]],fontsize=8)
             ax[ipanel].yaxis.set_label_coords(AXIS_LABEL_OFFSET,0.5) # align axis labels
@@ -256,6 +250,14 @@ def contourTri(chain,**kwargs):
         else:
             ax[ipanel].set_ylabel('')
             ax[ipanel].get_yaxis().set_ticklabels([])
+
+        # Handle log bins
+        if panel[0] in log_bins:
+            ax[ipanel].set_xscale('log')
+        elif panel[1] in log_bins:
+            ax[ipanel].set_yscale('log')
+            if panel[0] != 0:
+                ax[ipanel].get_yaxis().set_ticklabels([])
 
         # Set plot limits
         if autoscale:
