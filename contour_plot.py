@@ -142,6 +142,7 @@ def contourTri(chain,**kwargs):
                                        numpy.log10(chain[:,a].max()),binsize)
 
     # Set up the 2-D panels
+    lims={}
     for panel in pairs:
         ipanel+=1
         #bin_spec=(binsize,binsize)
@@ -278,6 +279,11 @@ def contourTri(chain,**kwargs):
             pylab.xlim(xlo,xhi)
             pylab.ylim(ylo,yhi)
 
+        # Save the axis limits (tetris-style)
+        lims[panel[0]]=ax[ipanel].xaxis.get_data_interval()
+        if panel[1]==nparams-1:
+            lims[panel[1]]=ax[ipanel].yaxis.get_data_interval()
+
         # Some housekeeping
         pylab.xticks(fontsize=FONTSIZE,rotation=ROTATION)
         pylab.yticks(fontsize=FONTSIZE,rotation=0)
@@ -311,6 +317,9 @@ def contourTri(chain,**kwargs):
                     pylab.xlim(xxlo,TRUNCATE_C_LIMIT)
                 #ax1d.set_xscale('log')
                 autoscale=True
+            print lims
+            xlo,xhi=lims[iparam]
+            pylab.xlim(xlo,xhi)
         if not autoscale:
             xlo,xhi=ranges[parameters[iparam]]
             pylab.xlim(xlo,xhi)
