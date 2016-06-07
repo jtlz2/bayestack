@@ -103,6 +103,30 @@ def strictly_increasing(L):
 #-------------------------------------------------------------------------------
 
 @profile
+def calculateReducedChisq(D,M,Sigma,ndof=1):
+
+    """
+    """
+    return numpy.power((D-M)/Sigma,2).sum() / float(ndof)
+
+#-------------------------------------------------------------------------------
+
+@profile
+def poissonLhoodMulti3(dataDict,realisationDict,silent=True):
+    loglike=0.0
+    for df in dataDict.keys():
+        data=dataDict[df]; realisation=realisationDict[df]
+        kk=data[numpy.where(realisation > 0)];
+        iii=realisation[numpy.where(realisation > 0)]
+        loglike += (kk*numpy.log(iii) + kk - kk*numpy.log(kk) - iii).sum()
+        if not silent:
+            for i in range(len(data)):
+                print i,data[i],realisation[i]
+    return loglike
+
+#-------------------------------------------------------------------------------
+
+@profile
 def poissonLhoodMulti2(dataObject,realisationObject,silent=True):
     #print dataObject.zsliceData
     #print realisationObject
