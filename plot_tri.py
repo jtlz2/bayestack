@@ -96,7 +96,8 @@ def main():
     furniture={'TRUNCATE_C':False,'TRUNCATE_C_LIMIT':2.0e7,\
                'C_COL':expt.parameters.index('C'),'FONTSIZE':4,\
                'ROTATION':60.0,'FIGSIZE':(8.27,11.69), 'DPI':400,\
-               'AXIS_LABEL_OFFSET':-0.3,'LOG_BINS':[expt.parameters.index('C')]}
+               'AXIS_LABEL_OFFSET':-0.3,'LOG_BINS':[expt.parameters.index('C')],\
+               'PADDING':0.05}
     bundle=contour_plot.contourTri(chain,\
                             line=line,\
                             outfile='%s/triangle-%s-publn.%s'%(outdir,run_num,extn),\
