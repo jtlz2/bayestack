@@ -317,7 +317,6 @@ def contourTri(chain,**kwargs):
                     pylab.xlim(xxlo,TRUNCATE_C_LIMIT)
                 #ax1d.set_xscale('log')
                 autoscale=True
-            print lims
             xlo,xhi=lims[iparam]
             pylab.xlim(xlo,xhi)
         if not autoscale:
