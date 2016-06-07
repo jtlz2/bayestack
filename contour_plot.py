@@ -231,6 +231,12 @@ def contourTri(chain,**kwargs):
         else:
             labelDict=dict((name,name) for name in parameters)
 
+        # Handle log bins
+        if panel[0] in log_bins:
+            ax[ipanel].set_xscale('log')
+        elif panel[1] in log_bins:
+            ax[ipanel].set_yscale('log')
+
         # Set the axis labels only for left and bottom:
         #print ax[ipanel].get_xlabel(),ax[ipanel].get_ylabel()
         if panel[1] == (nparams-1):
@@ -269,12 +275,6 @@ def contourTri(chain,**kwargs):
             yhi=ranges[labels[panel[1]]][1]
             pylab.xlim(xlo,xhi)
             pylab.ylim(ylo,yhi)
-
-        # Handle log bins
-        if panel[0] in log_bins:
-            ax[ipanel].set_xscale('log')
-        elif panel[1] in log_bins:
-            ax[ipanel].set_yscale('log')
 
         # Some housekeeping
         pylab.xticks(fontsize=FONTSIZE,rotation=ROTATION)
