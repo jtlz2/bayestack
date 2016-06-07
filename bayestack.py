@@ -16,8 +16,12 @@ from utils import touch,remark,remarks,dump_variable_values
 
 from mpi4py import MPI
 import dill
-MPI._p_pickle.dumps = dill.dumps
-MPI._p_pickle.loads = dill.loads
+try:
+    MPI.pickle.dumps = dill.dumps
+    MPI.pickle.loads = dill.loads
+except:
+    MPI._p_pickle.dumps = dill.dumps
+    MPI._p_pickle.loads = dill.loads
 
 # Need to change this so it's master only, i.e. incorporate in main()
 __name_cached=__name__
@@ -34,7 +38,11 @@ def main():
 
     settingsf=param_file.split('.')[-2]
     expt=countModel(modelFamily,nlaws,settingsf,[dataset],floatNoise,\
-                    doPoln=doPoln,doRayleigh=doRayleigh,doRedshiftSlices=doRedshiftSlices)
+                    doPoln=doPoln,doRayleigh=doRayleigh,\
+                    doRedshiftSlices=doRedshiftSlices)
+
+    #print expt.__dict__
+    #print expt.survey.__dict__
 
     #import bayestackClasses
     #x=bayestackClasses.dataSetup('sdss',zmanifestf,redshiftSlices=True)
@@ -120,13 +128,23 @@ def main():
         remarks(log,notes)
         notes='nsrc=%i'%expt.nsrc
         remark(log,notes)
-        for ibin in xrange(expt.nbins):
-            try:
-                line='%i %f %f %f'%(ibin+1,expt.bins[ibin],expt.bins[ibin+1],expt.data[ibin])
-            except IndexError:
-                print "Probably your binstyle doesn't match the datafile bins"
-                sys.exit(0)
-            remark(log,line)
+        if not expt.survey.multi:
+            for ibin in xrange(expt.nbins):
+                try:
+                    line='%i %f %f %f'%(ibin+1,expt.bins[ibin],expt.bins[ibin+1],expt.data[ibin])
+                except IndexError:
+                    print "Probably your binstyle doesn't match the datafile bins"
+                    sys.exit(0)
+                remark(log,line)
+        else:
+            for df in expt.survey.datafiles:
+                for ibin in xrange(expt.fnbins[df]):
+                    try:
+                        line='%i %f %f %f'%(ibin+1,expt.fbins[df][ibin],expt.fbins[df][ibin+1],expt.fdata[df][ibin])
+                    except IndexError:
+                        print "Probably your binstyle doesn't match the datafile bins"
+                        sys.exit(0)
+                    remark(log,line)
 
 
     # Run MultiNest
