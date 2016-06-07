@@ -255,6 +255,8 @@ def contourTri(chain,**kwargs):
         # Handle log bins
         if panel[0] in log_bins:
             ax[ipanel].set_xscale('log')
+            if panel[1] != 0:
+                ax[ipanel].get_xaxis().set_ticklabels([])
         elif panel[1] in log_bins:
             ax[ipanel].set_yscale('log')
             if panel[0] != 0:
