@@ -298,10 +298,9 @@ def contourTri(chain,**kwargs):
     iparam=0
     for iparam in range(nparams):
         bin_spec=bins_arr[iparam]
-        J,edges=numpy.histogram(chain[:,iparam],density=True,bins=bin_spec)
+        J,edges=numpy.histogram(chain[:,iparam],bins=bin_spec,density=False)
         ax1d=pylab.subplot2grid((nparams,nparams),(iparam,iparam))
         pylab.plot(edges[:-1],J,color='k')
-        #print iparam,nparams,labels[iparam]
 
         if 'truth' in kwargs and kwargs['truth'] is not None:
             truth=kwargs['truth']
