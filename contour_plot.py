@@ -131,29 +131,28 @@ def contourTri(chain,**kwargs):
     nparams = len(p)
 
     # Start setting up the plot
-    ipanel=0; ax={}
+    ipanel=-1; ax={}
     pylab.clf()
 
     # Set up the bins
     bins_arr={}
     #log_bins=[labels.index('C')]
     for a in p:
-        bins_arr[a]=numpy.linspace(chain[:,a].min(),chain[:,a].max(),binsize)
         if a in log_bins:
             bins_arr[a]=numpy.logspace(numpy.log10(chain[:,a].min()),\
                                        numpy.log10(chain[:,a].max()),binsize)
+        else:
+            bins_arr[a]=numpy.linspace(chain[:,a].min(),chain[:,a].max(),binsize)
 
     fig=pylab.figure()
     fig.subplots_adjust(hspace=PADDING,wspace=PADDING)
 
     # Set up the 2-D panels
-    lims={}
+    lims={}; H={}
     for panel in pairs:
         ipanel+=1
-        #bin_spec=(binsize,binsize)
-        bin_spec=(bins_arr[panel[0]],bins_arr[panel[1]])
+        bin_spec=[bins_arr[panel[0]],bins_arr[panel[1]]]
         H,xedges,yedges=numpy.histogram2d(chain[:,panel[0]],chain[:,panel[1]],bins=bin_spec)
-
         x=[]
         y=[]
         z=[]
@@ -175,7 +174,7 @@ def contourTri(chain,**kwargs):
             X=xedges[:-1]
             Y=yedges[:-1]
             Z=H
-    
+
         #I think this is the weird thing I have to do to make the contours work properly
         X1=numpy.zeros([len(X), len(X)])
         Y1=numpy.zeros([len(X), len(X)])
@@ -196,9 +195,9 @@ def contourTri(chain,**kwargs):
             #col =('#FFFFFF','#a3c0f6','#0057f6') #A pretty blue (pale then dark)
             col =('#a3c0f6','#0057f6')
         #ccol=[x for y, x in sorted(zip(col, [N95,N68,N100]))]
+
         # Now construct the subplot
         ax[ipanel]=pylab.subplot2grid((nparams,nparams),panel[::-1]) # Reverse quadrant
-
         #levels=[N68,N95,N100,numpy.inf].sort()
         # Fix levels https://github.com/dfm/corner.py/pull/73
         levelshiftfix=1.0e-4
@@ -209,11 +208,11 @@ def contourTri(chain,**kwargs):
         levels.sort()
         #print levels
         #print col
-        if 'line' in kwargs and kwargs['line']==True:
-            CS=pylab.contour(X,Y,Z,levels=levels,colors=col,linewidth=100)
-        else:
-            CS=pylab.contourf(X,Y,Z,levels=levels,colors=col)
 
+        if 'line' in kwargs and kwargs['line']==True:
+            CS=ax[ipanel].contour(X,Y,Z,levels=levels,colors=col,linewidth=100)
+        else:
+            CS=ax[ipanel].contourf(X,Y,Z,levels=levels,colors=col)
 
         # Identify points lying within 68 percent contour region
         #print ipanel,bundle.shape,chain.shape
@@ -288,7 +287,7 @@ def contourTri(chain,**kwargs):
 
         # Save the axis limits (tetris-style)
         lims[panel[0]]=ax[ipanel].xaxis.get_data_interval()
-        if panel[1]==nparams-1:
+        if panel[1]==nparams-1:            
             lims[panel[1]]=ax[ipanel].yaxis.get_data_interval()
 
         # Some housekeeping
@@ -296,6 +295,7 @@ def contourTri(chain,**kwargs):
         pylab.yticks(fontsize=FONTSIZE,rotation=0)
 
     # Set up the 1-D plots on the diagonal
+    iparam=0
     for iparam in range(nparams):
         bin_spec=bins_arr[iparam]
         J,edges=numpy.histogram(chain[:,iparam],density=True,bins=bin_spec)
@@ -310,7 +310,7 @@ def contourTri(chain,**kwargs):
         if iparam == 0:
             ax1d.set_ylabel(labelDict[labels[iparam]],fontsize=8)
             ax1d.yaxis.set_label_coords(AXIS_LABEL_OFFSET,0.5) # align axis labels
-        if iparam == (nparams-1):
+        elif iparam == (nparams-1):
             ax1d.set_xlabel(labelDict[labels[iparam]],fontsize=8)
             ax1d.xaxis.set_label_coords(0.5,AXIS_LABEL_OFFSET) # align axis labels
 
