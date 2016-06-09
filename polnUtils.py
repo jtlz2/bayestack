@@ -134,11 +134,13 @@ def rices(p0,sigma_QU,Pbinlow,Pbinhigh,doRayleigh=False):
     """
     This is the Rice/Rayleigh equivalent of the "erfs" variable of old
     """
+    fac=0.5
     if doRayleigh:
-        return rayleigh(scale=sigma_QU).cdf(Pbinhigh)-rayleigh(scale=sigma_QU).cdf(Pbinlow)
+        return fac*(rayleigh(scale=sigma_QU).cdf(Pbinhigh)-rayleigh(scale=sigma_QU).cdf(Pbinlow))
     else:
-        return rice(p0/sigma_QU,scale=sigma_QU).cdf(Pbinhigh)\
-               - rice(p0/sigma_QU,scale=sigma_QU).cdf(Pbinlow)
+        #fac=1.0#0.5
+        return fac*(rice(p0/sigma_QU,scale=sigma_QU).cdf(Pbinhigh)\
+               - rice(p0/sigma_QU,scale=sigma_QU).cdf(Pbinlow))
 
 #-------------------------------------------------------------------------------
 
@@ -167,8 +169,9 @@ def IP(dNdP0,params,paramsList,Pbinlow,Pbinhigh,inta=None,area=None,doRayleigh=F
     sigma_QU=params[paramsList.index('noise')]
     if doRayleigh: # Experimental
         C=params[paramsList.index('C')]
-        I=C*integrate.quad(lambda p0:rices(p0,sigma_QU/1.0e6,Pbinlow/1.0e6,Pbinhigh/1.0e6,\
-                                        doRayleigh=doRayleigh),Pmin/1.0e6,Pmax/1.0e6)[0]
+        I=C*area*0.5*(rayleigh(scale=sigma_QU).cdf(Pbinhigh)-rayleigh(scale=sigma_QU).cdf(Pbinlow))
+        #I=C*integrate.quad(lambda p0:rices(p0,sigma_QU/1.0e6,Pbinlow/1.0e6,Pbinhigh/1.0e6,\
+        #                                doRayleigh=doRayleigh),Pmin/1.0e6,Pmax/1.0e6)[0]
         #print C,I
         return I
     else:
