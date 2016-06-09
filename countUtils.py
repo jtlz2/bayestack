@@ -291,7 +291,7 @@ def N2C(function,deviates,Smin,Smax,numbins):
 def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
                     version=2,verbose=None,corrs=None):
     """
-    Write an array of fluxes to a binned counts file
+    Write an array of fluxes in muJy to a binned counts file
     """
 
     # Test version
@@ -301,7 +301,7 @@ def writeCountsFile(output,bins,fluxes,area,idl_style=None,\
     counts=numpy.histogram(fluxes,bins=bins)[0]
     N=len(fluxes)
     print '-> %i/%i objects observed in total (after binning)\n' % (counts.sum(),N)
-    
+
     # Calculate differential counts
     idl_style=False
     dn_by_ds,dn_by_ds_eucl,dn_by_ds_errs,dn_by_ds_b,dn_by_ds_b_errs=\
