@@ -1,0 +1,103 @@
+what,kind,bundleId,bundleVersion,description,time
+processors,sysinfo,,,"2",1462142522335
+java.runtime.name,sysinfo,,,"OpenJDK Runtime Environment",1462142522335
+java.runtime.version,sysinfo,,,"1.7.0_95-b00",1462142522335
+java.specification.name,sysinfo,,,"Java Platform API Specification",1462142522335
+java.specification.vendor,sysinfo,,,"Oracle Corporation",1462142522335
+java.specification.version,sysinfo,,,"1.7",1462142522335
+java.vendor,sysinfo,,,"Oracle Corporation",1462142522335
+java.version,sysinfo,,,"1.7.0_95",1462142522335
+java.vm.info,sysinfo,,,"mixed mode, sharing",1462142522335
+java.vm.name,sysinfo,,,"OpenJDK Client VM",1462142522335
+java.vm.specification.name,sysinfo,,,"Java Virtual Machine Specification",1462142522335
+java.vm.specification.vendor,sysinfo,,,"Oracle Corporation",1462142522335
+java.vm.specification.version,sysinfo,,,"1.7",1462142522335
+java.vm.vendor,sysinfo,,,"Oracle Corporation",1462142522335
+java.vm.version,sysinfo,,,"24.95-b01",1462142522335
+deactivated,workbench,org.eclipse.ui.workbench,3.7.0.I20110519-0100,"",1462142526270
+closed,workbench,org.eclipse.ui.workbench,3.7.0.I20110519-0100,"",1462142534060
+started,bundle,org.eclipse.compare.core,3.5.200.I20110208-0800,"org.eclipse.compare.core",1462142534483
+started,bundle,org.eclipse.compare,3.5.201.R37x_v20110817-0800,"org.eclipse.compare",1462142534488
+stopped,bundle,org.eclipse.linuxtools.valgrind.massif,0.8.1.201108301805,"org.eclipse.linuxtools.valgrind.massif",1462142534663
+stopped,bundle,org.eclipse.birt.chart.device.svg,3.7.1.v20110905,"org.eclipse.birt.chart.device.svg",1462142534664
+stopped,bundle,org.eclipse.birt.chart.device.extension,3.7.1.v20110905,"org.eclipse.birt.chart.device.extension",1462142534664
+stopped,bundle,org.eclipse.birt.chart.device.swt,3.7.1.v20110905,"org.eclipse.birt.chart.device.swt",1462142534665
+stopped,bundle,org.eclipse.birt.chart.engine.extension,3.7.1.v20110905,"org.eclipse.birt.chart.engine.extension",1462142534666
+stopped,bundle,org.eclipse.linuxtools.gcov,4.1.1.201108301805,"org.eclipse.linuxtools.gcov",1462142534667
+stopped,bundle,org.eclipse.linuxtools.gprof,4.0.0.201108301805,"org.eclipse.linuxtools.gprof",1462142534668
+stopped,bundle,org.eclipse.linuxtools.dataviewers.charts,4.1.0.201108301805,"org.eclipse.linuxtools.dataviewers.charts",1462142534668
+stopped,bundle,org.eclipse.birt.chart.ui,3.7.1.v20110905,"org.eclipse.birt.chart.ui",1462142534669
+stopped,bundle,org.eclipse.linuxtools.systemtap.ui.dashboardextension,0.3.0.201108301805,"org.eclipse.linuxtools.systemtap.ui.dashboardextension",1462142534670
+stopped,bundle,org.eclipse.linuxtools.systemtap.ui.dashboard,0.3.0.201108301805,"org.eclipse.linuxtools.systemtap.ui.dashboard",1462142534670
+stopped,bundle,org.eclipse.linuxtools.systemtap.ui.graphicalrun,0.3.0.201108301805,"org.eclipse.linuxtools.systemtap.ui.graphicalrun",1462142534671
+stopped,bundle,org.eclipse.linuxtools.systemtap.ui.ide,0.3.0.201108301805,"org.eclipse.linuxtools.systemtap.ui.ide",1462142534671
+stopped,bundle,org.eclipse.linuxtools.systemtap.ui.graphing,0.3.0.201108301805,"org.eclipse.linuxtools.systemtap.ui.graphing",1462142534672
+stopped,bundle,org.eclipse.linuxtools.systemtap.ui.graphingapi.ui,0.3.0.201108301805,"org.eclipse.linuxtools.systemtap.ui.graphingapi.ui",1462142534676
+stopped,bundle,org.eclipse.birt.chart.engine,3.7.1.v20110905,"org.eclipse.birt.chart.engine",1462142534676
+stopped,bundle,org.eclipse.birt.core.ui,3.7.1.v20110905,"org.eclipse.birt.core.ui",1462142534677
+stopped,bundle,org.eclipse.birt.data.aggregation,3.7.1.v20110905,"org.eclipse.birt.data.aggregation",1462142534677
+stopped,bundle,org.eclipse.birt.data,3.7.1.v20110905,"org.eclipse.birt.data",1462142534678
+stopped,bundle,org.eclipse.birt.core,3.7.1.v20110905,"org.eclipse.birt.core",1462142534678
+stopped,bundle,org.eclipse.cdt.build.crossgcc,1.0.0.201109151620,"org.eclipse.cdt.build.crossgcc",1462142534678
+stopped,bundle,org.eclipse.cdt.codan.checkers.ui,1.0.0.201109151620,"org.eclipse.cdt.codan.checkers.ui",1462142534679
+stopped,bundle,org.eclipse.cdt.codan.checkers,1.0.0.201109151620,"org.eclipse.cdt.codan.checkers",1462142534679
+stopped,bundle,org.eclipse.cdt.codan.ui.cxx,2.0.0.201109151620,"org.eclipse.cdt.codan.ui.cxx",1462142534679
+stopped,bundle,org.eclipse.cdt.codan.core.cxx,1.0.0.201109151620,"org.eclipse.cdt.codan.core.cxx",1462142534679
+stopped,bundle,org.eclipse.cdt.launch.remote,2.3.0.201109151620,"org.eclipse.cdt.launch.remote",1462142534680
+stopped,bundle,org.eclipse.cdt.debug.mi.ui,6.1.0.201109151620,"org.eclipse.cdt.debug.mi.ui",1462142534681
+stopped,bundle,org.eclipse.cdt.debug.mi.core,7.1.1.201109151620,"org.eclipse.cdt.debug.mi.core",1462142534686
+stopped,bundle,org.eclipse.cdt.debug.ui.memory.memorybrowser,1.2.100.201109151620,"org.eclipse.cdt.debug.ui.memory.memorybrowser",1462142534687
+stopped,bundle,org.eclipse.cdt.debug.ui.memory.search,1.2.0.201109151620,"org.eclipse.cdt.debug.ui.memory.search",1462142534687
+stopped,bundle,org.eclipse.cdt.dsf.gdb.ui,2.2.1.201109151620,"org.eclipse.cdt.dsf.gdb.ui",1462142534688
+stopped,bundle,org.eclipse.cdt.dsf.ui,2.2.0.201109151620,"org.eclipse.cdt.dsf.ui",1462142534689
+stopped,bundle,org.eclipse.cdt.gdb.ui,7.0.0.201109151620,"org.eclipse.cdt.gdb.ui",1462142534690
+stopped,bundle,org.eclipse.cdt.dsf.gdb,4.0.1.201109151620,"org.eclipse.cdt.dsf.gdb",1462142534691
+stopped,bundle,org.eclipse.linuxtools.callgraph.launch,0.0.1.201108301805,"org.eclipse.linuxtools.callgraph.launch",1462142534691
+stopped,bundle,org.eclipse.linuxtools.oprofile.launch,0.3.1.201108301805,"org.eclipse.linuxtools.oprofile.launch",1462142534693
+stopped,bundle,org.eclipse.linuxtools.valgrind.cachegrind,0.8.1.201108301805,"org.eclipse.linuxtools.valgrind.cachegrind",1462142534703
+stopped,bundle,org.eclipse.linuxtools.valgrind.helgrind,0.8.1.201108301805,"org.eclipse.linuxtools.valgrind.helgrind",1462142534705
+stopped,bundle,org.eclipse.linuxtools.valgrind.memcheck,0.8.1.201108301805,"org.eclipse.linuxtools.valgrind.memcheck",1462142534707
+stopped,bundle,org.eclipse.linuxtools.valgrind.launch,0.8.1.201108301805,"org.eclipse.linuxtools.valgrind.launch",1462142534707
+stopped,bundle,org.eclipse.linuxtools.profiling.launch,0.8.1.201108301805,"org.eclipse.linuxtools.profiling.launch",1462142534708
+stopped,bundle,org.eclipse.photran.ui.vpg.preprocessor.c,3.0.0.201109141657,"org.eclipse.photran.ui.vpg.preprocessor.c",1462142534709
+stopped,bundle,org.eclipse.photran.ui.vpg,7.0.0.201109141657,"org.eclipse.photran.ui.vpg",1462142534711
+stopped,bundle,org.eclipse.ptp.pldt.wizards,6.0.0.201109141657,"org.eclipse.ptp.pldt.wizards",1462142534713
+stopped,bundle,org.eclipse.ptp.pldt.mpi.core,6.0.0.201109141657,"org.eclipse.ptp.pldt.mpi.core",1462142534714
+stopped,bundle,org.eclipse.ptp.pldt.openmp.core,6.0.0.201109141657,"org.eclipse.ptp.pldt.openmp.core",1462142534715
+stopped,bundle,org.eclipse.photran.core.vpg,7.0.0.201109141657,"org.eclipse.photran.core.vpg",1462142534715
+stopped,bundle,org.eclipse.photran.managedbuilder.intel.ui,7.0.0.201109141657,"org.eclipse.photran.managedbuilder.intel.ui",1462142534717
+stopped,bundle,org.eclipse.photran.managedbuilder.core,7.0.0.201109141657,"org.eclipse.photran.managedbuilder.core",1462142534718
+stopped,bundle,org.eclipse.photran.ui,7.0.0.201109141657,"org.eclipse.photran.ui",1462142534719
+stopped,bundle,org.eclipse.photran.cdtinterface,7.0.0.201109141657,"org.eclipse.photran.cdtinterface",1462142534721
+stopped,bundle,org.eclipse.ptp.etfw.ppw,1.0.3.201109141657,"org.eclipse.ptp.etfw.ppw",1462142534721
+stopped,bundle,org.eclipse.ptp.etfw,5.0.0.201109141657,"org.eclipse.ptp.etfw",1462142534722
+stopped,bundle,org.eclipse.ptp.remotetools.environment.launcher,3.0.0.201109141657,"org.eclipse.ptp.remotetools.environment.launcher",1462142534724
+stopped,bundle,org.eclipse.cdt.launch,7.0.0.201109151620,"org.eclipse.cdt.launch",1462142534725
+stopped,bundle,org.eclipse.linuxtools.valgrind.ui,0.8.1.201108301805,"org.eclipse.linuxtools.valgrind.ui",1462142534727
+stopped,bundle,org.eclipse.ptp.debug.sdm.ui,4.0.0.201109141657,"org.eclipse.ptp.debug.sdm.ui",1462142534729
+stopped,bundle,org.eclipse.ptp.debug.sdm.x10,1.0.0.201109141657,"org.eclipse.ptp.debug.sdm.x10",1462142534730
+stopped,bundle,org.eclipse.ptp.debug.sdm.core,5.0.0.201109141657,"org.eclipse.ptp.debug.sdm.core",1462142534731
+stopped,bundle,org.eclipse.ptp.rm.generic.ui,1.0.0.201109141657,"org.eclipse.ptp.rm.generic.ui",1462142534731
+stopped,bundle,org.eclipse.ptp.rm.ibm.ll.ui,5.0.0.201109141657,"org.eclipse.ptp.rm.ibm.ll.ui",1462142534733
+stopped,bundle,org.eclipse.ptp.rm.ibm.pe.ui,5.0.0.201109141657,"org.eclipse.ptp.rm.ibm.pe.ui",1462142534735
+stopped,bundle,org.eclipse.ptp.rm.lml_jaxb,1.0.0.201109141657,"org.eclipse.ptp.rm.lml_jaxb",1462142534736
+stopped,bundle,org.eclipse.ptp.rm.jaxb.control.ui,1.0.0.201109141657,"org.eclipse.ptp.rm.jaxb.control.ui",1462142534739
+stopped,bundle,org.eclipse.ptp.rm.lml.monitor.ui,2.0.0.201109141657,"org.eclipse.ptp.rm.lml.monitor.ui",1462142534741
+stopped,bundle,org.eclipse.ptp.rm.mpi.mpich2.ui,2.0.0.201109141657,"org.eclipse.ptp.rm.mpi.mpich2.ui",1462142534742
+stopped,bundle,org.eclipse.ptp.rm.mpi.openmpi.ui,2.0.0.201109141657,"org.eclipse.ptp.rm.mpi.openmpi.ui",1462142534748
+stopped,bundle,org.eclipse.ptp.rm.slurm.ui,4.0.0.201109141657,"org.eclipse.ptp.rm.slurm.ui",1462142534749
+stopped,bundle,org.eclipse.ptp.rm.jaxb.ui,1.0.0.201109141657,"org.eclipse.ptp.rm.jaxb.ui",1462142534751
+stopped,bundle,org.eclipse.ptp.rm.ui,2.0.0.201109141657,"org.eclipse.ptp.rm.ui",1462142534754
+stopped,bundle,org.eclipse.ptp.launch,5.0.0.201109141657,"org.eclipse.ptp.launch",1462142534755
+stopped,bundle,org.eclipse.ptp.debug.ui,4.0.0.201109141657,"org.eclipse.ptp.debug.ui",1462142534756
+stopped,bundle,org.eclipse.ptp.rdt.server.dstore,2.0.0.201109141657,"org.eclipse.ptp.rdt.server.dstore",1462142534756
+stopped,bundle,org.eclipse.ptp.rdt.ui,3.1.100.201109141657,"org.eclipse.ptp.rdt.ui",1462142534757
+stopped,bundle,org.eclipse.cdt.debug.ui,7.1.1.201109151620,"org.eclipse.cdt.debug.ui",1462142534758
+stopped,bundle,org.eclipse.cdt.debug.ui.memory.traditional,1.2.0.201109151620,"org.eclipse.cdt.debug.ui.memory.traditional",1462142534762
+stopped,bundle,org.eclipse.cdt.dsf,2.2.0.201109151620,"org.eclipse.cdt.dsf",1462142534764
+stopped,bundle,org.eclipse.linuxtools.binutils,4.0.0.201108301805,"org.eclipse.linuxtools.binutils",1462142534766
+stopped,bundle,org.eclipse.linuxtools.callgraph,0.0.1.201108301805,"org.eclipse.linuxtools.callgraph",1462142534767
+stopped,bundle,org.eclipse.linuxtools.callgraph.core,0.0.1.201108301805,"org.eclipse.linuxtools.callgraph.core",1462142534768
+stopped,bundle,org.eclipse.linuxtools.oprofile.ui,0.3.1.201108301805,"org.eclipse.linuxtools.oprofile.ui",1462142534770
+stopped,bundle,org.eclipse.linuxtools.profiling.ui,0.8.1.201108301805,"org.eclipse.linuxtools.profiling.ui",1462142534773
+stopped,bundle,org.eclipse.ptp.rm.lml.monitor.core,2.0.0.201109141657,"org.eclipse.ptp.rm.lml.monitor.core",1462142534775
