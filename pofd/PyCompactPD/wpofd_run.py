@@ -25,7 +25,7 @@ def main():
         """
         x=[-7.32,-6.7,-6.3,-5.533,-4.766,-4.0,-3.25,-1.9]
         y=[16.1737,15.0620,14.4342,13.4563,12.1586,10.2764,8.55,6.314]
-        y=range(10,18)
+        #y=range(10,18)
 
         xy=np.array([x,y])
         i_p=ffi.cast("double *",np.ascontiguousarray(xy).ctypes.data)
@@ -46,7 +46,7 @@ def main():
         r=lib.CompactPD_LH(Nbins,DataArray,result,ParamsArray)
 
         loglike=result[0] # Dereferencing trick, i.e. *p
-        print loglike
+        print '\nresult: %f [unchecked]\n' % loglike
 
     else:
         """
