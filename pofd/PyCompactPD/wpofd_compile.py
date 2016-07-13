@@ -1,25 +1,53 @@
 #!/usr/bin/env python
 
 import os,sys
-
 from cffi import FFI
-ffibuilder = FFI()
+
+VERSION='_v2' # or ''
 
 #-------------------------------------------------------------------------------
 
-srcdir='/Users/jtlz2/Dropbox/bayestack/pofd/CompactPD/src'
-src='Wpofd.cpp'
-src=os.path.join(srcdir,src)
-src_str=open(src,'r').read()
+def main():
 
-os.environ["CC"] = "g++"
-libs=['fftw3','m','gsl','gslcblas']# -lfftw3 -lm -lgsl -lgslcblas]
-incl=['/usr/local/Cellar/gcc/4.2.1/include/c++/4.2.1/','/usr/local/include/','/usr/local/Cellar/gcc/4.2.1/include/c++/4.2.1/x86_64-apple-darwin13.4.0/',srcdir]
+    ffibuilder = FFI()
 
-ffibuilder.set_source('_wpofd',src_str,libraries=libs,include_dirs=incl)
+    srcdir='/Users/jtlz2/Dropbox/bayestack/pofd/CompactPD%s/src'%VERSION
+    src='Wpofd.cpp'
+    src=os.path.join(srcdir,src)
+    src_str=open(src,'r').read()
 
-ffibuilder.cdef(
+    os.environ["CC"] = "g++"
+
+    libs=['fftw3','m','gsl','gslcblas']# -lfftw3 -lm -lgsl -lgslcblas]
+    incl=['/usr/local/Cellar/gcc/4.2.1/include/c++/4.2.1/','/usr/local/include/',\
+          '/usr/local/Cellar/gcc/4.2.1/include/c++/4.2.1/x86_64-apple-darwin13.4.0/',srcdir]
+
+    ffibuilder.set_source('_wpofd',src_str,libraries=libs,include_dirs=incl)
+
+    if '2' in VERSION:
+        hdr="""
+struct PD_params{
+  double d_max;
+  double d_min;
+  double source_max;
+  double source_min;
+  double faint_slop;
+  double PSFresultionFWHM;
+  double pixelsize;
+  double sigma_noise;
+
+  double * m_beam;
+  int m_beam_size;
+
+  int interplot_length;
+  double * interplot_pointer;
+
+  };
+
+double CompactPD_LH(int Nbins, double * DataArray, double * result, void * ParamsArray );
 """
+    else:
+        hdr="""
 struct PD_params{
   double d_max;
   double d_min;
@@ -39,10 +67,18 @@ struct PD_params{
 
 double CompactPD_LH(int Nbins, double * DataArray, void * ParamsArray );
 
-""")
+"""
+    
+    ffibuilder.cdef(hdr)
+
+    ffibuilder.compile(verbose=True)
+
+    return 0
 
 #-------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    ffibuilder.compile(verbose=True)
-    sys.exit(0)
+
+    ret=main()
+    sys.exit(ret)
+
