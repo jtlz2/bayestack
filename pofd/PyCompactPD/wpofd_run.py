@@ -4,9 +4,6 @@ import os,sys
 import numpy as np
 from _wpofd import ffi,lib
 
-from math import pi
-sqDeg2sr=4.0*pi*pi/129600.0
-
 VERSION='_v2' # or ''
 
 #-------------------------------------------------------------------------------
@@ -54,10 +51,10 @@ def main():
     histof=os.path.join(datadir,histof)
     data=np.loadtxt(histof)
 
-    Npix=data[:,-1].sum()
-    Nbins=data.shape[0]
-    dd=np.ascontiguousarray(data.T)
-    DataArray = ffi.cast("double *",dd.ctypes.data)
+    #Npix=data[:,-1].sum()
+    #Nbins=data.shape[0]
+    #dd=np.ascontiguousarray(data.T)
+    #DataArray = ffi.cast("double *",dd.ctypes.data)
 
     if '2' in VERSION:
         """
@@ -70,6 +67,7 @@ def main():
         fluxes=[2.0e-8,17.0e-6,85.0e-6]
         dnds_eucl_per_sr=[5.0e-3,1.0,3.0]
 
+        # Some housekeeping
         x=np.log10(np.array(fluxes))
         y=np.log10(np.array(dnds_eucl_per_sr)*np.power(np.power(10,x),-2.5))
 
@@ -89,14 +87,12 @@ def main():
         'interplot_length':i_l,
         'interplot_pointer':i_p})
 
-        z=np.zeros(Nbins)
-        result=ffi.cast("double *",np.ascontiguousarray(z).ctypes.data)
-        r=lib.CompactPD_LH(Nbins,DataArray,result,ParamsArray)
-
-        realisation=np.array([result[i] for i in range(Nbins)])
-
-        loglike=poissonLhood(data[:,-1],np.power(10,realisation),silent=True)
-        print 'loglike = %f [unchecked]\n'%loglike
+        #z=np.zeros(Nbins)
+        #result=ffi.cast("double *",np.ascontiguousarray(z).ctypes.data)
+        #r=lib.CompactPD_LH(Nbins,DataArray,result,ParamsArray)
+        #realisation=np.array([result[i] for i in range(Nbins)])
+        #loglike=poissonLhood(data[:,-1],np.power(10,realisation),silent=True)
+        #print 'loglike = %f [unchecked]\n'%loglike
 
         loglike=loglike_pofd(data,model,ParamsArray)
         print 'loglike = %f [unchecked]\n'%loglike
