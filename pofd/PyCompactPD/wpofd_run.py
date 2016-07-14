@@ -96,8 +96,6 @@ def main():
 
         loglike=loglike_pofd(data,model,ParamsArray)
         print 'loglike = %f [unchecked]\n'%loglike
-        
-        return 0
 
     else:
         """
