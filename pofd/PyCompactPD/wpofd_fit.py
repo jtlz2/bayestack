@@ -37,13 +37,22 @@ def dNByDsToArray(params,paramList,array):
 
 #-------------------------------------------------------------------------------
 
-def loglike_pofd(data,model,ParamsArray):
+inited=False
+def loglike_pofd(pars):
     """
     """
 
-    Nbins=data.shape[0]
-    dd=np.ascontiguousarray(data.T)
-    DataArray = ffi.cast("double *",dd.ctypes.data)
+    global Nbins,dd,data,DataArray,inited
+    (model,ParamsArray)=pars
+    if not inited:
+        datadir='/Users/jtlz2/Dropbox/bayestack/pofd/CompactPD%s/Debug/out/'%VERSION
+        histof='histo.txt'
+        histof=os.path.join(datadir,histof)
+        data=np.loadtxt(histof)
+        Nbins=data.shape[0]
+        dd=np.ascontiguousarray(data.T)
+        DataArray = ffi.cast("double *",dd.ctypes.data)
+        inited=True
 
     xy=model
 
@@ -63,12 +72,7 @@ def loglike_pofd(data,model,ParamsArray):
 #-------------------------------------------------------------------------------
 
 def main():
-
-    datadir='/Users/jtlz2/Dropbox/bayestack/pofd/CompactPD%s/Debug/out/'%VERSION
-    histof='histo.txt'
-    histof=os.path.join(datadir,histof)
-    data=np.loadtxt(histof)
-
+    
     #Npix=data[:,-1].sum()
     #Nbins=data.shape[0]
     #dd=np.ascontiguousarray(data.T)
@@ -124,9 +128,9 @@ def main():
         #realisation=np.array([result[i] for i in range(Nbins)])
         #loglike=poissonLhood(data[:,-1],np.power(10,realisation),silent=True)
         #print 'loglike = %f [unchecked]\n'%loglike
-
+        pars=(model,ParamsArray)
         print '# ibin data realn'
-        loglike=loglike_pofd(data,model,ParamsArray)
+        loglike=loglike_pofd(pars)
         print 'loglike = %f [unchecked]\n'%loglike
 
     else:
