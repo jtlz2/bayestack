@@ -32,8 +32,19 @@ def loglike_pofd(data,model,ParamsArray):
     i_p=ffi.cast("double *",np.ascontiguousarray(xy).ctypes.data)
     i_l=xy.shape[-1]
 
+    ParamsArray = ffi.new("struct PD_params *",{\
+        'd_max':1.0e-3,
+        'd_min':10**-7.32,
+        'source_max':8.5e-5,
+        'source_min':10**-7.32,
+        'PSFresultionFWHM':6.0,
+        'pixelsize':1.0,
+        'sigma_noise':17.0e-6,
+        'interplot_length':i_l,
+        'interplot_pointer':i_p})
+
     z=np.zeros(Nbins)
-    result=ffi.cast("double *",np.ascontiguousarray(z).ctypes.data)
+    result=ffi.new("double []",np.ascontiguousarray(z).ctypes.data)
     r=lib.CompactPD_LH(Nbins,DataArray,result,ParamsArray)
 
     realisation=np.array([result[i] for i in range(Nbins)])
