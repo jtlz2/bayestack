@@ -3,6 +3,9 @@
 import os,sys
 from cffi import FFI
 
+from os.path import expanduser
+home = expanduser("~")
+
 VERSION='_v2' # or ''
 
 #-------------------------------------------------------------------------------
@@ -11,18 +14,20 @@ def main():
 
     ffibuilder = FFI()
 
-    srcdir='/Users/jtlz2/Dropbox/bayestack/pofd/CompactPD%s/src'%VERSION
+    srcdir='%s/Dropbox/bayestack/pofd/CompactPD%s/src'%(home,VERSION)
     src='Wpofd.cpp'
     src=os.path.join(srcdir,src)
     src_str=open(src,'r').read()
 
     os.environ["CC"] = "g++"
 
-    libs=['fftw3','m','gsl','gslcblas']# -lfftw3 -lm -lgsl -lgslcblas]
+    libs=['fftw3','m','gsl','gslcblas','stdc++']# -lfftw3 -lm -lgsl -lgslcblas]
     incl=['/usr/local/Cellar/gcc/4.2.1/include/c++/4.2.1/','/usr/local/include/',\
-          '/usr/local/Cellar/gcc/4.2.1/include/c++/4.2.1/x86_64-apple-darwin13.4.0/',srcdir]
+          '/usr/local/Cellar/gcc/4.2.1/include/c++/4.2.1/x86_64-apple-darwin13.4.0/',\
+          '/usr/lib/gcc/x86_64-linux-gnu/4.9/include',\
+          srcdir]
 
-    ffibuilder.set_source('_wpofd',src_str,libraries=libs,include_dirs=incl)
+    ffibuilder.set_source('_wpofd6',src_str,libraries=libs,include_dirs=incl)
 
     if '2' in VERSION:
         hdr="""
