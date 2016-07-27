@@ -19,6 +19,7 @@ elif  'extractor'   in exe: context='e'
 elif  'resample'    in exe: context='u'
 elif  'inject'      in exe: context='i'
 elif  'dnds_lumfunc'in exe: context='z'
+elif  'picker'      in exe: context='w'
 print 'Context is %s' % context
 #-------------------------------------------------------------------------------
 
@@ -317,7 +318,7 @@ if NLAWS_SIM>3:
 
 # Specify the data file (within outdir) and set up some survey parameters
 numRedshiftSlices=len(whichRedshiftSlices)
-numNoiseZones=5
+numNoiseZones=len(noiseZones)
 if dataset=='cosmos':
     #datafile='bondiover216_corr.txt'
     datafile='bondi2008_orig.txt'
@@ -362,13 +363,16 @@ elif dataset == 'en1jvla':
     weightvlaf='/Users/jtlz2/Dropbox/elaisn1/maps/EN1.I.mosaic.sensitivity_vla.fits'
     noisezonesf='noisezones_%s.txt'%stokes
     noisezonesf=os.path.join(dataset,noisezonesf)
+    WEIGHT_COL=47
     cutsDict={'star':[30,0],'lacy':[34,-1],'stern':[38,-1],'donley':[40,-1],\
-              'noise0':[47,1.1,1.5],'noise1':[47,1.5,2.0],\
+              'noise0':[WEIGHT_COL,1.0,1.4],'noise1':[WEIGHT_COL,1.4,1.96],\
+              'noise2':[WEIGHT_COL,1.96,2.74],\
+              'noise3':[WEIGHT_COL,2.74,3.84],'noise4':[WEIGHT_COL,3.84,5.38],\
+              'noise5':[WEIGHT_COL,5.38,7.53],'noise6':[WEIGHT_COL,7.53,13.0]}
               #'noise0':[47,1.5,2.0]}
               #'noise0':[47,1.1,1.5]}
-              'noise2':[47,2.0,2.5],'noise3':[47,2.5,3.0],\
-              'noise4':[47,3.0,5.0],'noise5':[47,5.0,13.0]}
-    numNoiseZones=len([k for k in cutsDict.keys() if 'noise' in k])
+
+#    numNoiseZones=len([k for k in cutsDict.keys() if 'noise' in k])
     datafiles=['en1jvla_%s_a%i.txt'%(stokes,n) for n in noiseZones]
     datafile=datafiles[0]
     SURVEY_AREAS={}; SURVEY_NOISES={}
@@ -378,13 +382,14 @@ elif dataset == 'en1jvla':
         nz=numpy.atleast_2d(numpy.genfromtxt(noisezonesf))
     for i,d in enumerate(datafiles):
         #print nz
-        SURVEY_AREAS[d]=nz[i,-1]
-        SURVEY_NOISES[d]=nz[i,:-1]
+        SURVEY_AREAS[noiseZones[i]]=nz[noiseZones[i],-1]
+        SURVEY_NOISES[noiseZones[i]]=nz[noiseZones[i],:-1]
     if not doPoln:
-        SURVEY_NOISE=1.164
+        SURVEY_NOISE=1.164 # uJy
     else:
-        SURVEY_NOISE=1.164
+        SURVEY_NOISE=1.034#0.8 # uJy
     SURVEY_AREA=sum([a for (f,a) in SURVEY_AREAS.iteritems()])
+    redshifts=[0.0 for i in range(numNoiseZones)]
     #SURVEY_AREA=0.1
 elif dataset=='sdss':
     SURVEY_NOISE=150.0 # uJy
@@ -541,6 +546,8 @@ noisy=True
 # Only really matters if simulating?
 #datafile=os.path.join(outdir,datafile)
 datafile=os.path.join(dataset,datafile)
+for i,d in enumerate(datafiles):
+    datafiles[i]=os.path.join(dataset,datafiles[i])
 
 # This block is called nproc times - how to (circularly) use only the master?
 # The thing to do is to read it from master and broadcast it
@@ -822,37 +829,86 @@ elif binstyle=='video2014' or binstyle=='mca2014':
         if nb==38:
             bins=numpy.array([-69.0,-50.0,-40.0,-30.0,-20.0,-15.0,-10.0,-8.0,-6.5,-5.0,-3.5,-2.5,-1.0,-0.65,-0.5,-0.25,-0.1,-0.05,0.0,0.05,0.1,0.25,0.5,0.65,1.0,2.5,3.5,5.0,6.5,8.0,10.0,15.0,20.0,30.0,40.0,50.0,65.0,80.0,85.0])
 
-if binstyle=='en1jvla':
-    bins=numpy.linspace(-4.6,5.8,40)
-    bins=numpy.linspace(-15.0,5.8,40)
-    bins=numpy.linspace(-5.3,5.8,32)
+elif binstyle=='en1jvla':
+    #bins=numpy.linspace(-4.6,5.8,40)
+    #bins=numpy.linspace(-15.0,5.8,40)
+    #bins=numpy.linspace(-5.3,5.8,32)
     binsZoned={}
-    #binsZoned[0]=numpy.array([-5.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,-0.005,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-    #binsZoned[1]=numpy.array([-9.5,-6.5,-5.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-    binsZoned[0]=numpy.array([-4.8,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-    binsZoned[1]=numpy.array([-6.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-    binsZoned[2]=numpy.array([-7.6,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
 
     # For shifted data
-    binsZoned[0]=numpy.array([-4.5,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-    binsZoned[1]=numpy.array([-7.4,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-    binsZoned[2]=numpy.array([-7.1,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    if shiftedIntensityPosns:
+        binsZoned[0]=numpy.array([-4.1,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[1]=numpy.array([-6.1,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[2]=numpy.array([-8.1,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.02,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
 
     # For random-position data
-    binsZoned[0]=numpy.array([-5.6,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-    binsZoned[1]=numpy.array([-6.9,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-    binsZoned[2]=numpy.array([-10.7,-9.0,-7.5,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+    elif randomIntensityPosns:
+        binsZoned[0]=numpy.array([-4.4,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[1]=numpy.array([-7.2,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[2]=numpy.array([-7.2,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
 
+    else:
+        #binsZoned[0]=numpy.array([-5.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,-0.005,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        #binsZoned[1]=numpy.array([-9.5,-6.5,-5.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        #binsZoned[0]=numpy.array([-4.8,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        #binsZoned[1]=numpy.array([-6.3,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        #binsZoned[2]=numpy.array([-7.6,-6.5,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[0]=numpy.array([-4.7,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[1]=numpy.array([-5.7,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[2]=numpy.array([-6.7,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+
+        binsZoned[0]=numpy.array([-4.8,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.005,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[1]=numpy.array([-6.3,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[2]=numpy.array([-8.9,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[3]=numpy.array([-12.3,-10.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[4]=numpy.array([-17.6,-15.0,-10.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[5]=numpy.array([-22.6,-20.0,-15.0,-10.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,-0.01,0.0,0.01,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
+        binsZoned[6]=numpy.array([-36.3,-25.0,-20.0,-15.0,-12.0,-10.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,-0.5,-0.1,-0.05,0.0,0.05,0.1,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
     if doPoln:
         #binsZoned[0]=numpy.array([0.0,0.125,0.25,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
         #binsZoned[1]=numpy.array([0.0,0.125,0.25,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
         #binsZoned[2]=numpy.array([0.0,0.125,0.25,0.5,1.0,2.0,3.0,4.0,5.0,5.8])
-        binsZoned[0]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
-                                  0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8])
-        binsZoned[1]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
-                                  0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8])
-        binsZoned[2]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
-                                  0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8])
+        if shiftedPolnPosns:
+            binsZoned[0]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0,5.8]) # 4.5
+            binsZoned[1]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0,5.8]) # 4.5
+
+        elif randomPolnPosns:
+            binsZoned[0]=numpy.array([0.03,0.05,0.08,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0,5.8])
+            binsZoned[0]=numpy.array([0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0])
+            binsZoned[1]=numpy.array([0.03,0.05,0.08,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0,5.8])
+            if maskSERVS or maskSERVSplusPOLN:
+                binsZoned[0]=numpy.array([0.015,0.03,0.05,0.08,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0])#5.8])
+                
+        else:
+            binsZoned[0]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0])#,5.8])
+            binsZoned[1]=numpy.array([0.03,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0,5.8])
+            binsZoned[2]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+                                      0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,3.5,4.0,5.0,5.8])
+
+        #binsZoned[1]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+        #                          0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8])
+        #binsZoned[2]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+        #                          0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8])
+        #binsZoned[1]=numpy.array([0.03,0.05,0.075,0.10,0.125,0.15,0.20,0.25,0.35,0.5,\
+        #                          0.8,1.0,1.25,1.5,1.75,2.0,2.5,3.0,4.0,5.0,5.5,5.8,6.5,7.0])
+
+    bins=binsZoned[noiseZones[0]]
+
+elif binstyle=='goodsnx':
+    binsZoned={}
+    binsZoned[0]=numpy.array([-4.2,-3.5,-3.0,-2.5,-2.0,-1.5,-1.0,-0.75,-0.5,-0.3,-0.2,-0.1,-0.05,-0.02,-0.01,0.0,0.01,0.02,0.05,0.1,0.3,0.5,0.75,1.0,1.5,2.0,2.5,3.0,3.5])
+    if doPoln:
+        binsZoned[0]=numpy.array([0.0,0.02,0.05,0.1,0.3,0.5,0.75,1.0,1.5,2.0,2.5,3.0,3.5])
+        # For shifted or random data
+        #binsZoned[0]=numpy.array([0.0,0.03,0.05,0.1,0.3,0.5,0.75,1.0,1.5,2.0,2.5,3.0,3.5])
 
     assert(len(noiseZones)==1), 'too many noise zones'
     bins=binsZoned[noiseZones[0]]
@@ -1158,15 +1214,74 @@ LZEVOL_MAX=5.0
 if len(whichRedshiftSlices) <= 1:
     LZEVOL_MIN=LZEVOL_MAX=0.0 # delta fn on LZEVOL
 
+
+# MF parameters
+
+# Prior types
+MMIN_PRIOR='LOG'
+MMAX_PRIOR='LOG'
+MSTAR_PRIOR='LOG'
+MSLOPE_PRIOR='U'
+MNORM_PRIOR='LOG'
+MZEVOL_PRIOR='U'
+MSLOPE2_PRIOR='U'
+
+# Prior ranges
+MMIN_MIN=1.0e20
+MMIN_MAX=1.0e23
+MMAX_MIN=1.0e23
+MMAX_MAX=1.0e25
+MSTAR_MIN=1.0e20
+MSTAR_MAX=1.0e25
+MSLOPE_MIN=0.0
+MSLOPE_MAX=-8.0
+MNORM_MIN=1.0e-10
+MNORM_MAX=1.0e-5
+MSLOPE2_MIN=0.0
+MSLOPE2_MAX=-8.0
+
+# MF redshift evolution (if > 1 z slice only)
+MZEVOL_MIN=-5.0
+MZEVOL_MAX=5.0
+if len(whichRedshiftSlices) <= 1:
+    MZEVOL_MIN=MZEVOL_MAX=0.0 # delta fn on MZEVOL
+
+
 #S0_MIN=S0_MAX=S0_TRUE            # delta fn on S0
 #BETA_MIN=BETA_MAX=BETA_TRUE    # delta fn on beta
 #D_MIN=D_MAX=D_TRUE            # delta fn on C
+    
+if numNoiseZones>1:
+    NOISES_MIN={}; NOISES_MAX={}
+    for nn in range(numNoiseZones):
+        NOISES_MIN[noiseZones[nn]]=SURVEY_NOISES[noiseZones[nn]][1]
+        NOISES_MAX[noiseZones[nn]]=SURVEY_NOISES[noiseZones[nn]][2]
+else:
+    #NOISE_MIN=0.5*SURVEY_NOISE
+    #NOISE_MAX=2.0*SURVEY_NOISE
+    NOISE_MIN=0.5*SURVEY_NOISES[noiseZones[0]][1]
+    NOISE_MIN=SURVEY_NOISES[noiseZones[0]][1]
+    #NOISE_MIN=1.0 # Fixed
+    NOISE_MAX=2.0*SURVEY_NOISES[noiseZones[0]][2]
+    NOISE_MAX=SURVEY_NOISES[noiseZones[0]][2]
 
-NOISE_MIN=0.5*SURVEY_NOISE
-#NOISE_MAX=2.0*SURVEY_NOISE
-NOISE_MAX=2.0*SURVEY_NOISE
+#NOISE_MIN=NOISE_MAX=SURVEY_NOISE
 if not floatNoise:
-    NOISE_MIN=NOISE_MAX=SURVEY_NOISE # delta fn on NOISE
+    #NOISE_MIN=NOISE_MAX=SURVEY_NOISE # delta fn on NOISE
+    NOISE_MIN=NOISE_MAX=(SURVEY_NOISES[noiseZones[0]][1]+SURVEY_NOISES[noiseZones[0]][2])/2.0 # delta fn on NOISE
+
+if doPoln and doRayleigh:
+    #C_PRIOR='LOG'
+    #C_MIN=C_MAX=0.0
+    SMIN_MIN=0.001#1.0e-12
+    SMIN_MAX=0.001
+    SMAX_MIN=SMAX_MAX=1.5
+    #SMAX_MIN=SMAX_MAX=binsZoned[noiseZones[0]][-1]#1.0e12
+    S0_MIN=S0_MAX=2.0e-3
+    S1_MIN=S1_MAX=3.0e-3
+    S2_MIN=S2_MAX=4.0e-3
+    SLOPE_MIN=SLOPE_MAX=-2.0
+    #C_MIN=CMAX=1.0e-50
 
 #-------------------------------------------------------------------------------
 
@@ -1193,6 +1308,7 @@ assert(SMAX_MIN >= SMIN_MAX), 'Smin/Smax priors must not overlap!'
 #-------------------------------------------------------------------------------
 
 # Set up the parameters for triangle plots and reconstruction
+
 
 if nlaws == 1:
     parameters=['C','slope','Smin','Smax']
@@ -1288,12 +1404,23 @@ elif modelFamily=='LFdpl':
                'LMIN':LMIN_TRUE,
                'LMAX':LMAX_TRUE,
                'LZEVOL':LZEVOL_TRUE}
-    
-                
+elif modelFamily=='poly':
+    parameters=['p%i' % ic for ic in range(nlaws)]
+    for ic in range(nlaws):
+        plotRanges['p%i'%ic] = [POLYCOEFF_MIN,POLYCOEFF_MAX]
+        plotTruth['p%i'%ic] = -1000.0
+
 if floatNoise:
-    parameters += ['sigma']
-    plotRanges['sigma']=[NOISE_MIN,NOISE_MAX]
-    plotTruth['sigma']=SURVEY_NOISE
+    if numNoiseZones>1:
+        for nn in range(numNoiseZones):
+            parameters += ['noise%i'%nn]
+            plotRanges['noise%i'%nn]=[NOISES_MIN[noiseZones[nn]],\
+                                      NOISES_MAX[noiseZones[nn]]]
+            plotTruth['noise%i'%nn]=SURVEY_NOISE
+    else:
+        parameters += ['noise']
+        plotRanges['noise']=[NOISE_MIN,NOISE_MAX]
+        plotTruth['noise']=SURVEY_NOISE
 
 
 # Triangle plot

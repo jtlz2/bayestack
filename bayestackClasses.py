@@ -36,7 +36,8 @@ from priors import Priors
 import countUtils
 import polnUtils
 import lumfuncUtils
-from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood,medianArray,poissonLhoodMulti2
+from utils import sqDeg2sr,beamFac,sqrtTwo,strictly_increasing,poissonLhood,\
+                      medianArray,poissonLhoodMulti,poissonLhoodMulti3
 from cosmocalc import cosmocalc
 #import cosmolopy
 from collections import OrderedDict
@@ -57,15 +58,19 @@ class surveySetup(object):
         self.datafiles=datafiles
         self.SURVEY_AREAS=areas
         self.SURVEY_NOISES=noises
+        self.numNoiseZones=len(self.SURVEY_NOISES)
         if len(self.datafiles)>1:
             self.multi=True
             self.fractions=[a/sum(self.SURVEY_AREAS) for a in self.SURVEY_AREAS]
         else:
             self.multi=False
-            self.datafile=datafiles[0]
+        self.datafile=datafiles[0]
         self.SURVEY_AREA=areas[0]
         self.SURVEY_NOISE=noises[0]
         self.fractions=[1.0]
+        self.noiseZoneMap={}
+        for df in self.datafiles:
+            self.noiseZoneMap[df]=int(os.path.basename(df).split('.')[-2].split('_')[-1][-1])
 
         if whichSurvey in ['video']:# or 'sim' in whichSurvey:
             self.HALO_MASK=11436315.0/(19354.0*19354.0)
@@ -173,7 +178,6 @@ class countModel(object):
     expt=countModel(kind,order,settingsf,whichSurvey,floatNoise)
     
     """
-
     def __init__(self,kind,order,settingsf,whichSurvey,floatNoise,doPoln=False,\
                  doRayleigh=False,doRedshiftSlices=False,mybins=None):
         # Import settings
@@ -197,14 +201,13 @@ class countModel(object):
 
         # Set up parameters for this model
         # --> This defines the order of the parameters:
-        self.paramsAvail=\
-                    OrderedDict([('extra',['noise']),\
+        self.paramsAvail=OrderedDict([\
+                     ('extra',['noise%i'%ic for ic in xrange(numNoiseZones)]),\
                      ('breaks',['S%i'%ic for ic in xrange(self.nlaws+1)]),\
                      ('amp',['C']),\
                      ('coeffs',['p%i'%ic for ic in xrange(self.nlaws)]),\
                      ('limits',['S%i'%ic for ic in xrange(2)]),\
                      ('poles',['b%i'%ic for ic in xrange(self.nlaws)]),\
-
                      ('slopes',['a%i'%ic for ic in xrange(self.nlaws)]),\
                      ('schechter',['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LZEVOL']),\
                      ('doublepl',['LMIN','LMAX','LNORM','LSTAR','LSLOPE','LSLOPE2','LZEVOL']),\
@@ -229,18 +232,24 @@ class countModel(object):
         self.priorsDict=self.parsePriors(self.parameters,self.floatNoise)
 
         # Load the data and derive the bins
-        self.survey=surveySetup(whichSurvey,[datafile],[SURVEY_AREA],[SURVEY_NOISE])
-        self.data,self.bins=self.loadData(self.survey.datafile)
-        #print self.data,self.survey.datafile
-        self.nbins=len(self.bins)-1
-        self.binsMedian=medianArray(self.bins)
-        self.nsrc=int(self.data.sum())
+        #self.survey=surveySetup(whichSurvey,[datafiles],[SURVEY_AREA],[SURVEY_NOISE])
+        self.survey=surveySetup(whichSurvey,datafiles,SURVEY_AREAS,SURVEY_NOISES)
+        if not self.survey.multi:
+            self.data,self.bins=self.loadData(self.survey.datafile)
+            #print self.data,self.survey.datafile
+            self.nbins=len(self.bins)-1
+            self.binsMedian=medianArray(self.bins)
+            self.nsrc=int(self.data.sum())
         # And load any multiple data sets
-        self.fdata={}; self.fbins={}; self.fnbins={}; self.fbinsMedian={}
-        for df in self.survey.datafiles:
-            self.fdata[df],self.fbins[df]=self.loadData(df)
-            self.fnbins[df]=len(self.fbins[df])-1
-            self.fbinsMedian[df]=medianArray(self.fbins[df])
+        else:
+            self.fdata={}; self.fbins={}; self.fnbins={}; self.fbinsMedian={}
+            for df in self.survey.datafiles:
+                self.fdata[df],self.fbins[df]=self.loadData(df)
+                self.fnbins[df]=len(self.fbins[df])-1
+                self.fbinsMedian[df]=medianArray(self.fbins[df])
+                self.data=self.fdata[df]
+                self.bins=self.fbins[df]
+            self.nsrc=int(sum([i.sum() for i in self.fdata.values()]))
         if mybins is not None:
             self.bins=mybins
             self.binsMedian=medianArray(self.bins)
@@ -265,15 +274,30 @@ class countModel(object):
                 elif p.startswith('a'): priorsDict[p]=['U',SLOPE_MIN,SLOPE_MAX] # slopes
             elif self.kind=='poly':
                 if p.startswith('p'): priorsDict[p]=[POLYCOEFF_PRIOR,POLYCOEFF_MIN,POLYCOEFF_MAX] # #coeffs
-                #if p=='p0': priorsDict[p]=['DELTA',1.0,1.0]
+                if p=='p0': priorsDict[p]=['LOG',1.0e11,1.0e15]
+                if p=='p1': priorsDict[p]=['U',-1.0e2,1.0e2]
+                #if p=='p2': priorsDict[p]=['U',-1.0e2,1.0e2]
+                #if p=='p3': priorsDict[p]=['U',-1.0e2,1.0e2]
+                #if p=='p0': priorsDict[p]=['LOG',1.0e14,1.0e15]
+                if p=='p1': priorsDict[p]=['U',-1.0e4,0.0]
+                if p=='p2': priorsDict[p]=['U',-1.0e5,1.0e5]
+
             elif self.kind=='bins':
-                if p.startswith('b'): priorsDict[p]=[POLEAMPS_PRIOR,POLEAMPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
+                if p.startswith('b'):
+                    priorsDict[p]=[POLEAMPS_PRIOR,POLEAMPS_MIN,POLEAMPS_MAX] # bins/poles/nodes
 
             if p.startswith('n'): # noise
-                if floatNoise:
-                    priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
+                if numNoiseZones>1:
+                    nNz=len([i for i in parameters if i.startswith('n')])
+                    for j in range(nNz):
+                        priorsDict['noise%i'%j]=\
+                          ['U',NOISES_MIN[noiseZones[j]],NOISES_MAX[noiseZones[j]]]
                 else:
-                    priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
+                    if floatNoise:
+                        priorsDict[p]=['U',NOISE_MIN,NOISE_MAX]
+                    else:
+                        priorsDict[p]=['DELTA',SURVEY_NOISE,SURVEY_NOISE]
+
             elif p=='S0': priorsDict[p]=['U',SMIN_MIN,SMIN_MAX] # Smin
             elif p=='S%i'%iSmax: priorsDict[p]=['U',SMAX_MIN,SMAX_MAX] # Smax
 
@@ -319,7 +343,8 @@ class countModel(object):
         if self.kind=='ppl':
             C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
             paramsList=self.parameters
-            nlaws=int(0.5*len(paramsList)-1) # infer nlaws from length of param vector
+            #nlaws=int(0.5*len(paramsList)-1)+2-numNoiseZones # infer nlaws from length of param vector
+            nlaws=int(0.5*(len(paramsList)-numNoiseZones-1))
             C=params[paramsList.index('C')]
             Smin=params[paramsList.index('S0')]
             alpha=params[paramsList.index('a0')]
@@ -504,6 +529,22 @@ class countModel(object):
             #self.dataRealisation=lumfuncUtils.calculateH3(cube,self.parameters,\
             #        bins=self.bins,area=self.survey.SURVEY_AREA,family=self.kind,\
             #        redshift=self.ziter)
+        elif self.survey.multi:
+            self.frealisations={}
+#            print self.parameters
+            #c=[cube[i] for i in range(len(self.parameters))]
+            #paramsList=self.parameters
+            for df in self.survey.datafiles:
+                nn=self.survey.noiseZoneMap[df]
+                # For noise zones other than the first, fix
+                #if nn>0:
+                #    c[paramsList.index('noise')]=numpy.mean(self.survey.SURVEY_NOISES[nn][1:])
+                #else:
+                #    c[paramsList.index('noise')]=cube[paramsList.index('noise')]
+                self.frealisations[df]=countUtils.calculateI(cube,self.parameters,\
+                family=self.kind,bins=self.fbins[df],area=self.survey.SURVEY_AREAS[nn],\
+                model=self.model,noiseZone=nn)
+            self.dataRealisation=self.frealisations
         else:
             self.dataRealisation=countUtils.calculateI(cube,self.parameters,\
                 family=self.kind,bins=self.bins,area=self.survey.SURVEY_AREA,\
@@ -553,9 +594,7 @@ class countModel(object):
                     return poissonLhoodMulti2(self.zDataObject,self.realise(cube),\
                                          silent=True)
             elif self.survey.multi:
-                return poissonLhoodMulti(self.data,self.realise(cube),\
-                                         silent=True,fractions=self.fractions,\
-                                         redshifts=self.redshifts)
+                return poissonLhoodMulti3(self.fdata,self.realise(cube),silent=True)
             else:
                return poissonLhood(self.data,self.realise(cube),silent=True)
 
@@ -564,5 +603,5 @@ class countModel(object):
 
 
 #-------------------------------------------------------------------------------
-        
+
     
