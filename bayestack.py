@@ -140,7 +140,7 @@ def main():
             for df in expt.survey.datafiles:
                 for ibin in xrange(expt.fnbins[df]):
                     try:
-                        line='%i %f %f %f'%(ibin+1,expt.fbins[df][ibin],expt.fbins[df][ibin+1],expt.fdata[df][ibin])
+                        line='%i %f %f %f' % (ibin+1,expt.fbins[df][ibin],expt.fbins[df][ibin+1],expt.fdata[df][ibin])
                     except IndexError:
                         print "Probably your binstyle doesn't match the datafile bins"
                         sys.exit(0)
