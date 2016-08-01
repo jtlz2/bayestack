@@ -42,7 +42,8 @@ def simulate(family,params,paramsList,bins,\
              seed=None,N=None,noise=None,output=None,\
              dump=None,version=2,verbose=False,area=None,\
              skadsf=None,pole_posns=None,simarrayf=None,\
-             simdocatnoise=True):
+             simdocatnoise=True,return_vals=False,\
+             gridlength=None):
     """
     Based on lumfunc.simtable()
     Specify family + parameters
@@ -125,6 +126,7 @@ def simulate(family,params,paramsList,bins,\
 
         function = lambda S:powerLawFuncWrap(nlaws,S,C,alpha,-99.0,beta,\
                                        Smin,Smax,S0,gamma,S1,delta,S2,1.0)
+        #print 'SS',function(Smin)
 
     elif family=='test':
         Smin=params[paramsList.index('S0')]
@@ -189,7 +191,8 @@ def simulate(family,params,paramsList,bins,\
 
     if family != 'skads':
         # Set up the 'rough' array
-        gridlength=1000000 # Good enough to prevent bleeding at the edges
+        if gridlength is None:
+            gridlength=1000000 # Good enough to prevent bleeding at edges
         Ss=numpy.linspace(Smin,Smax,gridlength)
         values=numpy.array([function(ix) for ix in Ss])
         # Build the CDF
@@ -265,7 +268,10 @@ def simulate(family,params,paramsList,bins,\
     idl_style=False
     writeCountsFile(output,bins,F,area,idl_style=idl_style,verbose=verbose)
 
-    return F
+    if return_vals:
+        return F,function
+    else:
+        return F
 
 #-------------------------------------------------------------------------------
 
@@ -569,11 +575,15 @@ def polyFunc(S,S_1,Smin,Smax,c):
         return 0.0
     #assert(len(c)==3)
     exponent=0.0
+    S_1*=1.0e-6
     for n in range(len(c)):
-        #exponent += c[n] * (numpy.log10(S/S_1)**n)
-        exponent += c[n]*(S**n)
+        exponent += c[n] * (numpy.log10(S/S_1))**n
+        #exponent += c[n]*(S**n)
     #print c
-    return exponent
+    #print exponent
+    func=numpy.poly1d(list(reversed(c)))
+    return func(S/S_1)
+    #return exponent
     #return 10**exponent
 
 #-------------------------------------------------------------------------------
@@ -618,7 +628,7 @@ def polesFunc(S,pole_posns,Smin,Smax,coeffs):
 
 @profile
 def calculateI(params,paramsList,bins=None,area=None,
-                family=None,dump=None,verbose=False,model=None):
+                family=None,dump=None,verbose=False,model=None,noiseZone=-1):
 
     """
     pn_integral, but for various different function families
@@ -627,7 +637,7 @@ def calculateI(params,paramsList,bins=None,area=None,
 
     if family=='ppl':
         return calculateI3(params,paramsList,bins=bins,area=area,\
-                family=family,dump=dump,verbose=verbose)
+                family=family,dump=dump,verbose=verbose,noiseZone=noiseZone)
 
     elif family=='poly':
         Smin=params[paramsList.index('S0')]
@@ -635,8 +645,10 @@ def calculateI(params,paramsList,bins=None,area=None,
         coeffs=[params[paramsList.index(p)] for p in paramsList if p.startswith('p')]
 #        func=numpy.poly1d(list(reversed(coeffs)))
 #        ncoeffs=len(coeffs)
-        S_1=1.0 # ref flux
-        noise=params[paramsList.index('noise')]
+        S_1=1.0 # ref flux / Jy
+        #noise=params[paramsList.index('noise')]
+        if noiseZone==-1:noiseZone=0
+        noise=params[paramsList.index('noise%i'%noiseZone)]
 
         #for i in range(6): print params[i]
         nbins=len(bins)-1
@@ -664,7 +676,7 @@ def calculateI(params,paramsList,bins=None,area=None,
 
 @profile
 def calculateI3(params,paramsList,bins=None,area=None,\
-                family=None,dump=None,verbose=False):
+                family=None,dump=None,verbose=False,noiseZone=-1):
 
     """
     Do this for all bins simultaneously
@@ -687,8 +699,11 @@ def calculateI3(params,paramsList,bins=None,area=None,\
 
     C=alpha=Smin=Smax=beta=S0=gamma=S1=delta=S2=-99.0
 
-    nlaws=int(0.5*len(paramsList)-1)
+    #nlaws=int(0.5*len(paramsList)-1)+2-numNoiseZones
+    nlaws=int(0.5*(len(paramsList)-numNoiseZones-1))
 
+    if noiseZone==-1:noiseZone=''
+    
     C=params[paramsList.index('C')]
     Smin=params[paramsList.index('S0')]
     alpha=params[paramsList.index('a0')]
@@ -705,7 +720,7 @@ def calculateI3(params,paramsList,bins=None,area=None,\
     iSmax=int([i for i in paramsList if i.startswith('S')][-1][-1])
     Smax=params[paramsList.index('S%i'%iSmax)]
 
-    noise=params[paramsList.index('noise')]
+    noise=params[paramsList.index('noise%i'%noiseZone)]
 
     nbins=len(bins)
     II = numpy.zeros(nbins-1)
