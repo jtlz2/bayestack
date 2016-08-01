@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <limits.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -55,9 +56,13 @@ int main(void){
 		 ParamsArray.source_min=ParamsArray.d_min;
 
 		 ParamsArray.interplot_length=8;
-		 // interplot the dN/dS with {{log10x} {log10y}}
-		 double arrary[2][8]={{-7.32,-6.7,-6.3,-5.533,-4.766,-4.0,-3.25,-1.9},{16.1737,15.0620,14.4342,13.4563,12.1586,10.2764,8.55,6.314}};
 
+		 double inf = -INFINITY;
+		 printf("-inf is %f\n",-inf);
+		 // interplot the dN/dS with {{log10x} {log10y}}
+		 //double arrary[2][8]={{-7.32,-6.7,-6.3,-5.533,-4.766,-4.0,-3.25,-1.9},{16.1737,15.0620,14.4342,13.4563,12.1586,10.2764,8.55,6.314}};
+		 double arrary[2][8]={{-7.69897,     -4.91506643,  -4.61439373,  -4.43842163,  -4.31354249,
+				   -4.21666824,  -4.13751083,  -4.07058107},{-inf,         -inf,         11.69216698,  11.25442674,  10.94378302,10.70280301,  -inf,  -inf}};
 		 ParamsArray.interplot_pointer=(double *) malloc(sizeof(double)*ParamsArray.interplot_length*2);
 		 memcpy(ParamsArray.interplot_pointer, arrary, sizeof(double)*ParamsArray.interplot_length*2);
 
@@ -69,10 +74,12 @@ int main(void){
 
 
 	CompactPD_LH(Ncount, (double *) DataArray, result, &ParamsArray );
-	for(int i=0;i<Ncount; i++){
+	CompactPD_LH(Ncount, (double *) DataArray, result, &ParamsArray );
+/*	for(int i=0;i<Ncount; i++){
 	printf("x-mean %lf  log10_data %lf log10_model %lf\n", (DataArray[0][i]+DataArray[1][i])*0.5,log10(DataArray[2][i]),result[i]);
-	}
+	}*/
 
+	free(ParamsArray.interplot_pointer);
 	return 0;
 }
 

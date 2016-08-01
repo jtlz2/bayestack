@@ -60,7 +60,7 @@ double interp( double xi, int Ndata, double* data ){
 	    return yi;
 	}else{
 		printf("error: The x=%e should not beyond data[%e~%e] ! \n",xi,x[0][0],x[0][Ndata-1]);
-		exit(0);
+		exit(EXIT_FAILURE);
 	}
 
 }
@@ -92,7 +92,7 @@ double interp_adv( double xi, int Ndata, double* data, int kmin, int kmax ){
 	    return yi;
 	}else{
 		printf("error: The x=%e should not beyond data[%e~%e] ! \n",xi,x[0][kmin],x[0][kmax]);
-		exit(0);
+		exit(EXIT_FAILURE);
 	}
 
 }
@@ -168,7 +168,10 @@ double output_res( int Nbins, double * xbin_min, double * xbin_max, double * dat
 
 	double sigma=10*sigma_noise;
 
-	if(input_fw(FFTW_FORWARD,N,-sigma, Delta,flux)==-1.0) exit(0);
+	if(input_fw(FFTW_FORWARD,N,-sigma, Delta,flux)==-1.0){
+		printf("error:input_fw forward\n");
+		exit(EXIT_FAILURE);
+	}
 
 	int shift=N-1-int((sigma/Delta));
 
@@ -242,7 +245,7 @@ printf("Ncut %d\n",Ncut);
 
 		}
 
-	free(flux);
+	delete[] flux;
 	free(outshift);
 	return 0.0;
 }
@@ -278,7 +281,8 @@ double Set_beam(void * ParamsArray){
 
 	memcpy(p->m_beam, beam, sizeof(double)*size*size);
 
-	free(beam);
+	delete[] beam;
+	delete[] bx;
 	return 0.0;
 }
 
@@ -324,8 +328,8 @@ double Get_Rx(double x, void * params){
 	if(check_count==Ntsize){
 	//	printf("error: Get_Rx( %f )  flux > source_max !  %f \n",log10(x),Get_dNdS_per_px(x,1.5667));
     //   exit(0);
-		free(flux);
-		free(newy);
+		delete [] flux;
+		delete [] newy;
 		return 0.0;
 	}
 
@@ -338,8 +342,8 @@ double Get_Rx(double x, void * params){
 	}
 
 
-free(flux);
-free(newy);
+delete[] flux;
+delete[] newy;
 
 	return rx;
 }
@@ -385,7 +389,10 @@ double CompactPD_LH(int Nbins, double * DataArray, double * result, void * Param
     Set_beam(ParamsArray);
     //it changes because of 1.0 show or not show in beam
 
-    if(input_fw(FFTW_FORWARD,N,0.0,Delta,f)==-1.0) exit(0);
+    if(input_fw(FFTW_FORWARD,N,0.0,Delta,f)==-1.0) {
+    	printf("error: input_fw forward !\n");
+    	exit(EXIT_FAILURE);
+    }
 
 
     double dx=Delta;
@@ -412,7 +419,10 @@ double CompactPD_LH(int Nbins, double * DataArray, double * result, void * Param
 
 	double temp_real;
 
-    if(input_fw(FFTW_BACKWARD,N,0.0,Delta,w)==-1.0) exit(0);
+    if(input_fw(FFTW_BACKWARD,N,0.0,Delta,w)==-1.0){
+    	printf("error: input_fw backward !\n");
+    	exit(EXIT_FAILURE);
+    }
 
 		  for (int i = 0; i < N; i++){
 			  temp_real=inbetween[i][0];
