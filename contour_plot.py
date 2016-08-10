@@ -144,6 +144,11 @@ def contourTri(chain,**kwargs):
         else:
             bins_arr[a]=numpy.linspace(chain[:,a].min(),chain[:,a].max(),binsize)
 
+    # Fix delta-function bins
+    for a in p:
+        if bins_arr[a][0]==bins_arr[a][-1]:
+            bins_arr[a]+=numpy.linspace(0.0,1.0e-12,len(bins_arr[a]))
+
     fig=pylab.figure()
     fig.subplots_adjust(hspace=PADDING,wspace=PADDING)
 
