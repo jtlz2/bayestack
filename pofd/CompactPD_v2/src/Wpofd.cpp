@@ -253,8 +253,8 @@ printf("Ncut %d\n",Ncut);
 
 double Set_beam(void * ParamsArray){
 
-	struct PD_params *p
-				    = (struct PD_params *) ParamsArray;
+	struct Stacking_params *p
+				    = (struct Stacking_params *) ParamsArray;
 
 	double FHWM=p->PSFresultionFWHM;
 	double pixelsize_asec=p->pixelsize;
@@ -286,6 +286,7 @@ double Set_beam(void * ParamsArray){
 	return 0.0;
 }
 
+
 double Get_dNdS_per_px(double flux, double px_size, int length, double * arrary_pointer){
 
 	double dnds=0.0;
@@ -299,11 +300,20 @@ double Get_dNdS_per_px(double flux, double px_size, int length, double * arrary_
 
 }
 
+double Get_Stacking_Rx(double x, void *params){
+	struct Stacking_params *p
+			    = (struct Stacking_params *) params;
+	  if((x>=p->source_min)&&(x<=p->source_max)){
+		   return Get_dNdS_per_px(x,p->pixelsize,p->stacking_interplot_length,p->stacking_interplot_pointer);
+	  }else{
+		   return 0.0;
+	  }
+}
 
 double Get_Rx(double x, void * params){
 
-	struct PD_params *p
-			    = (struct PD_params *) params;
+	struct Stacking_params *p
+			    = (struct Stacking_params *) params;
 
 
 
@@ -318,7 +328,7 @@ double Get_Rx(double x, void * params){
 		  flux[i]=x/p->m_beam[i];
 
 		  if((flux[i]>=p->source_min)&&(flux[i]<=p->source_max)){
-			   newy[i]=Get_dNdS_per_px(flux[i],p->pixelsize,p->interplot_length,p->interplot_pointer);
+			   newy[i]=Get_dNdS_per_px(flux[i],p->pixelsize,p->PD_interplot_length,p->PD_interplot_pointer);
 		  		}else{
 		  			newy[i]=-100.0;
 		  			check_count++;
@@ -379,8 +389,8 @@ double CompactPD_LH(int Nbins, double * DataArray, double * result, void * Param
 
 	//FFTW_MEASURE
 
-	struct PD_params *p
-		    = (struct PD_params *) ParamsArray;
+	struct Stacking_params *p
+		    = (struct Stacking_params *) ParamsArray;
 
 
 
@@ -439,6 +449,8 @@ double CompactPD_LH(int Nbins, double * DataArray, double * result, void * Param
 
 
 
+
+
 	fftw_destroy_plan(p1);
 	fftw_destroy_plan(p2);
 
@@ -452,6 +464,135 @@ double CompactPD_LH(int Nbins, double * DataArray, double * result, void * Param
 	fftw_free(inbetween);
 
 	free(p->m_beam);
+
+
+
+	return 0.0;
+
+}
+
+double CompactStacking_LH(int Nbins, double * DataArray, double * result, void * ParamsArray ) {
+
+	int N=pow(2,18);  //default 18
+
+     double x[3][Nbins];
+     memcpy(x, DataArray, sizeof(double)*3*Nbins);
+
+
+	fftw_complex *inbetween;
+	fftw_complex *stacking_res;
+	double *f, *w, *out,*in, *stacking_in;
+
+	fftw_plan p1,p2,stacking_plan;
+
+	w =(double *) malloc(sizeof(double)*N);
+	f =(double *) malloc(sizeof(double)*N);
+
+
+
+	inbetween =(fftw_complex *) fftw_malloc(sizeof(fftw_complex)*N);
+	stacking_res =(fftw_complex *) fftw_malloc(sizeof(fftw_complex)*N);
+
+	in =(double *) malloc(sizeof(double)*N);
+	stacking_in =(double *) malloc(sizeof(double)*N);
+	out =(double *) malloc(sizeof(double)*N);
+
+	//make a plan "estimate(guess) or measure(find an opptimal way)"
+    p1 = fftw_plan_dft_r2c_1d(N, in, inbetween, FFTW_ESTIMATE);
+	stacking_plan=fftw_plan_dft_r2c_1d(N, stacking_in, stacking_res, FFTW_ESTIMATE);
+    p2 = fftw_plan_dft_c2r_1d(N, inbetween, out, FFTW_ESTIMATE);
+
+	//FFTW_MEASURE
+
+	struct Stacking_params *p
+		    = (struct Stacking_params *) ParamsArray;
+
+
+
+	double Delta=(p->d_max)/(N-1);
+
+    Set_beam(ParamsArray);
+    //it changes because of 1.0 show or not show in beam
+
+
+    if(input_fw(FFTW_FORWARD,N,0.0,Delta,f)==-1.0) {
+    	printf("error: input_fw forward !\n");
+    	exit(EXIT_FAILURE);
+    }
+
+
+    double dx=Delta;
+
+
+    for (int i = 0; i < N; i++)
+    		{
+
+    	       if(f[i]< p->d_min ){
+    				in[i]=0.0;
+    				stacking_in[i]=0.0;
+    			}else{
+
+    		       in[i]=Get_Rx(f[i],ParamsArray)*dx*amp_I;
+    		       stacking_in[i]=Get_Stacking_Rx(f[i],ParamsArray)*dx*amp_I;
+    		 			}
+    		}
+
+    printf("come in !\n");
+
+
+	fftw_execute(p1); // execute the plan
+
+	double nbar=inbetween[0][0];
+
+	fftw_execute(stacking_plan); // execute the plan
+
+	double nbar_stacking=stacking_res[0][0];
+
+	double noise=p->sigma_noise; //unit Jy
+
+	double temp_real,Real_PD,Image_PD;
+
+    if(input_fw(FFTW_BACKWARD,N,0.0,Delta,w)==-1.0){
+    	printf("error: input_fw backward !\n");
+    	exit(EXIT_FAILURE);
+    }
+
+		  for (int i = 0; i < N; i++){
+			  temp_real=inbetween[i][0];
+		      Real_PD=cos(inbetween[i][1]/amp_I)*exp(temp_real/amp_I-nbar/amp_I-0.5*pow(noise*w[i]*2*PI,2));
+		      Image_PD=sin(inbetween[i][1]/amp_I)*exp(temp_real/amp_I-nbar/amp_I-0.5*pow(noise*w[i]*2*PI,2));
+		      inbetween[i][0]=(Real_PD*(stacking_res[i][0]/amp_I)-Image_PD*(stacking_res[i][1]/amp_I))*amp_II;
+		      inbetween[i][1]=((stacking_res[i][0]/nbar_stacking/amp_I)*Image_PD+(stacking_res[i][1]/nbar_stacking/amp_I)*Real_PD)*amp_II;
+		  }
+
+
+	fftw_execute(p2); // execute the plan
+
+
+
+	output_res(Nbins, x[0],x[1],x[2],Delta,N,out,p->sigma_noise, result);
+
+
+
+
+
+	fftw_destroy_plan(p1);
+	fftw_destroy_plan(p2);
+
+	fftw_destroy_plan(stacking_plan);
+
+
+	free(in);
+	free(stacking_in);
+	free(f);
+	free(out);
+	free(w);
+	fftw_free(inbetween);
+	fftw_free(stacking_res);
+
+	free(p->m_beam);
+
+
 
 	return 0.0;
 

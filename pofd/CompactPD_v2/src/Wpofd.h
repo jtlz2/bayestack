@@ -21,14 +21,41 @@ struct PD_params{
   double * m_beam;
   int m_beam_size;
 
-  int interplot_length;
-  double * interplot_pointer;
+  int PD_interplot_length;
+  double * PD_interplot_pointer;
+
+  };
+
+struct Stacking_params{
+  double d_max;
+  double d_min;
+  double source_max;
+  double source_min;
+
+  double stacking_source_max;
+  double stacking_source_min;
+
+  double PSFresultionFWHM;
+  double pixelsize;
+  double sigma_noise;
+
+  double * m_beam;
+  int m_beam_size;
+
+  int stacking_interplot_length;
+  double * stacking_interplot_pointer;
+
+  int PD_interplot_length;
+  double * PD_interplot_pointer;
 
   };
 
 
 
+
 double CompactPD_LH(int Nbins, double * DataArray, double * result, void * ParamsArray );
+
+double CompactStacking_LH(int Nbins, double * DataArray, double * result, void * ParamsArray );
 
 
 #endif /* WPOFD_H_ */
