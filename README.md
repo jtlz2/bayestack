@@ -30,7 +30,7 @@ archivePrefix = {arXiv},
 
 Released under GPLv2
 
-Contributers:
+Contributors:
 
 - Jonathan Zwart (jtlz2; author)
 - Song Chen
