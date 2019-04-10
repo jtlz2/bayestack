@@ -40,3 +40,6 @@ Contributers:
 - Mario Santos
 - Matt Jarvis
 - Tessa Vernstrom
+
+
+Proudly powered by MultiNest (Farhan Feroz and Mike Hobson) and PyMultinest (Johannes Buchner)
